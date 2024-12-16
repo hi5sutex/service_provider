@@ -1,16 +1,18 @@
-// home_page.dart
+// booking_page.dart
 import 'package:flutter/material.dart';
 import 'package:service_provider/User Panel/user_booking.dart'; // Create this page
 import 'package:service_provider/User Panel/user_account.dart';    // Create this page
-import 'package:service_provider/User Panel/user_chat.dart'; // Create this page
+import 'package:service_provider/User Panel/user_chat.dart';
+import 'package:service_provider/User Panel/user_home.dart';// Create this page
 
-class HomePage extends StatefulWidget {
+class BookingPage extends StatefulWidget {
   @override
-  _HomePageState createState() => _HomePageState();
+  _BookingPageState createState() => _BookingPageState();
 }
 
-class _HomePageState extends State<HomePage> {
-  int _selectedIndex = 0;
+
+class _BookingPageState extends State<BookingPage> {
+  int _selectedIndex = 1;
 
   // Navigation function
   void _onItemTapped(int index) {
@@ -22,12 +24,13 @@ class _HomePageState extends State<HomePage> {
     switch (index) {
       case 0:
       // Home page doesn't need navigation, as it's already displayed
-        break;
-      case 1:
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => BookingPage()),
+          MaterialPageRoute(builder: (context) => HomePage()),
         );
+        break;
+      case 1:
+
         break;
       case 2:
         Navigator.pushReplacement(
@@ -51,11 +54,11 @@ class _HomePageState extends State<HomePage> {
       appBar: AppBar(
         backgroundColor: Colors.white,
         automaticallyImplyLeading: false,
-        title: const Text('Home Page'),
+        title: const Text('Booking Page'),
       ),
       body: Center(
         child: const Text(
-          'Welcome to the Home Page!',
+          'Welcome to the Booking Page!',
           style: TextStyle(fontSize: 20),
         ),
       ),
@@ -88,3 +91,5 @@ class _HomePageState extends State<HomePage> {
     );
   }
 }
+
+

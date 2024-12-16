@@ -1,90 +1,117 @@
-// lib/screens/login_screen.dart
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:service_provider/User Panel/user_registration.dart';
+import 'package:service_provider/User%20Panel/user_home.dart';
 
-class LoginScreen extends StatefulWidget {
+class LoginPage extends StatefulWidget {
   @override
-  _LoginScreenState createState() => _LoginScreenState();
+  State<LoginPage> createState() => _LoginPageState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
-  final _formKey = GlobalKey<FormState>();
-  final _emailController = TextEditingController();
-  final _passwordController = TextEditingController();
+class _LoginPageState extends State<LoginPage> {
+  final TextEditingController emailController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
-  void _login() async {
-    if (_formKey.currentState!.validate()) {
-      try {
-        UserCredential userCredential = await _auth.signInWithEmailAndPassword(
-          email: _emailController.text.trim(),
-          password: _passwordController.text.trim(),
-        );
+  bool isLoading = false;
 
-        // Navigate to home screen
-        Navigator.pushReplacementNamed(context, '/home');
-      } on FirebaseAuthException catch (e) {
+  // Method to log in with email and password
+  Future<void> loginWithEmailAndPassword() async {
+    setState(() {
+      isLoading = true;
+    });
+
+    try {
+      // Log in user with Firebase Auth
+      UserCredential userCredential = await _auth.signInWithEmailAndPassword(
+        email: emailController.text.trim(),
+        password: passwordController.text.trim(),
+      );
+
+      // Fetch user details from Firestore
+      DocumentSnapshot userDoc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(userCredential.user!.uid)
+          .get();
+
+      if (userDoc.exists) {
+        // Navigate to the Home Page after successful login
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.message ?? 'Login failed')),
+          const SnackBar(content: Text("Login Successful!")),
+        );
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => HomePage(), // Navigate to the Home Page
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("User not found in database.")),
         );
       }
+    } on FirebaseAuthException catch (e) {
+      String errorMessage;
+      if (e.code == 'user-not-found') {
+        errorMessage = "No user found with this email.";
+      } else if (e.code == 'wrong-password') {
+        errorMessage = "Invalid password.";
+      } else {
+        errorMessage = "Login failed. Please try again.";
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(errorMessage)),
+      );
+    } finally {
+      setState(() {
+        isLoading = false;
+      });
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Login')),
-      body: Padding(
-        padding: EdgeInsets.all(16.0),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              TextFormField(
-                controller: _emailController,
-                decoration: InputDecoration(
-                  labelText: 'Email',
-                  border: OutlineInputBorder(),
-                ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter your email';
-                  }
-                  return null;
-                },
-              ),
-              SizedBox(height: 16),
-              TextFormField(
-                controller: _passwordController,
-                decoration: InputDecoration(
-                  labelText: 'Password',
-                  border: OutlineInputBorder(),
-                ),
-                obscureText: true,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter your password';
-                  }
-                  return null;
-                },
-              ),
-              SizedBox(height: 16),
-              ElevatedButton(
-                onPressed: _login,
-                child: Text('Login'),
-              ),
-              TextButton(
-                onPressed: () {
-                  Navigator.pushNamed(context, '/register');
-                },
-                child: Text('Don\'t have an account? Register'),
-              ),
-            ],
-          ),
+      appBar: AppBar(title: const Text("Login Page")),
+      body: isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            TextFormField(
+              controller: emailController,
+              decoration: const InputDecoration(labelText: 'Email'),
+              keyboardType: TextInputType.emailAddress,
+            ),
+            TextFormField(
+              controller: passwordController,
+              decoration: const InputDecoration(labelText: 'Password'),
+              obscureText: true,
+            ),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: loginWithEmailAndPassword,
+              child: const Text("Login"),
+            ),
+            const SizedBox(height: 10),
+            TextButton(
+              onPressed: () {
+                // Navigate to registration page
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => RegistrationPage(), // Replace with your registration page
+                  ),
+                );
+              },
+              child: const Text("Don't have an account? Register here"),
+            ),
+          ],
         ),
       ),
     );
   }
 }
+

@@ -1,16 +1,18 @@
-// home_page.dart
+// chat_page.dart
 import 'package:flutter/material.dart';
 import 'package:service_provider/User Panel/user_booking.dart'; // Create this page
 import 'package:service_provider/User Panel/user_account.dart';    // Create this page
-import 'package:service_provider/User Panel/user_chat.dart'; // Create this page
+import 'package:service_provider/User Panel/user_chat.dart';
+import 'package:service_provider/User Panel/user_home.dart';// Create this page
 
-class HomePage extends StatefulWidget {
+class ChatPage extends StatefulWidget {
   @override
-  _HomePageState createState() => _HomePageState();
+  _ChatPageState createState() => _ChatPageState();
 }
 
-class _HomePageState extends State<HomePage> {
-  int _selectedIndex = 0;
+
+class _ChatPageState extends State<ChatPage> {
+  int _selectedIndex = 2;
 
   // Navigation function
   void _onItemTapped(int index) {
@@ -22,6 +24,11 @@ class _HomePageState extends State<HomePage> {
     switch (index) {
       case 0:
       // Home page doesn't need navigation, as it's already displayed
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => HomePage()),
+        );
+        break;
         break;
       case 1:
         Navigator.pushReplacement(
@@ -30,10 +37,7 @@ class _HomePageState extends State<HomePage> {
         );
         break;
       case 2:
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => ChatPage()),
-        );
+
         break;
       case 3:
         Navigator.pushReplacement(
@@ -51,11 +55,11 @@ class _HomePageState extends State<HomePage> {
       appBar: AppBar(
         backgroundColor: Colors.white,
         automaticallyImplyLeading: false,
-        title: const Text('Home Page'),
+        title: const Text('Chat Page'),
       ),
       body: Center(
         child: const Text(
-          'Welcome to the Home Page!',
+          'Welcome to the Chat Page!',
           style: TextStyle(fontSize: 20),
         ),
       ),
@@ -88,3 +92,5 @@ class _HomePageState extends State<HomePage> {
     );
   }
 }
+
+
