@@ -45,7 +45,7 @@ class MyApp extends StatelessWidget {
 
           // If user is logged in, you can navigate to home page
           // For now, we'll just return the registration page
-          return HomePage();
+          return LoginPage();
         },
       ),
     );
