@@ -71,6 +71,33 @@ dev_dependencies:
 
 # The following section is specific to Flutter packages.
 flutter:
+  assets:
+    - android/assets/oven.png
+    - android/assets/baner_1.png
+    - android/assets/baner_2.png
+    - android/assets/bhangar.png
+    - android/assets/car_cleaning.png
+    - android/assets/car_washing.png
+    - android/assets/carpainter.png
+    - android/assets/door repairing.png
+    - android/assets/door_lock.png
+    - android/assets/drainage_repairing.png
+    - android/assets/electrician.png
+    - android/assets/gardner.png
+    - android/assets/glass_cleaning.png
+    - android/assets/home_appliance.png
+    - android/assets/home_cleaning.png
+    - android/assets/insect_catcher.png
+    - android/assets/kadiya_kam.png
+    - android/assets/lights.png
+    - android/assets/mechenical_work.png
+    - android/assets/oven.png
+    - android/assets/sanitize.png
+    - android/assets/wash_basin.png
+    - android/assets/washing_machince.png
+    - android/assets/washing_machine.png
+    - android/assets/window_cleaning.png
+    - android/assets/wooden work.png
 
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
