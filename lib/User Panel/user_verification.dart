@@ -5,6 +5,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:service_provider/User Panel/user_home.dart';
 import 'package:service_provider/User Panel/user_home.dart';
+import 'package:service_provider/User Panel/main_home.dart';
 
 class OtpVerificationPage extends StatefulWidget {
   final String email;
@@ -52,7 +53,7 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
         // Navigate to Home Page
         Navigator.pushAndRemoveUntil(
           context,
-          MaterialPageRoute(builder: (context) => HomePage()),
+          MaterialPageRoute(builder: (context) => MainHome()),
               (route) => false,
         );
       } else {

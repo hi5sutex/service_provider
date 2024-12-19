@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:service_provider/User Panel/user_registration.dart';
+import 'package:service_provider/User Panel/main_home.dart';
 import 'package:service_provider/User%20Panel/user_home.dart';
 
 class LoginPage extends StatefulWidget {
@@ -43,7 +44,7 @@ class _LoginPageState extends State<LoginPage> {
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
-            builder: (context) => HomePage(), // Navigate to the Home Page
+            builder: (context) => MainHome(), // Navigate to the Home Page
           ),
         );
       } else {
