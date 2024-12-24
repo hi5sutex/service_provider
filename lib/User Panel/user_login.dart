@@ -3,7 +3,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:service_provider/User Panel/user_registration.dart';
 import 'package:service_provider/User Panel/main_home.dart';
-import 'package:service_provider/User%20Panel/user_home.dart';
+import 'package:service_provider/Ak Provider Panel/screens/main.dart';
+import 'package:service_provider/Ak Provider Panel/screens/register_screen.dart';
 
 class LoginPage extends StatefulWidget {
   @override
@@ -30,27 +31,48 @@ class _LoginPageState extends State<LoginPage> {
         password: passwordController.text.trim(),
       );
 
-      // Fetch user details from Firestore
+      String uid = userCredential.user!.uid;
+
+      // Check if the user is in the 'users' collection
       DocumentSnapshot userDoc = await FirebaseFirestore.instance
           .collection('users')
-          .doc(userCredential.user!.uid)
+          .doc(uid)
           .get();
 
       if (userDoc.exists) {
-        // Navigate to the Home Page after successful login
+        // User is a normal user
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Login Successful!")),
+          const SnackBar(content: Text("Login Successful as User!")),
         );
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
-            builder: (context) => MainHome(), // Navigate to the Home Page
+            builder: (context) => MainHome(), // Navigate to User's Main Home
           ),
         );
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("User not found in database.")),
-        );
+        // Check if the user is in the 'providers' collection
+        DocumentSnapshot providerDoc = await FirebaseFirestore.instance
+            .collection('providers')
+            .doc(uid)
+            .get();
+
+        if (providerDoc.exists) {
+          // User is a provider
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("Login Successful as Provider!")),
+          );
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (context) => Main(), // Replace with Provider's Main Panel
+            ),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("User not found in database. ak")),
+          );
+        }
       }
     } on FirebaseAuthException catch (e) {
       String errorMessage;
@@ -70,6 +92,7 @@ class _LoginPageState extends State<LoginPage> {
       });
     }
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -108,6 +131,18 @@ class _LoginPageState extends State<LoginPage> {
                 );
               },
               child: const Text("Don't have an account? Register here"),
+            ),
+            TextButton(
+              onPressed: () {
+                // Navigate to registration page
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => RegisterScreen(), // Replace with your registration page
+                  ),
+                );
+              },
+              child: const Text("Wanna become Provider? Register here"),
             ),
           ],
         ),

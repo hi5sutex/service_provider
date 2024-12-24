@@ -1,19 +1,16 @@
-// otp_verification_page.dart
-import 'package:email_otp/email_otp.dart';
 import 'package:flutter/material.dart';
+import 'package:email_otp/email_otp.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:service_provider/User Panel/user_home.dart';
-import 'package:service_provider/User Panel/user_home.dart';
-import 'package:service_provider/User Panel/main_home.dart';
+import 'package:service_provider/Ak Provider Panel/screens/main.dart';
 
-class OtpVerificationPage extends StatefulWidget {
+class OtpVerificationScreen extends StatefulWidget {
   final String email;
   final String name;
   final String phone;
   final String password;
 
-  OtpVerificationPage({
+  OtpVerificationScreen({
     required this.email,
     required this.name,
     required this.phone,
@@ -21,42 +18,37 @@ class OtpVerificationPage extends StatefulWidget {
   });
 
   @override
-  _OtpVerificationPageState createState() => _OtpVerificationPageState();
+  _OtpVerificationScreenState createState() => _OtpVerificationScreenState();
 }
 
-class _OtpVerificationPageState extends State<OtpVerificationPage> {
-  final _otpController = TextEditingController();
+class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
+  final TextEditingController otpController = TextEditingController();
 
-  void _verifyOtpAndRegister() async {
+  void verifyOtpAndRegister() async {
     try {
-      // Verify OTP using EmailOTP package method
-      bool isVerified = await EmailOTP.verifyOTP(otp: _otpController.text);
+      bool isVerified = await EmailOTP.verifyOTP(otp: otpController.text);
 
       if (isVerified) {
-        // Create user in Firebase Auth
         UserCredential userCredential = await FirebaseAuth.instance
             .createUserWithEmailAndPassword(
           email: widget.email,
           password: widget.password,
         );
 
-        // Save additional details in Firestore
         await FirebaseFirestore.instance
-            .collection('users')
+            .collection('providers')
             .doc(userCredential.user!.uid)
             .set({
           'name': widget.name,
           'phone': widget.phone,
           'email': widget.email,
-          'userType': "user",
+          'userType': "provider",
           'createdAt': FieldValue.serverTimestamp(),
-
         });
 
-        // Navigate to Home Page
         Navigator.pushAndRemoveUntil(
           context,
-          MaterialPageRoute(builder: (context) => MainHome()),
+          MaterialPageRoute(builder: (context) => Main()),
               (route) => false,
         );
       } else {
@@ -74,21 +66,21 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('OTP Verification')),
+      appBar: AppBar(title: const Text('OTP Verification')),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
             Text('Enter the OTP sent to ${widget.email}'),
             TextFormField(
-              controller: _otpController,
-              decoration: InputDecoration(labelText: 'OTP'),
+              controller: otpController,
+              decoration: const InputDecoration(labelText: 'OTP'),
               keyboardType: TextInputType.number,
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             ElevatedButton(
-              onPressed: _verifyOtpAndRegister,
-              child: Text('Verify and Register'),
+              onPressed: verifyOtpAndRegister,
+              child: const Text('Verify and Register'),
             ),
           ],
         ),
