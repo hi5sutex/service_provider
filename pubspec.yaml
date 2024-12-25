@@ -41,7 +41,11 @@ dependencies:
   provider: ^6.1.2
 #  flutter_local_notifications: ^18.0.1
   fluttertoast: ^8.2.8
+  firebase_storage:
+  image_picker:
+  uuid:
   cloud_firestore: ^5.5.1
+  http:
   mailer: ^6.3.0
   random_string: ^2.3.1
   email_otp: ^3.0.2
