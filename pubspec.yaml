@@ -53,6 +53,7 @@ dependencies:
   google_fonts: ^6.2.1
   dio: ^5.7.0
   geolocator: ^13.0.2
+  carousel_slider: ^5.0.0
 
 
 
