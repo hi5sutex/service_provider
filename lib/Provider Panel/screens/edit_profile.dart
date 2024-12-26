@@ -1,5 +1,3 @@
-import 'dart:js_interop';
-
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -144,20 +142,20 @@ class _EditProfileState extends State<EditProfile> {
   // }
 
   Future<String> _getHumanReadableAddress(double lat, double lon) async {
-    // final Uri url = Uri.parse(
-    //     "https://nominatim.openstreetmap.org/reverse?format=json&lat=$lat&lon=$lon");
-    //
-    // try {
-    //   final response = await http.get(url);
-    //   if (response.statusCode == 200) {
-    //     final data = jsonDecode(response.body);
-    //     return data['display_name'] ?? "Unknown Location";
-    //   } else {
-    //     return "Error Fetching Address";
-    //   }
-    // } catch (e) {
-    //   return "Error: $e";
-    // }
+    final Uri url = Uri.parse(
+        "https://nominatim.openstreetmap.org/reverse?format=json&lat=$lat&lon=$lon");
+
+    try {
+      final response = await http.get(url);
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return data['display_name'] ?? "Unknown Location";
+      } else {
+        return "Error Fetching Address";
+      }
+    } catch (e) {
+      return "Error: $e";
+    }
     return "";
   }
 
