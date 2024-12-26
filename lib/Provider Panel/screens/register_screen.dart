@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:email_otp/email_otp.dart';
-import 'package:service_provider/Ak Provider Panel/screens/otp_verification.dart';
+import 'package:service_provider/Provider Panel/screens/otp_verification.dart';
 
 class RegisterScreen extends StatefulWidget {
   @override
