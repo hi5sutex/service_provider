@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:email_otp/email_otp.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:service_provider/User Panel/user_verification.dart'; // OTP verification page
+import 'package:service_provider/User Panel/user_verification.dart';
+import 'package:service_provider/User%20Panel/user_login.dart'; // OTP verification page
 
 class RegistrationPage extends StatefulWidget {
   @override
@@ -105,6 +106,18 @@ class _RegistrationPageState extends State<RegistrationPage> {
             ElevatedButton(
               onPressed: sendOTPAndNavigate,
               child: const Text("Send OTP"),
+            ),
+            TextButton(
+              onPressed: () {
+                // Navigate to registration page
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => LoginPage(), // Replace with your registration page
+                  ),
+                );
+              },
+              child: const Text("Already have an account? Login here"),
             ),
           ],
         ),

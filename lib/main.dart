@@ -7,6 +7,7 @@ import 'package:service_provider/User Panel/user_registration.dart'; // The regi
 import 'package:service_provider/User Panel/user_login.dart';
 import 'package:service_provider/User Panel/user_login.dart';
 
+
 void main() async {
   // Ensure Flutter binding is initialized
   WidgetsFlutterBinding.ensureInitialized();

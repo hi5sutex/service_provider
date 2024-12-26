@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:service_provider/User Panel/user_home.dart';
 import 'package:service_provider/User Panel/user_chat.dart';
-import 'package:service_provider/User Panel/user_account.dart';
+import 'package:service_provider/User Panel/user_profile.dart';
 import 'package:service_provider/User Panel/user_booking.dart';
 
 class MainHome extends StatefulWidget {
@@ -17,7 +17,7 @@ class _MainHomeState extends State<MainHome> {
     UserHome(),
     UserBooking(),
     UserChat(),
-    UserAccount(),
+    UserProfile(),
   ];
 
   void _onItemTapped(int index) {

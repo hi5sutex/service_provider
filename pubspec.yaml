@@ -51,6 +51,7 @@ dependencies:
   email_otp: ^3.0.2
   font_awesome_flutter: ^10.8.0
   google_fonts: ^6.2.1
+  dio: ^5.7.0
 
 
 
