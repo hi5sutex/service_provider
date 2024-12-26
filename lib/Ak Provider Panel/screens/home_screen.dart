@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'add_service_screen.dart'; // Import your Add Service Screen
 
 class ProviderHome extends StatelessWidget {
   @override
@@ -9,7 +10,6 @@ class ProviderHome extends StatelessWidget {
         elevation: 1,
         title: Text(
           'Provider Dashboard',
-          // style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
         ),
         actions: [
           IconButton(
@@ -67,6 +67,10 @@ class ProviderHome extends StatelessWidget {
                   label: 'Add Service',
                   onTap: () {
                     // Navigate to Add Service screen
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => AddServiceScreen()),
+                    );
                   },
                 ),
                 _buildQuickActionCard(
