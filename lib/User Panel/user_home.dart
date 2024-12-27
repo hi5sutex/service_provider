@@ -2,18 +2,46 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+// Service Model
+class Service {
+  final String id;
+  final String title;
+  final String category;
+  final double price;
+  final String imageUrl;
+
+  Service({
+    required this.id,
+    required this.title,
+    required this.category,
+    required this.price,
+    required this.imageUrl,
+  });
+
+  factory Service.fromFirestore(DocumentSnapshot doc) {
+    Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+    return Service(
+      id: doc.id,
+      title: data['category'] ?? '',
+      category: data['category'] ?? '',
+      price: (data['price'] ?? 0).toDouble(),
+      imageUrl: data['images'] != null && (data['images'] as List).isNotEmpty
+          ? data['images'][0]
+          : '',
+    );
+  }
+}
+
 Future<String> getUserName() async {
   try {
     User? user = FirebaseAuth.instance.currentUser;
     if (user != null) {
-      // Fetch user document from Firestore
       DocumentSnapshot userDoc = await FirebaseFirestore.instance
-          .collection('users') // Ensure your users collection is named 'users'
+          .collection('users')
           .doc(user.uid)
           .get();
 
-      // Extract the 'name' field
-      return userDoc['name'] ?? 'User'; // Fallback to 'User' if name is not found
+      return userDoc['name'] ?? 'User';
     } else {
       return 'User not logged in';
     }
@@ -23,12 +51,31 @@ Future<String> getUserName() async {
   }
 }
 
-class UserHome extends StatelessWidget {
+class UserHome extends StatefulWidget {
+  @override
+  _UserHomeState createState() => _UserHomeState();
+}
+
+class _UserHomeState extends State<UserHome> {
+  String selectedCategory = 'All';
+
+  Stream<List<Service>> getServices(String category) {
+    Query query = FirebaseFirestore.instance.collection('services');
+
+    if (category != 'All') {
+      query = query.where('category', isEqualTo: category);
+    }
+
+    return query.snapshots().map((snapshot) {
+      return snapshot.docs.map((doc) => Service.fromFirestore(doc)).toList();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: PreferredSize(
-        preferredSize: Size.fromHeight(70.0), // Increase the height here
+        preferredSize: Size.fromHeight(70.0),
         child: AppBar(
           backgroundColor: Colors.white,
           elevation: 1,
@@ -71,7 +118,7 @@ class UserHome extends StatelessWidget {
           ),
           actions: [
             IconButton(
-              icon: Icon(Icons.settings),
+              icon: Icon(Icons.settings, color: Colors.black),
               onPressed: () {},
             ),
           ],
@@ -93,70 +140,107 @@ class UserHome extends StatelessWidget {
               ),
             ),
             SizedBox(height: 20),
+
             // Categories
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Row(
-                children: [
-                  CategoryChip(label: 'All', selected: true),
-                  CategoryChip(label: 'Cleaning'),
-                  CategoryChip(label: 'Plumbing'),
-                  CategoryChip(label: 'Electrical'),
-                  CategoryChip(label: 'Painting'),
-                ],
-              ),
+            StreamBuilder<QuerySnapshot>(
+              stream: FirebaseFirestore.instance.collection('categories').snapshots(),
+              builder: (context, snapshot) {
+                if (!snapshot.hasData) {
+                  return CircularProgressIndicator();
+                }
+
+                List<String> categories = ['All'];
+                categories.addAll(
+                    snapshot.data!.docs.map((doc) => doc['name'] as String).toList()
+                );
+
+                return SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    children: categories
+                        .map((category) => CategoryChip(
+                      label: category,
+                      selected: category == selectedCategory,
+                      onSelected: () {
+                        setState(() {
+                          selectedCategory = category;
+                        });
+                      },
+                    ))
+                        .toList(),
+                  ),
+                );
+              },
             ),
+
             SizedBox(height: 20),
+
             // Popular Services
             Text(
               'Popular Services',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             SizedBox(height: 10),
+
+            // Services List
             Expanded(
               flex: 2,
-              child: ListView(
-                scrollDirection: Axis.horizontal,
-                children: [
-                  ServiceCard(
-                    title: 'House Cleaning',
-                    rating: 4.8,
-                    reviews: '2.5k',
-                    price: '\$25/hr',
-                  ),
-                  ServiceCard(
-                    title: 'Plumbing Service',
-                    rating: 4.9,
-                    reviews: '1.8k',
-                    price: '\$40/hr',
-                  ),
-                ],
+              child: StreamBuilder<List<Service>>(
+                stream: getServices(selectedCategory),
+                builder: (context, snapshot) {
+                  if (!snapshot.hasData) {
+                    return Center(child: CircularProgressIndicator());
+                  }
+
+                  return ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: snapshot.data!.length,
+                    itemBuilder: (context, index) {
+                      Service service = snapshot.data![index];
+                      return ServiceCard(
+                        title: service.title,
+                        price: '\$${service.price}/hr',
+                        imageUrl: service.imageUrl,
+                      );
+                    },
+                  );
+                },
               ),
             ),
+
             SizedBox(height: 20),
+
             // Top Rated Providers
             Text(
               'Top Rated Providers',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             SizedBox(height: 10),
+
+            // Providers List
             Expanded(
               flex: 3,
-              child: ListView(
-                children: [
-                  ProviderCard(
-                    name: 'John Smith',
-                    profession: 'Professional Cleaner',
-                    rating: 4.9,
-                    reviews: '523 reviews',
-                  ),
-                  ProviderCard(
-                    name: 'Sarah Johnson',
-                    profession: 'Expert Plumber',
-                    rating: 4.8,
-                    reviews: '428 reviews',
-                  ),
-                ],
+              child: StreamBuilder<QuerySnapshot>(
+                stream: FirebaseFirestore.instance
+                    .collection('providers')
+                    .snapshots(),
+                builder: (context, snapshot) {
+                  if (!snapshot.hasData) {
+                    return Center(child: CircularProgressIndicator());
+                  }
+
+                  return ListView.builder(
+                    itemCount: snapshot.data!.docs.length,
+                    itemBuilder: (context, index) {
+                      Provider provider = Provider.fromFirestore(snapshot.data!.docs[index]);
+                      return ProviderCard(
+                        name: provider.name,
+                        phoneNumber: provider.phoneNumber,
+                        profilePicUrl: provider.profilePicUrl,
+                      );
+                    },
+                  );
+                },
               ),
             ),
           ],
@@ -170,18 +254,26 @@ class UserHome extends StatelessWidget {
 class CategoryChip extends StatelessWidget {
   final String label;
   final bool selected;
+  final VoidCallback? onSelected;
 
-  const CategoryChip({required this.label, this.selected = false});
+  const CategoryChip({
+    required this.label,
+    this.selected = false,
+    this.onSelected,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.only(right: 8.0),
-      child: Chip(
-        label: Text(label),
-        backgroundColor: selected ? Colors.blue : Colors.grey[200],
-        labelStyle: TextStyle(
-          color: selected ? Colors.white : Colors.black,
+      child: GestureDetector(
+        onTap: onSelected,
+        child: Chip(
+          label: Text(label),
+          backgroundColor: selected ? Colors.blue : Colors.grey[200],
+          labelStyle: TextStyle(
+            color: selected ? Colors.white : Colors.black,
+          ),
         ),
       ),
     );
@@ -191,15 +283,13 @@ class CategoryChip extends StatelessWidget {
 // ServiceCard Widget
 class ServiceCard extends StatelessWidget {
   final String title;
-  final double rating;
-  final String reviews;
   final String price;
+  final String imageUrl;
 
   const ServiceCard({
     required this.title,
-    required this.rating,
-    required this.reviews,
     required this.price,
+    required this.imageUrl,
   });
 
   @override
@@ -213,17 +303,38 @@ class ServiceCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Expanded(
-              child: Container(
+              child: imageUrl.isNotEmpty
+                  ? ClipRRect(
+                borderRadius: BorderRadius.circular(8),
+                child: Image.network(
+                  imageUrl,
+                  fit: BoxFit.cover,
+                  width: double.infinity,
+                  height: double.infinity,
+                  errorBuilder: (context, error, stackTrace) {
+                    return Container(
+                      color: Colors.grey[300],
+                      child: Icon(Icons.error),
+                    );
+                  },
+                ),
+              )
+                  : Container(
                 color: Colors.grey[300],
+                child: Icon(Icons.image),
               ),
             ),
             SizedBox(height: 8),
             Text(
               title,
               style: TextStyle(fontWeight: FontWeight.bold),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
-            Text('⭐ $rating ($reviews)'),
-            Text(price, style: TextStyle(color: Colors.blue)),
+            Text(
+              price,
+              style: TextStyle(color: Colors.blue),
+            ),
           ],
         ),
       ),
@@ -231,18 +342,42 @@ class ServiceCard extends StatelessWidget {
   }
 }
 
+
+
+class Provider {
+  final String id;
+  final String name;
+  final String phoneNumber;
+  final String profilePicUrl;
+
+  Provider({
+    required this.id,
+    required this.name,
+    required this.phoneNumber,
+    required this.profilePicUrl,
+  });
+
+  factory Provider.fromFirestore(DocumentSnapshot doc) {
+    Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+    return Provider(
+      id: doc.id,
+      name: data['name'] ?? '',
+      phoneNumber: data['phone'] ?? '',
+      profilePicUrl: data['profilePicUrl'] ?? '',
+    );
+  }
+}
+
 // ProviderCard Widget
 class ProviderCard extends StatelessWidget {
   final String name;
-  final String profession;
-  final double rating;
-  final String reviews;
+  final String phoneNumber;
+  final String profilePicUrl;
 
   const ProviderCard({
     required this.name,
-    required this.profession,
-    required this.rating,
-    required this.reviews,
+    required this.phoneNumber,
+    required this.profilePicUrl,
   });
 
   @override
@@ -251,16 +386,15 @@ class ProviderCard extends StatelessWidget {
       margin: EdgeInsets.symmetric(vertical: 8),
       child: ListTile(
         leading: CircleAvatar(
-          child: Icon(Icons.person),
+          backgroundImage: profilePicUrl.isNotEmpty
+              ? NetworkImage(profilePicUrl)
+              : null,
+          child: profilePicUrl.isEmpty ? Icon(Icons.person) : null,
         ),
         title: Text(name),
-        subtitle: Text(profession),
-        trailing: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text('⭐ $rating'),
-            Text('($reviews)'),
-          ],
+        subtitle: Text(
+          phoneNumber,
+          style: TextStyle(color: Colors.blue),
         ),
       ),
     );
