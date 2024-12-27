@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:service_provider/User%20Panel/service_detail.dart';
+import 'package:service_provider/User%20Panel/service_list.dart';
 
 // Service Model
 class Service {
@@ -309,7 +309,7 @@ class ServiceCard extends StatelessWidget {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => ServiceDetailsPage(category: category),
+            builder: (context) => ServiceListPage(category: category),
           ),
         );
       },

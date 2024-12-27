@@ -1,40 +1,50 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:service_provider/User Panel/service_details.dart';
 
-// First update the Service model to include serviceName
+// Service model to include service details
 class Service {
   final String id;
-  final String serviceName;  // Changed from title
+  final String serviceName;
   final String category;
   final double price;
   final String imageUrl;
+  final String description;
+  final List<String> responsibilities;
+  final List<String> whatsIncluded;
 
   Service({
     required this.id,
-    required this.serviceName,  // Changed from title
+    required this.serviceName,
     required this.category,
     required this.price,
     required this.imageUrl,
+    required this.description,
+    required this.responsibilities,
+    required this.whatsIncluded,
   });
 
   factory Service.fromFirestore(DocumentSnapshot doc) {
     Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
     return Service(
       id: doc.id,
-      serviceName: data['name'] ?? '',  // Changed from title
+      serviceName: data['name'] ?? '',
       category: data['category'] ?? '',
       price: (data['price'] ?? 0).toDouble(),
       imageUrl: data['images'] != null && (data['images'] as List).isNotEmpty
           ? data['images'][0]
           : '',
+      description: data['description'] ?? '',
+      responsibilities: List<String>.from(data['responsibilities'] ?? []),
+      whatsIncluded: List<String>.from(data['whatsIncluded'] ?? []),
     );
   }
 }
 
-class ServiceDetailsPage extends StatelessWidget {
+class ServiceListPage extends StatelessWidget {
   final String category;
 
-  const ServiceDetailsPage({required this.category});
+  const ServiceListPage({required this.category});
 
   Stream<List<Service>> getServicesByCategory() {
     return FirebaseFirestore.instance
@@ -100,23 +110,45 @@ class ServiceDetailsPage extends StatelessWidget {
                     ),
                   ),
                   title: Text(
-                    service.serviceName,  // Using serviceName instead of category
+                    service.serviceName,
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 16,
                     ),
                   ),
                   subtitle: Text(
-                    '\$${service.price}/hr',
+                    '\$${service.price.toStringAsFixed(2)}/hr',
                     style: TextStyle(
                       color: Colors.blue,
                       fontWeight: FontWeight.w500,
                       fontSize: 14,
                     ),
                   ),
-                  onTap: () {
-                    // Handle service selection
-                  },
+                  trailing: ElevatedButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => DetailedServicePage(
+                            serviceName: service.serviceName,
+                            category: service.category,
+                            price: service.price,
+                            description: service.description,
+                            responsibilities: service.responsibilities,
+                            subcategory: service.category,
+                            whatsIncluded: service.whatsIncluded,
+                            images: [service.imageUrl],
+                          ),
+                        ),
+                      );
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.blue,
+                      foregroundColor: Colors.white,
+                      padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    ),
+                    child: Text('View in Detail'),
+                  ),
                 ),
               );
             },
