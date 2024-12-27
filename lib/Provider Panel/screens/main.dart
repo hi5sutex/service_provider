@@ -3,6 +3,7 @@ import 'package:service_provider/Provider Panel/screens/home_screen.dart';
 import 'package:service_provider/Provider Panel/screens/booking_screen.dart';
 import 'package:service_provider/Provider Panel/screens/chat_screen.dart';
 import 'package:service_provider/Provider Panel/screens/profile_screen.dart';
+import 'package:service_provider/Provider Panel/screens/add_dummy_bookings.dart';
 
 class Main extends StatefulWidget {
   @override
@@ -18,6 +19,7 @@ class _MainState extends State<Main> with SingleTickerProviderStateMixin {
     ProviderBooking(),
     ProviderChat(),
     ProviderProfile(),
+    // AddDummyBookings(),
   ];
 
   void _onItemTapped(int index) {

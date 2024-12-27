@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class ProviderBooking extends StatefulWidget {
   @override
@@ -7,32 +9,54 @@ class ProviderBooking extends StatefulWidget {
 
 class _ProviderBookingState extends State<ProviderBooking> {
   String activeTab = 'pending';
+  String? providerId;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchCurrentUserUid();
+  }
+
+  Future<void> _fetchCurrentUserUid() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      setState(() {
+        providerId = user.uid;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Booking Management'),
+        title: const Text('Booking Management', style: TextStyle(color: Colors.black)),
+        backgroundColor: Colors.white,
+        elevation: 1,
+        iconTheme: const IconThemeData(color: Colors.black),
       ),
-      body: Column(
+      body: providerId == null
+          ? const Center(child: CircularProgressIndicator())
+          : Column(
         children: [
-          // Booking Tabs
-          Container(
-            color: Colors.white,
-            padding: const EdgeInsets.symmetric(vertical: 8),
-            child: Row(
-              children: [
-                _buildTabButton('Pending', 'pending'),
-                _buildTabButton('Ongoing', 'ongoing'),
-                _buildTabButton('Completed', 'completed'),
-              ],
-            ),
-          ),
+          _buildTabBar(),
           const Divider(height: 1, color: Colors.grey),
-          // Booking List
-          Expanded(
-            child: _buildBookingList(),
-          ),
+          Expanded(child: _buildBookingList()),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTabBar() {
+    return Container(
+      color: Colors.white,
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Row(
+        children: [
+          _buildTabButton('Pending', 'pending'),
+          _buildTabButton('Ongoing', 'confirmed'),
+          _buildTabButton('Completed', 'completed'),
+          _buildTabButton('Cancelled', 'cancelled'),
         ],
       ),
     );
@@ -70,98 +94,37 @@ class _ProviderBookingState extends State<ProviderBooking> {
   }
 
   Widget _buildBookingList() {
-    if (activeTab == 'pending') {
-      return _buildPendingBookings();
-    } else if (activeTab == 'ongoing') {
-      return _buildOngoingBookings();
-    } else {
-      return _buildCompletedBookings();
-    }
-  }
+    return StreamBuilder(
+      stream: FirebaseFirestore.instance
+          .collection('bookings')
+          .where('providerId', isEqualTo: providerId)
+          .where('status', isEqualTo: activeTab[0].toUpperCase() + activeTab.substring(1).toLowerCase())
+          .snapshots(),
+      builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        if (snapshot.hasError) {
+          return const Center(child: Text('Error loading bookings'));
+        }
+        if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+          return const Center(child: Text('No bookings found.'));
+        }
 
-  Widget _buildPendingBookings() {
-    return ListView.builder(
-      padding: const EdgeInsets.all(16),
-      itemCount: 3,
-      itemBuilder: (context, index) {
-        return _buildBookingCard(
-          serviceName: 'House Cleaning',
-          clientName: 'John Doe',
-          date: 'Today, 2:00 PM - 4:00 PM',
-          status: 'Pending',
-          statusColor: Colors.orange,
-          actions: [
-            TextButton(
-              onPressed: () {},
-              child: const Text('Decline', style: TextStyle(color: Colors.red)),
-            ),
-            ElevatedButton(
-              onPressed: () {},
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.blue),
-              child: const Text('Accept'),
-            ),
-          ],
+        final bookings = snapshot.data!.docs;
+        return ListView.builder(
+          padding: const EdgeInsets.all(16),
+          itemCount: bookings.length,
+          itemBuilder: (context, index) {
+            final booking = bookings[index];
+            return _buildBookingCard(booking);
+          },
         );
       },
     );
   }
 
-  Widget _buildOngoingBookings() {
-    return ListView.builder(
-      padding: const EdgeInsets.all(16),
-      itemCount: 2,
-      itemBuilder: (context, index) {
-        return _buildBookingCard(
-          serviceName: 'AC Repair',
-          clientName: 'Sarah Smith',
-          date: '123 Main St, New York',
-          status: 'In Progress',
-          statusColor: Colors.blue,
-          actions: [
-            ElevatedButton(
-              onPressed: () {},
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
-              child: const Text('Complete Service'),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  Widget _buildCompletedBookings() {
-    return ListView.builder(
-      padding: const EdgeInsets.all(16),
-      itemCount: 1,
-      itemBuilder: (context, index) {
-        return _buildBookingCard(
-          serviceName: 'Plumbing Service',
-          clientName: 'Mike Johnson',
-          date: '\$120.00',
-          status: 'Completed',
-          statusColor: Colors.green,
-          actions: [
-            Row(
-              children: [
-                Icon(Icons.star, color: Colors.yellow.shade600),
-                const SizedBox(width: 4),
-                const Text('4.5'),
-              ],
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  Widget _buildBookingCard({
-    required String serviceName,
-    required String clientName,
-    required String date,
-    required String status,
-    required Color statusColor,
-    List<Widget>? actions,
-  }) {
+  Widget _buildBookingCard(QueryDocumentSnapshot booking) {
     return Card(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       margin: const EdgeInsets.symmetric(vertical: 8),
@@ -171,68 +134,144 @@ class _ProviderBookingState extends State<ProviderBooking> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Header
-            Row(
-              children: [
-                CircleAvatar(
-                  radius: 24,
-                  backgroundImage: NetworkImage(
-                      'https://via.placeholder.com/150'), // Placeholder image
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(serviceName, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                      Text(clientName, style: TextStyle(color: Colors.grey.shade600)),
-                    ],
-                  ),
-                ),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: statusColor.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Text(status, style: TextStyle(color: statusColor, fontWeight: FontWeight.bold)),
-                ),
-              ],
-            ),
+            _buildBookingHeader(booking),
             const SizedBox(height: 16),
-            // Date and Actions
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Expanded(
-                  child: Row(
-                    children: [
-                      Icon(Icons.calendar_today, size: 16, color: Colors.grey.shade600),
-                      const SizedBox(width: 4),
-                      Expanded(
-                        child: Text(
-                          date,
-                          style: const TextStyle(color: Colors.grey),
-                          overflow: TextOverflow.ellipsis, // Ensures text doesn't overflow
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                Row(
-                  children: actions?.map((action) {
-                    return Padding(
-                      padding: const EdgeInsets.only(left: 4.0),
-                      child: action,
-                    );
-                  }).toList() ?? [],
-                ),
-              ],
-            ),
-
+            _buildBookingDetails(booking),
+            const SizedBox(height: 16),
+            _buildBookingActions(booking),
           ],
         ),
       ),
     );
+  }
+
+  Widget _buildBookingHeader(QueryDocumentSnapshot booking) {
+    final statusColor = _getStatusColor(booking['status']);
+    final profileUrl = '';
+    // booking['userId'] != null ? getUserProfileImageUrl(booking['userId']) as String : '';
+    final userName = booking['userId'] != null ? getUserName(booking['userId']) : 'Unknown';
+
+    return Row(
+      children: [
+        CircleAvatar(
+          radius: 24,
+          backgroundImage: NetworkImage(profileUrl.isNotEmpty ? profileUrl : 'https://via.placeholder.com/150'),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(userName.toString(), style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+              Text(booking['location']['local'] ?? '', style: TextStyle(color: Colors.grey.shade600, fontSize: 12)),
+            ],
+          ),
+        ),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+          decoration: BoxDecoration(
+            color: statusColor.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Text(
+            booking['status'],
+            style: TextStyle(color: statusColor, fontWeight: FontWeight.bold),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildBookingDetails(QueryDocumentSnapshot booking) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('${booking['category']} - ${booking['serviceName']}', style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+        const SizedBox(height: 8),
+        Text(booking['bookingDate'] ?? 'N/A', style: TextStyle(color: Colors.grey.shade600, fontSize: 12)),
+        const SizedBox(height: 8),
+        Row(
+          children: [
+            Text('Payment: ', style: TextStyle(color: Colors.grey.shade600)),
+            Text('₹${(booking['paymentAmount'] as int).toDouble().toStringAsFixed(2)} (${booking['paymentMode']})', style: const TextStyle(fontWeight: FontWeight.bold)),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildBookingActions(QueryDocumentSnapshot booking) {
+    final actions = _getActionsForStatus(booking['status'], booking.id);
+
+    if (actions.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.end,
+      children: actions,
+    );
+  }
+
+  Color _getStatusColor(String status) {
+    switch (status.toLowerCase()) {
+      case 'pending':
+        return Colors.orange;
+      case 'ongoing':
+        return Colors.blue;
+      case 'completed':
+        return Colors.green;
+      case 'cancelled':
+        return Colors.red;
+      default:
+        return Colors.grey;
+    }
+  }
+
+  List<Widget> _getActionsForStatus(String status, String bookingId) {
+    switch (status.toLowerCase()) {
+      case 'pending':
+        return [
+          TextButton(onPressed: () => _updateBookingStatus(bookingId, 'declined'), child: const Text('Decline', style: TextStyle(color: Colors.red))),
+          ElevatedButton(onPressed: () => _updateBookingStatus(bookingId, 'approved'), child: const Text('Approve')),
+        ];
+      case 'ongoing':
+        return [
+          ElevatedButton(onPressed: () => _updateBookingStatus(bookingId, 'completed'), child: const Text('Complete Service')),
+        ];
+      default:
+        return [];
+    }
+  }
+
+  Future<void> _updateBookingStatus(String bookingId, String newStatus) async {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const Center(child: CircularProgressIndicator()),
+    );
+
+    try {
+      await FirebaseFirestore.instance.collection('bookings').doc(bookingId).update({'status': newStatus});
+      Navigator.of(context).pop(); // Dismiss the dialog
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Status updated to $newStatus.')));
+    } catch (e) {
+      Navigator.of(context).pop(); // Dismiss the dialog
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to update status: $e')));
+    }
+  }
+
+  String getFormattedActiveTab(String activeTab) {
+    return activeTab[0].toUpperCase() + activeTab.substring(1).toLowerCase();
+  }
+
+  Future<String?> getUserProfileImageUrl(String userId) async {
+    final userDoc = await FirebaseFirestore.instance.collection('users').doc(userId).get();
+    return userDoc.exists ? userDoc['profileImage'] as String? : null;
+  }
+
+  Future<String?> getUserName(String userId) async {
+    final userDoc = await FirebaseFirestore.instance.collection('users').doc(userId).get();
+    return userDoc.exists ? userDoc['name'] as String? : null;
   }
 }
