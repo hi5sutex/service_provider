@@ -83,7 +83,8 @@ class _UserHomeState extends State<UserHome> {
             future: getUserName(),
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
-                return Text('Loading...', style: TextStyle(color: Colors.black));
+                return Text('Loading...',
+                    style: TextStyle(color: Colors.black));
               } else if (snapshot.hasError) {
                 return Text('Error', style: TextStyle(color: Colors.red));
               }
@@ -143,30 +144,32 @@ class _UserHomeState extends State<UserHome> {
 
             // Categories
             StreamBuilder<QuerySnapshot>(
-              stream: FirebaseFirestore.instance.collection('categories').snapshots(),
+              stream: FirebaseFirestore.instance
+                  .collection('categories')
+                  .snapshots(),
               builder: (context, snapshot) {
                 if (!snapshot.hasData) {
                   return CircularProgressIndicator();
                 }
 
                 List<String> categories = ['All'];
-                categories.addAll(
-                    snapshot.data!.docs.map((doc) => doc['name'] as String).toList()
-                );
+                categories.addAll(snapshot.data!.docs
+                    .map((doc) => doc['name'] as String)
+                    .toList());
 
                 return SingleChildScrollView(
                   scrollDirection: Axis.horizontal,
                   child: Row(
                     children: categories
                         .map((category) => CategoryChip(
-                      label: category,
-                      selected: category == selectedCategory,
-                      onSelected: () {
-                        setState(() {
-                          selectedCategory = category;
-                        });
-                      },
-                    ))
+                              label: category,
+                              selected: category == selectedCategory,
+                              onSelected: () {
+                                setState(() {
+                                  selectedCategory = category;
+                                });
+                              },
+                            ))
                         .toList(),
                   ),
                 );
@@ -232,7 +235,8 @@ class _UserHomeState extends State<UserHome> {
                   return ListView.builder(
                     itemCount: snapshot.data!.docs.length,
                     itemBuilder: (context, index) {
-                      Provider provider = Provider.fromFirestore(snapshot.data!.docs[index]);
+                      Provider provider =
+                          Provider.fromFirestore(snapshot.data!.docs[index]);
                       return ProviderCard(
                         name: provider.name,
                         phoneNumber: provider.phoneNumber,
@@ -305,24 +309,24 @@ class ServiceCard extends StatelessWidget {
             Expanded(
               child: imageUrl.isNotEmpty
                   ? ClipRRect(
-                borderRadius: BorderRadius.circular(8),
-                child: Image.network(
-                  imageUrl,
-                  fit: BoxFit.cover,
-                  width: double.infinity,
-                  height: double.infinity,
-                  errorBuilder: (context, error, stackTrace) {
-                    return Container(
-                      color: Colors.grey[300],
-                      child: Icon(Icons.error),
-                    );
-                  },
-                ),
-              )
+                      borderRadius: BorderRadius.circular(8),
+                      child: Image.network(
+                        imageUrl,
+                        fit: BoxFit.cover,
+                        width: double.infinity,
+                        height: double.infinity,
+                        errorBuilder: (context, error, stackTrace) {
+                          return Container(
+                            color: Colors.grey[300],
+                            child: Icon(Icons.error),
+                          );
+                        },
+                      ),
+                    )
                   : Container(
-                color: Colors.grey[300],
-                child: Icon(Icons.image),
-              ),
+                      color: Colors.grey[300],
+                      child: Icon(Icons.image),
+                    ),
             ),
             SizedBox(height: 8),
             Text(
@@ -341,8 +345,6 @@ class ServiceCard extends StatelessWidget {
     );
   }
 }
-
-
 
 class Provider {
   final String id;
@@ -363,7 +365,8 @@ class Provider {
       id: doc.id,
       name: data['name'] ?? '',
       phoneNumber: data['phone'] ?? '',
-      profilePicUrl: data['profilePicUrl'] ?? '',
+      profilePicUrl: data['profileImage'] ?? '',
+
     );
   }
 }
@@ -386,9 +389,8 @@ class ProviderCard extends StatelessWidget {
       margin: EdgeInsets.symmetric(vertical: 8),
       child: ListTile(
         leading: CircleAvatar(
-          backgroundImage: profilePicUrl.isNotEmpty
-              ? NetworkImage(profilePicUrl)
-              : null,
+          backgroundImage:
+              profilePicUrl.isNotEmpty ? NetworkImage(profilePicUrl) : null,
           child: profilePicUrl.isEmpty ? Icon(Icons.person) : null,
         ),
         title: Text(name),
