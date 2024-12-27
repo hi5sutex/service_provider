@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:service_provider/Ak Provider Panel/screens/home_screen.dart';
-import 'package:service_provider/Ak Provider Panel/screens/booking_screen.dart';
-import 'package:service_provider/Ak Provider Panel/screens/chat_screen.dart';
-import 'package:service_provider/Ak Provider Panel/screens/profile_screen.dart';
+import 'package:service_provider/Provider Panel/screens/home_screen.dart';
+import 'package:service_provider/Provider Panel/screens/booking_screen.dart';
+import 'package:service_provider/Provider Panel/screens/chat_screen.dart';
+import 'package:service_provider/Provider Panel/screens/profile_screen.dart';
 
 class Main extends StatefulWidget {
   @override

@@ -42,11 +42,6 @@ class _UserProfileState extends State<UserProfile> {
       }
     } catch (e) {
       print('Error fetching profile details: $e');
-      setState(() {
-        _profileImageUrl = null;
-        _userName = null;
-        _phoneNumber = null;
-      });
     }
   }
 
@@ -56,14 +51,12 @@ class _UserProfileState extends State<UserProfile> {
       if (pickedFile != null) {
         String filePath = pickedFile.path;
 
-        // Define Cloudinary API details
         String uploadUrl = "https://api.cloudinary.com/v1_1/dpcjw0g5c/image/upload";
         FormData formData = FormData.fromMap({
           "file": await MultipartFile.fromFile(filePath),
           "upload_preset": "flutter_unsigned_upload",
         });
 
-        // Use Dio to upload the file
         Dio dio = Dio();
         Response response = await dio.post(uploadUrl, data: formData);
 

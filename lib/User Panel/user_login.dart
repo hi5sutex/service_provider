@@ -3,8 +3,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:service_provider/User Panel/user_registration.dart';
 import 'package:service_provider/User Panel/main_home.dart';
-import 'package:service_provider/Ak Provider Panel/screens/main.dart';
-import 'package:service_provider/Ak Provider Panel/screens/register_screen.dart';
+import 'package:service_provider/Provider Panel/screens/main.dart';
+import 'package:service_provider/Provider Panel/screens/register_screen.dart';
 
 class LoginPage extends StatefulWidget {
   @override

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:service_provider/Ak%20Provider%20Panel/screens/chat_window_screen.dart';
+import 'package:service_provider/Provider%20Panel/screens/chat_window_screen.dart';
 
 class ProviderChat extends StatefulWidget {
   @override

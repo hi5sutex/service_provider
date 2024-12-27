@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:email_otp/email_otp.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:service_provider/Ak Provider Panel/screens/main.dart';
+import 'package:service_provider/Provider Panel/screens/main.dart';
 
 class OtpVerificationScreen extends StatefulWidget {
   final String email;

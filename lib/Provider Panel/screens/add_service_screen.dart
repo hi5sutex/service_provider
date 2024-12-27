@@ -143,6 +143,7 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
         List<String> imageUrls = await uploadImagesToCloudinary();
 
         // Add service to Firestore
+        DocumentReference newServiceRef =
         await FirebaseFirestore.instance.collection('services').add({
           'name': _nameController.text,
           'description': _descriptionController.text,
@@ -154,6 +155,14 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
           'images': imageUrls,
           'createdBy': providerId, // Dynamically set provider ID
           'createdAt': FieldValue.serverTimestamp(),
+        });
+
+        // Add the service ID to the provider's servicesOffered array
+        await FirebaseFirestore.instance
+            .collection('providers')
+            .doc(providerId)
+            .update({
+          'servicesOffered': FieldValue.arrayUnion([newServiceRef.id]),
         });
 
         ScaffoldMessenger.of(context).showSnackBar(
@@ -172,6 +181,7 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
       }
     }
   }
+
 
   Widget _buildDynamicList(String label, String hint, List<String> itemsList) {
     return Column(
