@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:service_provider/User%20Panel/service_list.dart';
 
 // Service Model
 class Service {
@@ -204,12 +205,14 @@ class _UserHomeState extends State<UserHome> {
                         title: service.title,
                         price: '\$${service.price}/hr',
                         imageUrl: service.imageUrl,
+                        category: service.category, // Pass category here
                       );
                     },
                   );
                 },
               ),
             ),
+
 
             SizedBox(height: 20),
 
@@ -289,62 +292,76 @@ class ServiceCard extends StatelessWidget {
   final String title;
   final String price;
   final String imageUrl;
+  final String category; // Add category field
 
   const ServiceCard({
     required this.title,
     required this.price,
     required this.imageUrl,
+    required this.category,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      margin: EdgeInsets.only(right: 16),
-      child: Container(
-        width: 150,
-        padding: EdgeInsets.all(12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(
-              child: imageUrl.isNotEmpty
-                  ? ClipRRect(
-                      borderRadius: BorderRadius.circular(8),
-                      child: Image.network(
-                        imageUrl,
-                        fit: BoxFit.cover,
-                        width: double.infinity,
-                        height: double.infinity,
-                        errorBuilder: (context, error, stackTrace) {
-                          return Container(
-                            color: Colors.grey[300],
-                            child: Icon(Icons.error),
-                          );
-                        },
-                      ),
-                    )
-                  : Container(
-                      color: Colors.grey[300],
-                      child: Icon(Icons.image),
-                    ),
-            ),
-            SizedBox(height: 8),
-            Text(
-              title,
-              style: TextStyle(fontWeight: FontWeight.bold),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-            Text(
-              price,
-              style: TextStyle(color: Colors.blue),
-            ),
-          ],
+    return GestureDetector(
+      onTap: () {
+        // Navigate to ServiceDetailsPage
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => ServiceListPage(category: category),
+          ),
+        );
+      },
+      child: Card(
+        margin: EdgeInsets.only(right: 16),
+        child: Container(
+          width: 150,
+          padding: EdgeInsets.all(12),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: imageUrl.isNotEmpty
+                    ? ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: Image.network(
+                    imageUrl,
+                    fit: BoxFit.cover,
+                    width: double.infinity,
+                    height: double.infinity,
+                    errorBuilder: (context, error, stackTrace) {
+                      return Container(
+                        color: Colors.grey[300],
+                        child: Icon(Icons.error),
+                      );
+                    },
+                  ),
+                )
+                    : Container(
+                  color: Colors.grey[300],
+                  child: Icon(Icons.image),
+                ),
+              ),
+              SizedBox(height: 8),
+              Text(
+                title,
+                style: TextStyle(fontWeight: FontWeight.bold),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+              Text(
+                price,
+                style: TextStyle(color: Colors.blue),
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 }
+
 
 class Provider {
   final String id;
