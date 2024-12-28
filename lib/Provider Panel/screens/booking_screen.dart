@@ -1,277 +1,250 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:service_provider/Provider Panel/screens/booking_detail_screen.dart';
+import 'package:intl/intl.dart';
+import 'package:shimmer/shimmer.dart';
 
 class ProviderBooking extends StatefulWidget {
   @override
   _ProviderBookingState createState() => _ProviderBookingState();
 }
 
-class _ProviderBookingState extends State<ProviderBooking> {
-  String activeTab = 'pending';
-  String? providerId;
+class _ProviderBookingState extends State<ProviderBooking>
+    with SingleTickerProviderStateMixin {
+  late TabController _tabController;
+  final String? providerId = FirebaseAuth.instance.currentUser?.uid;
 
   @override
   void initState() {
     super.initState();
-    _fetchCurrentUserUid();
+    _tabController = TabController(length: 4, vsync: this);
   }
 
-  Future<void> _fetchCurrentUserUid() async {
-    final user = FirebaseAuth.instance.currentUser;
-    if (user != null) {
-      setState(() {
-        providerId = user.uid;
-      });
-    }
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
+
+  Stream<List<Map<String, dynamic>>> fetchBookings(String status) {
+    return FirebaseFirestore.instance
+        .collection('bookings')
+        .where('status', isEqualTo: status)
+        .where('providerId', isEqualTo: providerId)
+        .snapshots()
+        .map((snapshot) => snapshot.docs
+            .map((doc) => {
+                  ...doc.data(),
+                  'bId': doc.id,
+                })
+            .toList());
+  }
+
+  Future<Map<String, dynamic>?> fetchServiceDetails(String serviceId) async {
+    final serviceDoc = await FirebaseFirestore.instance
+        .collection('services')
+        .doc(serviceId)
+        .get();
+    return serviceDoc.data();
+  }
+
+  Widget bookingCard(Map<String, dynamic> booking) {
+    final DateFormat dateFormat = DateFormat('dd MMM yyyy');
+
+    return FutureBuilder<Map<String, dynamic>?>(
+      future: Future.wait([
+        FirebaseFirestore.instance
+            .collection('users')
+            .doc(booking['userId'])
+            .get()
+            .then((doc) => doc.data()),
+        FirebaseFirestore.instance
+            .collection('services')
+            .doc(booking['serviceId'])
+            .get()
+            .then((doc) => doc.data())
+      ]).then((results) {
+        return {'userData': results[0], 'serviceData': results[1]};
+      }),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return Shimmer.fromColors(
+            baseColor: Colors.grey[300]!,
+            highlightColor: Colors.grey[100]!,
+            child: Card(
+              margin: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+              elevation: 4,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12)),
+              child: Container(height: 120),
+            ),
+          );
+        }
+        if (!snapshot.hasData || snapshot.data == null) {
+          return SizedBox();
+        }
+
+        final data = snapshot.data as Map<String, dynamic>;
+        final userData = data['userData'];
+        final serviceData = data['serviceData'];
+
+        return GestureDetector(
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => BookingDetailScreen(booking: booking),
+              ),
+            );
+          },
+          child: Card(
+            margin: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+            elevation: 4,
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            child: Padding(
+              padding: const EdgeInsets.all(12.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      CircleAvatar(
+                        backgroundImage:
+                            NetworkImage(userData['profileImage'] ?? ''),
+                        radius: 28,
+                      ),
+                      SizedBox(width: 12),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            userData['name'] ?? 'User Name',
+                            style: TextStyle(
+                                fontSize: 16, fontWeight: FontWeight.bold),
+                          ),
+                          Text(
+                            booking['location']['local'] ?? 'Location',
+                            style: TextStyle(color: Colors.grey[600]),
+                          ),
+                        ],
+                      ),
+                      Spacer(),
+                      Align(
+                        alignment: Alignment.topRight,
+                        child: Container(
+                          padding:
+                              EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+                          decoration: BoxDecoration(
+                            color: booking['status'] == 'Pending'
+                                ? Colors.orange
+                                : Colors.green,
+                            // Example based on status
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Text(
+                            booking['status'],
+                            style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 12),
+                  if (serviceData != null)
+                    Text(
+                      serviceData['name'] ?? 'Service Name',
+                      style: TextStyle(fontSize: 14, color: Colors.grey[700]),
+                    ),
+                  Divider(height: 20, thickness: 1),
+                  Padding(
+                    padding: EdgeInsets.only(right: 16),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Service Date: ${dateFormat.format((booking['serviceDate'] as Timestamp).toDate())}',
+                              style: TextStyle(color: Colors.grey[700]),
+                            ),
+                            Text(
+                              'Payment: ₹${booking['paymentAmount']} (${booking['paymentMode']})',
+                              style: TextStyle(color: Colors.grey[700]),
+                            ),
+                          ],
+                        ),
+                        if (booking['status'] == 'Pending')
+                          Text('Pending', style: TextStyle(color: Colors.grey)),
+                        if (booking['status'] == 'Confirmed')
+                          Text('Confirmed',
+                              style: TextStyle(color: Colors.blueGrey)),
+                        if (booking['status'] == 'Completed')
+                          Text('Completed',
+                              style: TextStyle(color: Colors.green)),
+                        if (booking['status'] == 'Cancelled')
+                          Text('Cancelled',
+                              style: TextStyle(color: Colors.red)),
+                      ],
+                    ),
+                  )
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Booking Management', style: TextStyle(color: Colors.black)),
-        backgroundColor: Colors.white,
-        elevation: 1,
-        iconTheme: const IconThemeData(color: Colors.black),
-      ),
-      body: providerId == null
-          ? const Center(child: CircularProgressIndicator())
-          : Column(
-        children: [
-          _buildTabBar(),
-          const Divider(height: 1, color: Colors.grey),
-          Expanded(child: _buildBookingList()),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildTabBar() {
-    return Container(
-      color: Colors.white,
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      child: Row(
-        children: [
-          _buildTabButton('Pending', 'pending'),
-          _buildTabButton('Ongoing', 'confirmed'),
-          _buildTabButton('Completed', 'completed'),
-          _buildTabButton('Cancelled', 'cancelled'),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildTabButton(String label, String tab) {
-    return Expanded(
-      child: GestureDetector(
-        onTap: () {
-          setState(() {
-            activeTab = tab;
-          });
-        },
-        child: Container(
-          alignment: Alignment.center,
-          padding: const EdgeInsets.symmetric(vertical: 12),
-          decoration: BoxDecoration(
-            border: Border(
-              bottom: BorderSide(
-                color: activeTab == tab ? Colors.blue : Colors.transparent,
-                width: 3,
-              ),
-            ),
-          ),
-          child: Text(
-            label,
-            style: TextStyle(
-              color: activeTab == tab ? Colors.blue : Colors.grey.shade600,
-              fontWeight: activeTab == tab ? FontWeight.bold : FontWeight.normal,
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildBookingList() {
-    return StreamBuilder(
-      stream: FirebaseFirestore.instance
-          .collection('bookings')
-          .where('providerId', isEqualTo: providerId)
-          .where('status', isEqualTo: activeTab[0].toUpperCase() + activeTab.substring(1).toLowerCase())
-          .snapshots(),
-      builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
-        }
-        if (snapshot.hasError) {
-          return const Center(child: Text('Error loading bookings'));
-        }
-        if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-          return const Center(child: Text('No bookings found.'));
-        }
-
-        final bookings = snapshot.data!.docs;
-        return ListView.builder(
-          padding: const EdgeInsets.all(16),
-          itemCount: bookings.length,
-          itemBuilder: (context, index) {
-            final booking = bookings[index];
-            return _buildBookingCard(booking);
-          },
-        );
-      },
-    );
-  }
-
-  Widget _buildBookingCard(QueryDocumentSnapshot booking) {
-    return Card(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      margin: const EdgeInsets.symmetric(vertical: 8),
-      elevation: 4,
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildBookingHeader(booking),
-            const SizedBox(height: 16),
-            _buildBookingDetails(booking),
-            const SizedBox(height: 16),
-            _buildBookingActions(booking),
+        title: Text('Bookings'),
+        bottom: TabBar(
+          controller: _tabController,
+          indicatorColor: Colors.blue,
+          // Change this color as per your theme
+          labelColor: Colors.blue,
+          unselectedLabelColor: Colors.grey,
+          indicatorWeight: 3.0,
+          tabs: [
+            Tab(text: 'Pending'),
+            Tab(text: 'Ongoing'),
+            Tab(text: 'Completed'),
+            Tab(text: 'Cancelled'),
           ],
         ),
       ),
+      body: TabBarView(
+        controller: _tabController,
+        children:
+            ['Pending', 'Confirmed', 'Completed', 'Cancelled'].map((status) {
+          return StreamBuilder<List<Map<String, dynamic>>>(
+            stream: fetchBookings(status),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return Center(child: CircularProgressIndicator());
+              }
+              if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                return Center(child: Text('No bookings found'));
+              }
+              return ListView.builder(
+                itemCount: snapshot.data!.length,
+                itemBuilder: (context, index) {
+                  return bookingCard(snapshot.data![index]);
+                },
+              );
+            },
+          );
+        }).toList(),
+      ),
     );
-  }
-
-  Widget _buildBookingHeader(QueryDocumentSnapshot booking) {
-    final statusColor = _getStatusColor(booking['status']);
-    final profileUrl = '';
-    // booking['userId'] != null ? getUserProfileImageUrl(booking['userId']) as String : '';
-    final userName = booking['userId'] != null ? getUserName(booking['userId']) : 'Unknown';
-
-    return Row(
-      children: [
-        CircleAvatar(
-          radius: 24,
-          backgroundImage: NetworkImage(profileUrl.isNotEmpty ? profileUrl : 'https://via.placeholder.com/150'),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(userName.toString(), style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-              Text(booking['location']['local'] ?? '', style: TextStyle(color: Colors.grey.shade600, fontSize: 12)),
-            ],
-          ),
-        ),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-          decoration: BoxDecoration(
-            color: statusColor.withOpacity(0.1),
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Text(
-            booking['status'],
-            style: TextStyle(color: statusColor, fontWeight: FontWeight.bold),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildBookingDetails(QueryDocumentSnapshot booking) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text('${booking['category']} - ${booking['serviceName']}', style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
-        const SizedBox(height: 8),
-        Text(booking['bookingDate'] ?? 'N/A', style: TextStyle(color: Colors.grey.shade600, fontSize: 12)),
-        const SizedBox(height: 8),
-        Row(
-          children: [
-            Text('Payment: ', style: TextStyle(color: Colors.grey.shade600)),
-            Text('₹${(booking['paymentAmount'] as int).toDouble().toStringAsFixed(2)} (${booking['paymentMode']})', style: const TextStyle(fontWeight: FontWeight.bold)),
-          ],
-        ),
-      ],
-    );
-  }
-
-  Widget _buildBookingActions(QueryDocumentSnapshot booking) {
-    final actions = _getActionsForStatus(booking['status'], booking.id);
-
-    if (actions.isEmpty) {
-      return const SizedBox.shrink();
-    }
-
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.end,
-      children: actions,
-    );
-  }
-
-  Color _getStatusColor(String status) {
-    switch (status.toLowerCase()) {
-      case 'pending':
-        return Colors.orange;
-      case 'ongoing':
-        return Colors.blue;
-      case 'completed':
-        return Colors.green;
-      case 'cancelled':
-        return Colors.red;
-      default:
-        return Colors.grey;
-    }
-  }
-
-  List<Widget> _getActionsForStatus(String status, String bookingId) {
-    switch (status.toLowerCase()) {
-      case 'pending':
-        return [
-          TextButton(onPressed: () => _updateBookingStatus(bookingId, 'declined'), child: const Text('Decline', style: TextStyle(color: Colors.red))),
-          ElevatedButton(onPressed: () => _updateBookingStatus(bookingId, 'approved'), child: const Text('Approve')),
-        ];
-      case 'ongoing':
-        return [
-          ElevatedButton(onPressed: () => _updateBookingStatus(bookingId, 'completed'), child: const Text('Complete Service')),
-        ];
-      default:
-        return [];
-    }
-  }
-
-  Future<void> _updateBookingStatus(String bookingId, String newStatus) async {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => const Center(child: CircularProgressIndicator()),
-    );
-
-    try {
-      await FirebaseFirestore.instance.collection('bookings').doc(bookingId).update({'status': newStatus});
-      Navigator.of(context).pop(); // Dismiss the dialog
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Status updated to $newStatus.')));
-    } catch (e) {
-      Navigator.of(context).pop(); // Dismiss the dialog
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to update status: $e')));
-    }
-  }
-
-  String getFormattedActiveTab(String activeTab) {
-    return activeTab[0].toUpperCase() + activeTab.substring(1).toLowerCase();
-  }
-
-  Future<String?> getUserProfileImageUrl(String userId) async {
-    final userDoc = await FirebaseFirestore.instance.collection('users').doc(userId).get();
-    return userDoc.exists ? userDoc['profileImage'] as String? : null;
-  }
-
-  Future<String?> getUserName(String userId) async {
-    final userDoc = await FirebaseFirestore.instance.collection('users').doc(userId).get();
-    return userDoc.exists ? userDoc['name'] as String? : null;
   }
 }

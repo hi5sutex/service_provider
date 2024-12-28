@@ -9,159 +9,159 @@ class AddDummyBookings extends StatefulWidget {
 }
 
 class _AddDummyBookingsState extends State<AddDummyBookings> {
-
   void addDummyBookings() async {
     final bookings = [
       {
-        "userId": "YbQvtIOdbugXZa5Se1yOGLeN9hR2",
-        "providerId": "kYtEjoImtKW0zmc9ZwcTDgZ6Qpn2",
-        "serviceId": "6PsjcrE9axCwNuc36uAa",
-        "serviceDate": "2025-01-10T10:30:00Z",
-        "paymentAmount": 1500,
-        "paymentMode": "Online",
-        "status": "Confirmed",
-        "location": {
-          "latitude": 22.3072,
-          "longitude": 73.1812,
-          "local": "Vadodara, Gujarat, India"
-        },
-        "bookingDate": "2024-12-27T14:15:00Z"
-      },
-      {
         "userId": "5gB3ecdk9jVm575fuVrAUEKEgFU2",
         "providerId": "kYtEjoImtKW0zmc9ZwcTDgZ6Qpn2",
-        "serviceId": "qW3XeIGyom8KWbJeTBUA",
-        "serviceDate": "2025-01-15T15:00:00Z",
-        "paymentAmount": 2200,
-        "paymentMode": "Cash",
-        "status": "Pending",
+        "serviceId": "0Au0X32VlAglDCOHNmY8",
+        "serviceDate": Timestamp.fromDate(DateTime(2024, 1, 5)),
+        "bookingDate": Timestamp.fromDate(DateTime(2023, 12, 28)),
         "location": {
           "latitude": 21.1702,
           "longitude": 72.8311,
-          "local": "Surat, Gujarat, India"
+          "local": "Katargam, Surat"
         },
-        "bookingDate": "2024-12-25T13:00:00Z"
-      },
-      {
-        "userId": "jslzh88QyqbiMrgvVWbWU7AngD63",
-        "providerId": "kYtEjoImtKW0zmc9ZwcTDgZ6Qpn2",
-        "serviceId": "oILamNOtm9c03W8Gltzd",
-        "serviceDate": "2025-01-20T11:00:00Z",
-        "paymentAmount": 1800,
-        "paymentMode": "Online",
-        "status": "Completed",
-        "location": {
-          "latitude": 23.0225,
-          "longitude": 72.5714,
-          "local": "Ahmedabad, Gujarat, India"
-        },
-        "bookingDate": "2024-12-20T12:00:00Z"
+        "paymentAmount": 500,
+        "paymentMode": "Cash",
+        "status": "Pending"
       },
       {
         "userId": "YbQvtIOdbugXZa5Se1yOGLeN9hR2",
-        "providerId": "kYtEjoImtKW0zmc9ZwcTDgZ6Qpn2",
-        "serviceId": "86QPKqiZURunQYV6Waye",
-        "serviceDate": "2025-01-05T09:00:00Z",
-        "paymentAmount": 3000,
-        "paymentMode": "Card",
-        "status": "Cancelled",
+        "providerId": "sGwqMbPXbadonjgeretNyFIst5i1",
+        "serviceId": "6PsjcrE9axCwNuc36uAa",
+        "serviceDate": Timestamp.fromDate(DateTime(2024, 1, 7)),
+        "bookingDate": Timestamp.fromDate(DateTime(2023, 12, 25)),
         "location": {
-          "latitude": 20.5937,
-          "longitude": 78.9629,
-          "local": "Nagpur, Maharashtra, India"
+          "latitude": 19.0760,
+          "longitude": 72.8777,
+          "local": "Andheri, Mumbai"
         },
-        "bookingDate": "2024-12-23T10:45:00Z"
+        "paymentAmount": 750,
+        "paymentMode": "Online",
+        "status": "Confirmed"
+      },
+      {
+        "userId": "jslzh88QyqbiMrgvVWbWU7AngD63",
+        "providerId": "yri40iFNrFVb0M9vy7qHZWG5ZKH3",
+        "serviceId": "6nktV7lgbwMo95Kp6oNn",
+        "serviceDate": Timestamp.fromDate(DateTime(2024, 2, 15)),
+        "bookingDate": Timestamp.fromDate(DateTime(2023, 12, 20)),
+        "location": {
+          "latitude": 28.7041,
+          "longitude": 77.1025,
+          "local": "Connaught Place, Delhi"
+        },
+        "paymentAmount": 1000,
+        "paymentMode": "UPI",
+        "status": "Completed"
       },
       {
         "userId": "5gB3ecdk9jVm575fuVrAUEKEgFU2",
         "providerId": "kYtEjoImtKW0zmc9ZwcTDgZ6Qpn2",
-        "serviceId": "CNzckjHtIgrfXEShoTiJ",
-        "serviceDate": "2025-02-12T14:00:00Z",
-        "paymentAmount": 1200,
-        "paymentMode": "Online",
-        "status": "Confirmed",
-        "location": {
-          "latitude": 19.0760,
-          "longitude": 72.8777,
-          "local": "Mumbai, Maharashtra, India"
-        },
-        "bookingDate": "2024-12-22T16:30:00Z"
-      },
-      {
-        "userId": "jslzh88QyqbiMrgvVWbWU7AngD63",
-        "providerId": "kYtEjoImtKW0zmc9ZwcTDgZ6Qpn2",
-        "serviceId": "ZkMhXew0vXZjfnmoXX8J",
-        "serviceDate": "2025-01-18T10:00:00Z",
-        "paymentAmount": 2500,
-        "paymentMode": "Cash",
-        "status": "Completed",
-        "location": {
-          "latitude": 17.3850,
-          "longitude": 78.4867,
-          "local": "Hyderabad, Telangana, India"
-        },
-        "bookingDate": "2024-12-24T15:00:00Z"
-      },
-      {
-        "userId": "YbQvtIOdbugXZa5Se1yOGLeN9hR2",
-        "providerId": "kYtEjoImtKW0zmc9ZwcTDgZ6Qpn2",
-        "serviceId": "fvN1QwYPoEwxNE39hIvS",
-        "serviceDate": "2025-02-01T12:00:00Z",
-        "paymentAmount": 1700,
-        "paymentMode": "Online",
-        "status": "Pending",
+        "serviceId": "86QPKqiZURunQYV6Waye",
+        "serviceDate": Timestamp.fromDate(DateTime(2024, 1, 10)),
+        "bookingDate": Timestamp.fromDate(DateTime(2023, 12, 15)),
         "location": {
           "latitude": 13.0827,
           "longitude": 80.2707,
-          "local": "Chennai, Tamil Nadu, India"
+          "local": "T Nagar, Chennai"
         },
-        "bookingDate": "2024-12-21T11:30:00Z"
+        "paymentAmount": 600,
+        "paymentMode": "Cash",
+        "status": "Cancelled"
       },
       {
-        "userId": "4wB3ecdk9jVm575fuVrAUEKEgFU2",
-        "providerId": "kYtEjoImtKW0zmc9ZwcTDgZ6Qpn2",
-        "serviceId": "hX9AMnQLyuoapknc9H5v",
-        "serviceDate": "2025-01-12T09:00:00Z",
-        "paymentAmount": 2000,
+        "userId": "YbQvtIOdbugXZa5Se1yOGLeN9hR2",
+        "providerId": "sGwqMbPXbadonjgeretNyFIst5i1",
+        "serviceId": "CNzckjHtIgrfXEShoTiJ",
+        "serviceDate": Timestamp.fromDate(DateTime(2024, 3, 3)),
+        "bookingDate": Timestamp.fromDate(DateTime(2023, 12, 10)),
+        "location": {
+          "latitude": 18.5204,
+          "longitude": 73.8567,
+          "local": "Koregaon Park, Pune"
+        },
+        "paymentAmount": 1200,
         "paymentMode": "Online",
-        "status": "Processing",
+        "status": "Pending"
+      },
+      {
+        "userId": "jslzh88QyqbiMrgvVWbWU7AngD63",
+        "providerId": "yri40iFNrFVb0M9vy7qHZWG5ZKH3",
+        "serviceId": "CPiAbxf9gIQtzXS3LVMY",
+        "serviceDate": Timestamp.fromDate(DateTime(2024, 2, 8)),
+        "bookingDate": Timestamp.fromDate(DateTime(2023, 12, 8)),
         "location": {
           "latitude": 12.9716,
           "longitude": 77.5946,
-          "local": "Bangalore, Karnataka, India"
+          "local": "MG Road, Bangalore"
         },
-        "bookingDate": "2024-12-26T11:00:00Z"
-      },
-      {
-        "userId": "7gB3ecdk9jVm575fuVrAUEKEgFU3",
-        "providerId": "kYtEjoImtKW0zmc9ZwcTDgZ6Qpn2",
-        "serviceId": "pywEkeq71hcV4RyoijF7",
-        "serviceDate": "2025-01-30T16:00:00Z",
-        "paymentAmount": 1700,
-        "paymentMode": "Online",
-        "status": "Failed",
-        "location": {
-          "latitude": 11.0168,
-          "longitude": 76.9558,
-          "local": "Coimbatore, Tamil Nadu, India"
-        },
-        "bookingDate": "2024-12-29T09:00:00Z"
-      },
-      {
-        "userId": "8gB3ecdk9jVm575fuVrAUEKEgFU4",
-        "providerId": "kYtEjoImtKW0zmc9ZwcTDgZ6Qpn2",
-        "serviceId": "wq4Ph1MN4jr6o4m9UJh5",
-        "serviceDate": "2025-02-05T08:30:00Z",
-        "paymentAmount": 2500,
+        "paymentAmount": 850,
         "paymentMode": "Cash",
-        "status": "Cancelled",
+        "status": "Confirmed"
+      },
+      {
+        "userId": "5gB3ecdk9jVm575fuVrAUEKEgFU2",
+        "providerId": "kYtEjoImtKW0zmc9ZwcTDgZ6Qpn2",
+        "serviceId": "N1prOUJKjeFnAllWGF1b",
+        "serviceDate": Timestamp.fromDate(DateTime(2024, 1, 20)),
+        "bookingDate": Timestamp.fromDate(DateTime(2023, 12, 5)),
         "location": {
-          "latitude": 10.8505,
-          "longitude": 76.2711,
-          "local": "Trivandrum, Kerala, India"
+          "latitude": 22.5726,
+          "longitude": 88.3639,
+          "local": "Salt Lake, Kolkata"
         },
-        "bookingDate": "2024-12-30T14:45:00Z"
-      }
+        "paymentAmount": 400,
+        "paymentMode": "Online",
+        "status": "Completed"
+      },
+      {
+        "userId": "YbQvtIOdbugXZa5Se1yOGLeN9hR2",
+        "providerId": "sGwqMbPXbadonjgeretNyFIst5i1",
+        "serviceId": "P0tVaLj18IUYbfLsTZpC",
+        "serviceDate": Timestamp.fromDate(DateTime(2024, 2, 25)),
+        "bookingDate": Timestamp.fromDate(DateTime(2023, 12, 1)),
+        "location": {
+          "latitude": 25.5941,
+          "longitude": 85.1376,
+          "local": "Fraser Road, Patna"
+        },
+        "paymentAmount": 950,
+        "paymentMode": "UPI",
+        "status": "Cancelled"
+      },
+      {
+        "userId": "jslzh88QyqbiMrgvVWbWU7AngD63",
+        "providerId": "yri40iFNrFVb0M9vy7qHZWG5ZKH3",
+        "serviceId": "TAtMhHo3TOv9bUdWFl3R",
+        "serviceDate": Timestamp.fromDate(DateTime(2024, 1, 15)),
+        "bookingDate": Timestamp.fromDate(DateTime(2023, 11, 28)),
+        "location": {
+          "latitude": 31.6340,
+          "longitude": 74.8723,
+          "local": "Golden Temple Area, Amritsar"
+        },
+        "paymentAmount": 700,
+        "paymentMode": "Cash",
+        "status": "Pending"
+      },
+      {
+        "userId": "5gB3ecdk9jVm575fuVrAUEKEgFU2",
+        "providerId": "kYtEjoImtKW0zmc9ZwcTDgZ6Qpn2",
+        "serviceId": "XFjv6laP42Px3tYuoiv8",
+        "serviceDate": Timestamp.fromDate(DateTime(2024, 1, 25)),
+        "bookingDate": Timestamp.fromDate(DateTime(2023, 11, 25)),
+        "location": {
+          "latitude": 26.9124,
+          "longitude": 75.7873,
+          "local": "Malviya Nagar, Jaipur"
+        },
+        "paymentAmount": 500,
+        "paymentMode": "Online",
+        "status": "Confirmed"
+      },
+      // Add more entries as needed with diverse cities
     ];
 
     try {
@@ -185,7 +185,7 @@ class _AddDummyBookingsState extends State<AddDummyBookings> {
     return Scaffold(
       appBar: AppBar(title: const Text("Add Dummy Bookings")),
       floatingActionButton: FloatingActionButton(
-        onPressed: addDummyBookings, // Removed 'const' and added the proper method call
+        onPressed: addDummyBookings,
         child: const Icon(Icons.add),
       ),
       body: const Center(
