@@ -41,11 +41,11 @@ dependencies:
   provider: ^6.1.2
 #  flutter_local_notifications: ^18.0.1
   fluttertoast: ^8.2.8
-  firebase_storage:
-  image_picker:
-  uuid:
+  firebase_storage: ^12.3.7
+  image_picker: ^1.1.2
+  uuid: ^4.5.1
   cloud_firestore: ^5.5.1
-  http:
+  http: ^1.2.2
   mailer: ^6.3.0
   random_string: ^2.3.1
   email_otp: ^3.0.2
@@ -79,32 +79,35 @@ dev_dependencies:
 # The following section is specific to Flutter packages.
 flutter:
   assets:
-    - android/assets/oven.png
+    - android/assets/appliance repair.png
+    - android/assets/automobile services.png
     - android/assets/baner_1.png
     - android/assets/baner_2.png
+    - android/assets/beauty & wellness.png
     - android/assets/bhangar.png
-    - android/assets/car_cleaning.png
     - android/assets/car_washing.png
-    - android/assets/carpainter.png
+    - android/assets/cleaning.png
     - android/assets/door repairing.png
     - android/assets/door_lock.png
-    - android/assets/drainage_repairing.png
-    - android/assets/electrician.png
-    - android/assets/gardner.png
-    - android/assets/glass_cleaning.png
-    - android/assets/home_appliance.png
-    - android/assets/home_cleaning.png
-    - android/assets/insect_catcher.png
+    - android/assets/electrical.png
+    - android/assets/events & decor.png
+    - android/assets/gardening.png
+    - android/assets/home improvement.png
     - android/assets/kadiya_kam.png
     - android/assets/lights.png
     - android/assets/mechenical_work.png
     - android/assets/oven.png
-    - android/assets/sanitize.png
+    - android/assets/painting.png
+    - android/assets/pest control.png
+    - android/assets/plumbing.png
     - android/assets/wash_basin.png
-    - android/assets/washing_machince.png
     - android/assets/washing_machine.png
     - android/assets/window_cleaning.png
     - android/assets/wooden work.png
+
+
+
+
 
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
