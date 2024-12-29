@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:service_provider/Admin%20Panel/screens/users_screen.dart';
+import 'package:service_provider/Admin Panel/screens/providers_screen.dart';
 
 class DashboardScreen extends StatelessWidget {
   const DashboardScreen({Key? key}) : super(key: key);
@@ -108,7 +109,7 @@ class DashboardScreen extends StatelessWidget {
                       _buildDashboardCard(
                         title: 'Revenue',
                         value: '\$${data['totalRevenue'].toStringAsFixed(2)}',
-                        color: Colors.yellow.shade100,
+                        color: Colors.indigo.shade100,
                         onTap: () => navigateOrShowMessage(context, 'Revenue', () => RevenueScreen()),
                       ),
                       _buildDashboardCard(
@@ -217,13 +218,6 @@ class DashboardScreen extends StatelessWidget {
       ),
     );
   }
-}
-
-
-
-class ProvidersScreen extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) => Scaffold(appBar: AppBar(title: Text('Providers')));
 }
 
 class BookingsScreen extends StatelessWidget {
