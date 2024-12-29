@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:service_provider/Admin%20Panel/screens/main.dart';
 import 'package:service_provider/User Panel/user_login.dart';
 import 'package:service_provider/User Panel/main_home.dart'; // User home
 import 'package:service_provider/Provider Panel/screens/main.dart'; // Provider home
@@ -64,7 +65,9 @@ class AuthStateHandler extends StatelessWidget {
             }
 
             final userType = userTypeSnapshot.data!;
-            if (userType == 'user') {
+            if (userType == 'admin') {
+              return MainAdminPanel(); // User panel
+            } else if (userType == 'user') {
               return MainHome(); // User panel
             } else if (userType == 'provider') {
               return Main(); // Provider panel
@@ -83,6 +86,14 @@ class AuthStateHandler extends StatelessWidget {
 
   Future<String?> _getUserType(String uid, BuildContext context) async {
     try {
+
+      // Check the "admins" collection
+      final adminDoc = await FirebaseFirestore.instance.collection('admins').doc(uid).get();
+
+      if (adminDoc.exists && adminDoc.data() != null) {
+
+        return "admin"; // Return userType for "users"
+      }
 
       // Check the "users" collection
       final userDoc = await FirebaseFirestore.instance.collection('users').doc(uid).get();
