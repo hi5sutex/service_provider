@@ -130,6 +130,7 @@ class ServiceListPage extends StatelessWidget {
                         context,
                         MaterialPageRoute(
                           builder: (context) => DetailedServicePage(
+                            serviceId: service.id,
                             serviceName: service.serviceName,
                             category: service.category,
                             price: service.price,

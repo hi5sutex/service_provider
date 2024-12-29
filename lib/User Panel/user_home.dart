@@ -55,7 +55,7 @@ class _UserHomeState extends State<UserHome> {
                 children: [
                   // User Info and Settings
                   Container(
-                    padding: EdgeInsets.all(16),
+                    padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                     child: Row(
                       children: [
                         Expanded(
@@ -101,21 +101,22 @@ class _UserHomeState extends State<UserHome> {
                   ),
                   // Search Bar
                   Container(
-                    padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    padding: EdgeInsets.symmetric(horizontal: 12, vertical: 4), // Reduce padding
                     child: TextField(
                       decoration: InputDecoration(
+                        contentPadding: EdgeInsets.symmetric(vertical: 8), // Adjust internal padding
                         hintText: 'Search services...',
-                        prefixIcon: Icon(Icons.search),
+                        prefixIcon: Icon(Icons.search, size: 20), // Adjust icon size
                         border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(10), // Slightly smaller corner radius
                           borderSide: BorderSide(color: Colors.grey.shade300),
                         ),
                         enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(10),
                           borderSide: BorderSide(color: Colors.grey.shade300),
                         ),
                         focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(10),
                           borderSide: BorderSide(color: Colors.blue),
                         ),
                         filled: true,
@@ -123,48 +124,10 @@ class _UserHomeState extends State<UserHome> {
                       ),
                     ),
                   ),
-                  // Category Chips
-                  Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 16),
-                    child: StreamBuilder<QuerySnapshot>(
-                      stream: FirebaseFirestore.instance
-                          .collection('categories')
-                          .snapshots(),
-                      builder: (context, snapshot) {
-                        if (!snapshot.hasData) {
-                          return Center(child: CircularProgressIndicator());
-                        }
-
-                        List<String> categories = ['All'];
-                        categories.addAll(snapshot.data!.docs
-                            .map((doc) => doc['name'] as String)
-                            .toList());
-
-                        return SingleChildScrollView(
-                          scrollDirection: Axis.horizontal,
-                          child: Row(
-                            children: categories
-                                .map((category) => Padding(
-                              padding: EdgeInsets.only(right: 8),
-                              child: CategoryChip(
-                                label: category,
-                                selected: category == selectedCategory,
-                                onSelected: () {
-                                  setState(() {
-                                    selectedCategory = category;
-                                  });
-                                },
-                              ),
-                            ))
-                                .toList(),
-                          ),
-                        );
-                      },
-                    ),
-                  ),
                 ],
               ),
             ),
+
 
             // Scrollable Content
             Expanded(
@@ -172,9 +135,49 @@ class _UserHomeState extends State<UserHome> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    // Category Chips Section (Move it here)
+                    Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      child: StreamBuilder<QuerySnapshot>(
+                        stream: FirebaseFirestore.instance
+                            .collection('categories')
+                            .snapshots(),
+                        builder: (context, snapshot) {
+                          if (!snapshot.hasData) {
+                            return Center(child: CircularProgressIndicator());
+                          }
+
+                          List<String> categories = ['All'];
+                          categories.addAll(snapshot.data!.docs
+                              .map((doc) => doc['name'] as String)
+                              .toList());
+
+                          return SingleChildScrollView(
+                            scrollDirection: Axis.horizontal,
+                            child: Row(
+                              children: categories
+                                  .map((category) => Padding(
+                                padding: EdgeInsets.only(right: 8),
+                                child: CategoryChip(
+                                  label: category,
+                                  selected: category == selectedCategory,
+                                  onSelected: () {
+                                    setState(() {
+                                      selectedCategory = category;
+                                    });
+                                  },
+                                ),
+                              ))
+                                  .toList(),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+
                     // Popular Services Section
                     Padding(
-                      padding: EdgeInsets.all(16),
+                      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                       child: Text(
                         'Popular Services',
                         style: TextStyle(
