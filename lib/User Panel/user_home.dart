@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:service_provider/User%20Panel/service_list.dart';
+import 'package:service_provider/User%20Panel/subcategories_list.dart';
 
 class UserHome extends StatefulWidget {
   @override
@@ -297,8 +297,7 @@ class _UserHomeState extends State<UserHome> {
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (context) => ServiceListPage(
-                                      category: categoryName,
+                                    builder: (context) => SubcategoriesPage(categoryName: categoryName,
                                     ),
                                   ),
                                 );
@@ -377,7 +376,7 @@ class Service {
     Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
     return Service(
       id: doc.id,
-      title: data['title'] ?? '',
+      title: data['name'] ?? '',
       category: data['category'] ?? '',
       price: (data['price'] ?? 0).toDouble(),
       imageUrl: data['images'] != null && (data['images'] as List).isNotEmpty
@@ -487,12 +486,12 @@ class ServiceCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => ServiceListPage(category: category),
-          ),
-        );
+        // Navigator.push(
+        //   context,
+        //   MaterialPageRoute(
+        //     // builder: (context) => SubcategoriesPage(categoryName: category),
+        //   ),
+        // );
       },
       child: Container(
         width: 160,
