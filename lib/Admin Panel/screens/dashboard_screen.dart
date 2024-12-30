@@ -1,7 +1,11 @@
+
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:service_provider/Admin%20Panel/screens/bookings_screen.dart';
+import 'package:service_provider/Admin%20Panel/screens/payments_screen.dart';
 import 'package:service_provider/Admin%20Panel/screens/users_screen.dart';
 import 'package:service_provider/Admin Panel/screens/providers_screen.dart';
+import 'package:service_provider/Admin Panel/screens/services_screen.dart';
 
 class DashboardScreen extends StatelessWidget {
   const DashboardScreen({Key? key}) : super(key: key);
@@ -110,7 +114,7 @@ class DashboardScreen extends StatelessWidget {
                         title: 'Revenue',
                         value: '\$${data['totalRevenue'].toStringAsFixed(2)}',
                         color: Colors.indigo.shade100,
-                        onTap: () => navigateOrShowMessage(context, 'Revenue', () => RevenueScreen()),
+                        onTap: () => navigateOrShowMessage(context, 'Revenue', () => PaymentsScreen()),
                       ),
                       _buildDashboardCard(
                         title: 'Services',
@@ -220,17 +224,3 @@ class DashboardScreen extends StatelessWidget {
   }
 }
 
-class BookingsScreen extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) => Scaffold(appBar: AppBar(title: Text('Bookings')));
-}
-
-class RevenueScreen extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) => Scaffold(appBar: AppBar(title: Text('Revenue')));
-}
-
-class ServicesScreen extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) => Scaffold(appBar: AppBar(title: Text('Services')));
-}
