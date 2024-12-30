@@ -22,8 +22,14 @@ class ProviderDetailsScreen extends StatelessWidget {
         .where('createdBy', isEqualTo: providerId)
         .get();
 
-    return servicesSnapshot.docs.map((doc) => doc.data() as Map<String, dynamic>).toList();
+    return servicesSnapshot.docs.map((doc) {
+      // Extract document ID and include it in the map
+      Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+      data['id'] = doc.id; // Add the document ID
+      return data;
+    }).toList();
   }
+
 
   Future<List<Map<String, dynamic>>> _fetchProviderBookings() async {
     QuerySnapshot bookingsSnapshot = await FirebaseFirestore.instance
@@ -31,17 +37,29 @@ class ProviderDetailsScreen extends StatelessWidget {
         .where('providerId', isEqualTo: providerId)
         .get();
 
-    List<Map<String, dynamic>> bookings = bookingsSnapshot.docs.map((doc) => doc.data() as Map<String, dynamic>).toList();
+    List<Map<String, dynamic>> bookings = [];
 
-    // Fetch user details for each booking
-    for (var booking in bookings) {
+    for (var doc in bookingsSnapshot.docs) {
+      Map<String, dynamic> booking = doc.data() as Map<String, dynamic>;
+
+      // Fetch user details
       DocumentSnapshot userDoc = await FirebaseFirestore.instance
           .collection('users')
           .doc(booking['userId'])
           .get();
-
       booking['userName'] = (userDoc.data() as Map<String, dynamic>)['name'];
-      booking['bookingDate'] = booking['bookingDate'].toDate().toString(); // Format booking date
+
+      // Fetch service name
+      DocumentSnapshot serviceDoc = await FirebaseFirestore.instance
+          .collection('services')
+          .doc(booking['serviceId'])
+          .get();
+      booking['serviceName'] = (serviceDoc.data() as Map<String, dynamic>)['name'];
+
+      // Format booking date
+      booking['bookingDate'] = booking['bookingDate'].toDate().toString();
+
+      bookings.add(booking);
     }
 
     return bookings;
@@ -188,8 +206,10 @@ class ProviderDetailsScreen extends StatelessWidget {
                       ...services.map((service) {
                         return GestureDetector(
                           onTap: () {
+                            print(service['id']);
                             Navigator.of(context).push(MaterialPageRoute(
-                              builder: (context) => ServiceDetailsScreen(serviceData:  service), // Navigate to service details screen
+
+                              builder: (context) => ServiceDetailsScreen(serviceId:  service['id']), // Navigate to service details screen
                             ));
                           },
                           child: Card(
@@ -237,7 +257,7 @@ class ProviderDetailsScreen extends StatelessWidget {
                         return Card(
                           margin: EdgeInsets.symmetric(vertical: 8),
                           child: ListTile(
-                            title: Text('Service: ${booking['serviceName']}'), // Use serviceName from bookings
+                            title: Text('Service: ${booking['serviceName']}'),
                             subtitle: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
