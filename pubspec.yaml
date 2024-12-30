@@ -106,6 +106,124 @@ flutter:
     - android/assets/washing_machine.png
     - android/assets/window_cleaning.png
     - android/assets/wooden work.png
+      #categories
+        #Appliance Repair
+    - android/assets/categories_images/Appliance Repair/Air Conditioner Repair.png
+    - android/assets/categories_images/Appliance Repair/create-a-minimalistic-and-clean-illustration-icon- (3).png
+    - android/assets/categories_images/Appliance Repair/create-a-minimalistic-and-clean-illustration-icon- (4).png
+    - android/assets/categories_images/Appliance Repair/create-a-minimalistic-and-clean-illustration-icon- (6).png
+    - android/assets/categories_images/Appliance Repair/Microwave Oven Repair.png
+    - android/assets/categories_images/Appliance Repair/Refrigerator Repair.png
+    - android/assets/categories_images/Appliance Repair/TV Repair.png
+    - android/assets/categories_images/Appliance Repair/Washing Machine Repair.png
+    - android/assets/categories_images/Appliance Repair/Water Purifier Repair.png
+        #Automobile Services
+    - android/assets/categories_images/Automobile Services/AC Service.png
+    - android/assets/categories_images/Automobile Services/Car Wash.png
+    - android/assets/categories_images/Automobile Services/create-a-minimalistic-and-clean-illustration-icon- (1).png
+    - android/assets/categories_images/Automobile Services/create-a-minimalistic-and-clean-illustration-icon- (2).png
+    - android/assets/categories_images/Automobile Services/create-a-minimalistic-and-clean-illustration-icon- (4).png
+    - android/assets/categories_images/Automobile Services/create-a-minimalistic-and-clean-illustration-icon- (7).png
+    - android/assets/categories_images/Automobile Services/Engine Repair.png
+    - android/assets/categories_images/Automobile Services/Oil Change.png
+    - android/assets/categories_images/Automobile Services/Tire Replacement.png
+    - android/assets/categories_images/Automobile Services/Vehicle Detailing.png
+        #Beauty & Wellness
+    - android/assets/categories_images/Beauty & Wellness/create-a-minimalistic-and-clean-illustration-icon- (1).png
+    - android/assets/categories_images/Beauty & Wellness/create-a-minimalistic-and-clean-illustration-icon- (3).png
+    - android/assets/categories_images/Beauty & Wellness/create-a-minimalistic-and-clean-illustration-icon- (5).png
+    - android/assets/categories_images/Beauty & Wellness/create-a-minimalistic-and-clean-illustration-icon- (7).png
+    - android/assets/categories_images/Beauty & Wellness/create-a-minimalistic-and-clean-illustration-icon- (8).png
+    - android/assets/categories_images/Beauty & Wellness/Fitness Trainer.png
+    - android/assets/categories_images/Beauty & Wellness/Haircut at Home.png
+    - android/assets/categories_images/Beauty & Wellness/Makeup Services.png
+    - android/assets/categories_images/Beauty & Wellness/Manicure & Pedicure.png
+    - android/assets/categories_images/Beauty & Wellness/Spa Services.png
+    - android/assets/categories_images/Beauty & Wellness/Yoga Trainer.png
+        #Cleaning
+    - android/assets/categories_images/Cleaning/Carpet Cleaning.png
+    - android/assets/categories_images/Cleaning/create-a-minimalistic-and-clean-illustration-icon- (1).png
+    - android/assets/categories_images/Cleaning/create-a-minimalistic-and-clean-illustration-icon- (3).png
+    - android/assets/categories_images/Cleaning/create-a-minimalistic-and-clean-illustration-icon- (5).png
+    - android/assets/categories_images/Cleaning/create-a-minimalistic-and-clean-illustration-icon- (7).png
+    - android/assets/categories_images/Cleaning/create-a-minimalistic-and-clean-illustration-icon-.png
+    - android/assets/categories_images/Cleaning/House Cleaning.png
+    - android/assets/categories_images/Cleaning/Office Cleaning.png
+    - android/assets/categories_images/Cleaning/Post-construction Cleaning.png
+    - android/assets/categories_images/Cleaning/Window Cleaning.png
+        #Electrical
+    - android/assets/categories_images/Electrical/Circuit Breaker Installation.png
+    - android/assets/categories_images/Electrical/create-a-minimalistic-and-clean-illustration-icon- (1).png
+    - android/assets/categories_images/Electrical/create-a-minimalistic-and-clean-illustration-icon- (3).png
+    - android/assets/categories_images/Electrical/create-a-minimalistic-and-clean-illustration-icon- (6).png
+    - android/assets/categories_images/Electrical/create-a-minimalistic-and-clean-illustration-icon- (7).png
+    - android/assets/categories_images/Electrical/create-a-minimalistic-and-clean-illustration-icon- (9).png
+    - android/assets/categories_images/Electrical/Electric Appliance Repair.png
+    - android/assets/categories_images/Electrical/Electrical Repairs.png
+    - android/assets/categories_images/Electrical/Fan Installation & Repair.png
+    - android/assets/categories_images/Electrical/Light Installation.png
+    - android/assets/categories_images/Electrical/Power Backup Setup.png
+    - android/assets/categories_images/Electrical/Wiring.png
+        #Events & Decor
+    - android/assets/categories_images/Events & Decor/Balloon Decoration.png
+    - android/assets/categories_images/Events & Decor/Birthday Party Decoration.png
+    - android/assets/categories_images/Events & Decor/Catering Services.png
+    - android/assets/categories_images/Events & Decor/create-a-minimalistic-and-clean-illustration-icon- (3).png
+    - android/assets/categories_images/Events & Decor/create-a-minimalistic-and-clean-illustration-icon- (5).png
+    - android/assets/categories_images/Events & Decor/create-a-minimalistic-and-clean-illustration-icon- (7).png
+    - android/assets/categories_images/Events & Decor/create-a-minimalistic-and-clean-illustration-icon- (8).png
+    - android/assets/categories_images/Events & Decor/create-a-minimalistic-and-clean-illustration-icon- (10).png
+    - android/assets/categories_images/Events & Decor/create-a-minimalistic-and-clean-illustration-icon- (11).png
+    - android/assets/categories_images/Events & Decor/Event Photography.png
+    - android/assets/categories_images/Events & Decor/Sound and Lighting Setup.png
+    - android/assets/categories_images/Events & Decor/Wedding Decoration.png
+        #Gardening
+    - android/assets/categories_images/Gardening/create-a-minimalistic-and-clean-illustration-icon- (12).png
+    - android/assets/categories_images/Gardening/create-a-minimalistic-and-clean-illustration-icon- (14).png
+    - android/assets/categories_images/Gardening/create-a-minimalistic-and-clean-illustration-icon- (16).png
+    - android/assets/categories_images/Gardening/Lawn Mowing.png
+    - android/assets/categories_images/Gardening/Tree Trimming.png
+    - android/assets/categories_images/Gardening/Weed Removal.png
+        #Home Improvement
+    - android/assets/categories_images/Home Improvement/Carpentry.png
+    - android/assets/categories_images/Home Improvement/create-a-minimalistic-and-clean-illustration-icon- (1).png
+    - android/assets/categories_images/Home Improvement/create-a-minimalistic-and-clean-illustration-icon- (2).png
+    - android/assets/categories_images/Home Improvement/create-a-minimalistic-and-clean-illustration-icon- (9).png
+    - android/assets/categories_images/Home Improvement/create-a-minimalistic-and-clean-illustration-icon-.png
+    - android/assets/categories_images/Home Improvement/Flooring.png
+    - android/assets/categories_images/Home Improvement/Furniture Assembly.png
+    - android/assets/categories_images/Home Improvement/Interior Design.png
+    - android/assets/categories_images/Home Improvement/Painting.png
+    - android/assets/categories_images/Home Improvement/Wall Repair.png
+        #Painting
+    - android/assets/categories_images/Painting/create-a-minimalistic-and-clean-illustration-icon- (1).png
+    - android/assets/categories_images/Painting/create-a-minimalistic-and-clean-illustration-icon- (5).png
+    - android/assets/categories_images/Painting/create-a-minimalistic-and-clean-illustration-icon-.png
+    - android/assets/categories_images/Painting/Exterior Painting.png
+    - android/assets/categories_images/Painting/Furniture Painting.png
+    - android/assets/categories_images/Painting/Interior Painting.png
+        #Pest Control
+    - android/assets/categories_images/Pest Control/Bed Bug Treatment.png
+    - android/assets/categories_images/Pest Control/Cockroach Control.png
+    - android/assets/categories_images/Pest Control/create-a-minimalistic-and-clean-illustration-icon- (1).png
+    - android/assets/categories_images/Pest Control/create-a-minimalistic-and-clean-illustration-icon- (2).png
+    - android/assets/categories_images/Pest Control/create-a-minimalistic-and-clean-illustration-icon- (3).png
+    - android/assets/categories_images/Pest Control/create-a-minimalistic-and-clean-illustration-icon-_1_.png
+    - android/assets/categories_images/Pest Control/General Pest Control.png
+    - android/assets/categories_images/Pest Control/Mosquito Control.png
+    - android/assets/categories_images/Pest Control/Termite Control.png
+        #Plumbing
+    - android/assets/categories_images/Plumbing/create-a-minimalistic-and-clean-illustration-icon- (1).png
+    - android/assets/categories_images/Plumbing/create-a-minimalistic-and-clean-illustration-icon- (9).png
+    - android/assets/categories_images/Plumbing/create-a-minimalistic-and-clean-illustration-icon-.png
+    - android/assets/categories_images/Plumbing/create-a-minimalistic-and-clean-illustration-icon-_2_.png
+    - android/assets/categories_images/Plumbing/create-a-minimalistic-and-clean-illustration-icon-_4_.png
+    - android/assets/categories_images/Plumbing/Drain Cleaning.png
+    - android/assets/categories_images/Plumbing/Faucet Repair.png
+    - android/assets/categories_images/Plumbing/Leak Fixing.png
+    - android/assets/categories_images/Plumbing/Pipe Installation.png
+    - android/assets/categories_images/Plumbing/Toilet Installation&Repair.png
+    - android/assets/categories_images/Plumbing/Water Heater Installation.png
 
 
 

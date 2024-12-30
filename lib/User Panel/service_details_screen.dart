@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class ServiceDetailsScreen extends StatelessWidget {
   final Map<String, dynamic> service;
@@ -219,6 +220,66 @@ class ServiceDetailsScreen extends StatelessWidget {
                 ),
               ),
               SizedBox(height: 32),
+
+              // Providers Section
+              FutureBuilder<QuerySnapshot>(
+                future: FirebaseFirestore.instance
+                    .collection('providers')
+                    .where('servicesOffered', arrayContains: service['id'])
+                    .get(),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return Center(child: CircularProgressIndicator());
+                  }
+
+                  if (snapshot.hasError) {
+                    return Center(child: Text('Error: ${snapshot.error}'));
+                  }
+
+                  final providers = snapshot.data?.docs ?? [];
+
+                  if (providers.isEmpty) {
+                    return Center(child: Text('No providers found for this service'));
+                  }
+
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Providers Offering This Service',
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      SizedBox(height: 16),
+                      ListView.builder(
+                        shrinkWrap: true,
+                        physics: NeverScrollableScrollPhysics(),
+                        itemCount: providers.length,
+                        itemBuilder: (context, index) {
+                          final provider = providers[index];
+                          final providerName = provider['name'] ?? 'Unknown Provider';
+                          final providerImage = provider['profileImage'] ?? '';
+                          return ListTile(
+                            leading: providerImage.isNotEmpty
+                                ? CircleAvatar(
+                              backgroundImage: NetworkImage(providerImage),
+                            )
+                                : CircleAvatar(child: Icon(Icons.person)),
+                            title: Text(providerName),
+                            subtitle: Text(provider['phone'] ?? 'No contact info'),
+                            onTap: () {
+                              // Navigate to provider's details page (if any)
+                            },
+                          );
+                        },
+                      ),
+                    ],
+                  );
+                },
+              ),
+
             ],
           ),
         ),
