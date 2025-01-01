@@ -60,8 +60,24 @@ class _SubcategoriesPageState extends State<SubcategoriesPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.categoryName),
-        backgroundColor: Colors.blue,
+        title: Text(
+          widget.categoryName,
+          style: TextStyle(color: Colors.black),
+        ),
+        backgroundColor: Colors.white,
+        elevation: 1,
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back, color: Colors.black),
+          onPressed: () => Navigator.pop(context),
+        ),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.search, color: Colors.black),
+            onPressed: () {
+              // Add search functionality if needed
+            },
+          ),
+        ],
       ),
       body: FutureBuilder<List<String>>(
         future: _subcategoriesFuture,
@@ -81,12 +97,12 @@ class _SubcategoriesPageState extends State<SubcategoriesPage> {
           }
 
           return GridView.builder(
-            padding: const EdgeInsets.all(8.0),
+            padding: const EdgeInsets.all(16.0),
             gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 2,
-              crossAxisSpacing: 8.0,
-              mainAxisSpacing: 8.0,
-              childAspectRatio: 3 / 4,
+              crossAxisSpacing: 16.0,
+              mainAxisSpacing: 16.0,
+              childAspectRatio: 1,
             ),
             itemCount: subcategories.length,
             itemBuilder: (context, index) {
@@ -107,31 +123,42 @@ class _SubcategoriesPageState extends State<SubcategoriesPage> {
                 child: Card(
                   elevation: 4.0,
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10.0),
+                    borderRadius: BorderRadius.circular(12.0),
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
+                      // Image section with rounded corners
                       Expanded(
+                        flex: 3,
                         child: ClipRRect(
-                          borderRadius: const BorderRadius.vertical(
-                            top: Radius.circular(10.0),
+                          borderRadius: BorderRadius.vertical(
+                            top: Radius.circular(12.0),
                           ),
-                          child: image ?? Image.asset(
-                            'android/assets/categories_images/placeholder.png',
-                            fit: BoxFit.cover,
-                          ),
+                          child: image ??
+                              Image.asset(
+                                'android/assets/categories_images/placeholder.png',
+                                fit: BoxFit.cover,
+                              ),
                         ),
                       ),
-                      Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Text(
-                          subcategory,
-                          style: TextStyle(
-                            fontSize: 16.0,
-                            fontWeight: FontWeight.bold,
+                      // Subcategory name section
+                      Expanded(
+                        flex: 1,
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                          child: Center(
+                            child: Text(
+                              subcategory,
+                              style: TextStyle(
+                                fontSize: 13.0,
+                                fontWeight: FontWeight.bold,
+                              ),
+                              textAlign: TextAlign.center,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
                           ),
-                          textAlign: TextAlign.center,
                         ),
                       ),
                     ],
