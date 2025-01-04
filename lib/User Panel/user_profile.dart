@@ -3,6 +3,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:dio/dio.dart';
+import 'package:service_provider/User%20Panel/edit_profile.dart';
+import 'package:service_provider/User%20Panel/user_setting.dart';
 
 class UserProfile extends StatefulWidget {
   @override
@@ -143,15 +145,26 @@ class _UserProfileState extends State<UserProfile> {
                   title: Text('Edit Profile'),
                   trailing: Icon(Icons.arrow_forward_ios, size: 18),
                   onTap: () {
-                    // Handle edit profile
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => EditUserProfile(),
+                      ),
+                    );
                   },
                 ),
+
                 ListTile(
                   leading: Icon(Icons.settings, color: Colors.blue),
                   title: Text('Settings'),
                   trailing: Icon(Icons.arrow_forward_ios, size: 18),
                   onTap: () {
-                    // Handle settings
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => SettingsPage(),
+                      ),
+                    );
                   },
                 ),
                 ListTile(

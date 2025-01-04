@@ -2,19 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class ServiceDetailsScreen extends StatefulWidget {
-  final Map<String, dynamic> service;
-  final String serviceId; // Add this parameter
+  final String serviceId;
 
-  const ServiceDetailsScreen({
-    required this.service,
-    required this.serviceId, // Make sure to pass this
-  });
+  const ServiceDetailsScreen({Key? key, required this.serviceId}) : super(key: key);
 
   @override
   _ServiceDetailsScreenState createState() => _ServiceDetailsScreenState();
 }
 
 class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
+  Map<String, dynamic>? serviceData;
+  Map<String, dynamic>? providerData;
   late PageController _pageController;
   int _currentPage = 0;
 
@@ -22,6 +20,7 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
   void initState() {
     super.initState();
     _pageController = PageController();
+    _fetchServiceAndProviderDetails();
   }
 
   @override
@@ -30,173 +29,51 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
     super.dispose();
   }
 
-  // Add this method to fetch and display providers
-  Widget _buildProvidersList() {
-    return StreamBuilder<QuerySnapshot>(
-      stream: FirebaseFirestore.instance.collection('providers').snapshots(),
-      builder: (context, snapshot) {
-        if (snapshot.hasError) {
-          return Text('Something went wrong: ${snapshot.error}');
+  Future<void> _fetchServiceAndProviderDetails() async {
+    try {
+      DocumentSnapshot serviceSnapshot = await FirebaseFirestore.instance
+          .collection('services')
+          .doc(widget.serviceId)
+          .get();
+
+      if (serviceSnapshot.exists) {
+        serviceData = serviceSnapshot.data() as Map<String, dynamic>;
+        String providerId = serviceData!['createdBy'];
+
+        DocumentSnapshot providerSnapshot = await FirebaseFirestore.instance
+            .collection('providers')
+            .doc(providerId)
+            .get();
+
+        if (providerSnapshot.exists) {
+          setState(() {
+            providerData = providerSnapshot.data() as Map<String, dynamic>;
+          });
         }
-
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return Center(child: CircularProgressIndicator());
-        }
-
-        // Filter providers who offer this service
-        final providers = snapshot.data!.docs.where((doc) {
-          final servicesOffered = List<String>.from(doc['servicesOffered'] ?? []);
-          return servicesOffered.contains(widget.serviceId);
-        }).toList();
-
-        if (providers.isEmpty) {
-          return Card(
-            margin: EdgeInsets.all(16),
-            child: Padding(
-              padding: EdgeInsets.all(16),
-              child: Text('No providers available for this service currently'),
-            ),
-          );
-        }
-
-        return Card(
-          margin: EdgeInsets.all(16),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16.0),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Padding(
-                padding: EdgeInsets.all(16),
-                child: Text(
-                  'Available Providers',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-              ListView.builder(
-                shrinkWrap: true,
-                physics: NeverScrollableScrollPhysics(),
-                itemCount: providers.length,
-                itemBuilder: (context, index) {
-                  final provider = providers[index].data() as Map<String, dynamic>;
-
-                  return ListTile(
-                    leading: CircleAvatar(
-                      backgroundImage: NetworkImage(
-                        provider['profileImage'] ??
-                            'https://via.placeholder.com/50',
-                      ),
-                      onBackgroundImageError: (_, __) {
-                        // Handle error loading image
-                      },
-                    ),
-                    title: Text(provider['name'] ?? 'Unknown Provider'),
-                    subtitle: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(provider['bio'] ?? 'No bio available'),
-                        Text('📍 ${provider['address'] ?? 'Location not specified'}'),
-                      ],
-                    ),
-                    trailing: IconButton(
-                      icon: Icon(Icons.arrow_forward_ios),
-                      onPressed: () {
-                        // Navigate to provider details or booking screen
-                        // You can add navigation logic here
-                      },
-                    ),
-                  );
-                },
-              ),
-            ],
-          ),
-        );
-      },
-    );
+      }
+    } catch (e) {
+      print('Error fetching service or provider details: $e');
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    final List<String> images =
-        (widget.service['images'] as List<dynamic>?)?.cast<String>() ?? [];
-
     return Scaffold(
       backgroundColor: Colors.grey[100],
       appBar: AppBar(
-        title: Text(widget.service['name'] ?? 'Service Details'),
+        title: Text(serviceData?['name'] ?? 'Service Details'),
         backgroundColor: Colors.blue,
       ),
-      body: SingleChildScrollView(
+      body: serviceData == null
+          ? const Center(child: CircularProgressIndicator())
+          : SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Image Slider with Dots Indicator
-              if (images.isNotEmpty)
-                Column(
-                  children: [
-                    SizedBox(
-                      height: 200,
-                      child: PageView.builder(
-                        controller: _pageController,
-                        onPageChanged: (index) {
-                          setState(() {
-                            _currentPage = index;
-                          });
-                        },
-                        itemCount: images.length,
-                        itemBuilder: (context, index) {
-                          return ClipRRect(
-                            borderRadius: BorderRadius.circular(16.0),
-                            child: Image.network(
-                              images[index],
-                              fit: BoxFit.cover,
-                              errorBuilder: (context, error, stackTrace) =>
-                                  Container(
-                                    color: Colors.grey[300],
-                                    child: Icon(Icons.image,
-                                        size: 80, color: Colors.grey),
-                                  ),
-                            ),
-                          );
-                        },
-                      ),
-                    ),
-                    SizedBox(height: 8),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: List.generate(images.length, (index) {
-                        return Container(
-                          margin: const EdgeInsets.symmetric(horizontal: 4.0),
-                          width: _currentPage == index ? 8.0 : 5.0,
-                          height: _currentPage == index ? 8.0 : 5.0,
-                          decoration: BoxDecoration(
-                            color: _currentPage == index
-                                ? Colors.blue
-                                : Colors.grey,
-                            shape: BoxShape.circle,
-                          ),
-                        );
-                      }),
-                    ),
-                  ],
-                ),
-              if (images.isEmpty)
-                Container(
-                  height: 200,
-                  decoration: BoxDecoration(
-                    color: Colors.grey[300],
-                    borderRadius: BorderRadius.circular(16.0),
-                  ),
-                  child: Center(
-                    child: Icon(Icons.image, size: 80, color: Colors.grey),
-                  ),
-                ),
+              _buildImageSlider(),
               SizedBox(height: 16),
 
               // Service Details Card
@@ -211,7 +88,7 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        widget.service['name'] ?? 'Unnamed Service',
+                        serviceData!['name'] ?? 'Unnamed Service',
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 24,
@@ -219,12 +96,12 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
                       ),
                       SizedBox(height: 8),
                       Text(
-                        'Category: ${widget.service['category'] ?? 'N/A'}',
+                        'Category: ${serviceData!['category'] ?? 'N/A'}',
                         style: TextStyle(color: Colors.grey[700], fontSize: 16),
                       ),
                       SizedBox(height: 16),
                       Text(
-                        '₹${widget.service['price']?.toString() ?? 'N/A'}',
+                        '₹${serviceData!['price']?.toString() ?? 'N/A'}',
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 20,
@@ -233,8 +110,7 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
                       ),
                       SizedBox(height: 16),
                       Text(
-                        widget.service['description'] ??
-                            'No description available',
+                        serviceData!['description'] ?? 'No description available',
                         style: TextStyle(fontSize: 16),
                       ),
                     ],
@@ -244,8 +120,7 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
               SizedBox(height: 24),
 
               // What's Included Section
-              if (widget.service['whatsIncluded'] != null &&
-                  (widget.service['whatsIncluded'] as List).isNotEmpty)
+              if ((serviceData!['whatsIncluded'] as List<dynamic>?)?.isNotEmpty ?? false)
                 Card(
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16.0),
@@ -264,8 +139,7 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
                           ),
                         ),
                         SizedBox(height: 8),
-                        ...(widget.service['whatsIncluded'] as List<dynamic>)
-                            .map(
+                        ...(serviceData!['whatsIncluded'] as List<dynamic>).map(
                               (item) => Padding(
                             padding: const EdgeInsets.symmetric(vertical: 4),
                             child: Row(
@@ -284,8 +158,7 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
               SizedBox(height: 24),
 
               // Responsibilities Section
-              if (widget.service['responsibilities'] != null &&
-                  (widget.service['responsibilities'] as List).isNotEmpty)
+              if ((serviceData!['responsibilities'] as List<dynamic>?)?.isNotEmpty ?? false)
                 Card(
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16.0),
@@ -304,8 +177,7 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
                           ),
                         ),
                         SizedBox(height: 8),
-                        ...(widget.service['responsibilities'] as List<dynamic>)
-                            .map(
+                        ...(serviceData!['responsibilities'] as List<dynamic>).map(
                               (item) => Padding(
                             padding: const EdgeInsets.symmetric(vertical: 4),
                             child: Row(
@@ -362,10 +234,111 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
                 ),
               ),
               SizedBox(height: 32),
+
+              // Provider Information
+              if (providerData != null)
+                Card(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16.0),
+                  ),
+                  elevation: 4,
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Service Provider',
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        SizedBox(height: 16),
+                        ListTile(
+                          leading: CircleAvatar(
+                            child: Icon(Icons.person),
+                          ),
+                          title: Text(providerData!['name'] ?? 'N/A'),
+                          subtitle: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(providerData!['phone'] ?? 'N/A'),
+                              Text(providerData!['email'] ?? 'N/A'),
+                              Text(providerData!['address']?['string'] ?? 'N/A'),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
             ],
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildImageSlider() {
+    final List<String> images = (serviceData!['images'] as List<dynamic>?)?.cast<String>() ?? [];
+
+    if (images.isEmpty) {
+      return Container(
+        height: 200,
+        decoration: BoxDecoration(
+          color: Colors.grey[300],
+          borderRadius: BorderRadius.circular(16.0),
+        ),
+        child: Center(
+          child: Icon(Icons.image, size: 80, color: Colors.grey),
+        ),
+      );
+    }
+
+    return Column(
+      children: [
+        SizedBox(
+          height: 200,
+          child: PageView.builder(
+            controller: _pageController,
+            onPageChanged: (index) {
+              setState(() {
+                _currentPage = index;
+              });
+            },
+            itemCount: images.length,
+            itemBuilder: (context, index) {
+              return ClipRRect(
+                borderRadius: BorderRadius.circular(16.0),
+                child: Image.network(
+                  images[index],
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) => Container(
+                    color: Colors.grey[300],
+                    child: Icon(Icons.image, size: 80, color: Colors.grey),
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+        SizedBox(height: 8),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: List.generate(images.length, (index) {
+            return Container(
+              margin: const EdgeInsets.symmetric(horizontal: 4.0),
+              width: _currentPage == index ? 8.0 : 5.0,
+              height: _currentPage == index ? 8.0 : 5.0,
+              decoration: BoxDecoration(
+                color: _currentPage == index ? Colors.blue : Colors.grey,
+                shape: BoxShape.circle,
+              ),
+            );
+          }),
+        ),
+      ],
     );
   }
 }

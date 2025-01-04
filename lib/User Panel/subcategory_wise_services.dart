@@ -46,7 +46,7 @@ class SubcategoryWiseServices extends StatelessWidget {
                     context,
                     MaterialPageRoute(
                       builder: (context) => ServiceDetailsScreen(
-                        service: service,
+                        //service: service,
                         serviceId: serviceId, // Pass the service ID
                       ),
                     ),

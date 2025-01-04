@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:geocoding/geocoding.dart';
 import 'package:service_provider/User%20Panel/subcategories_list.dart';
 
 class UserHome extends StatefulWidget {
@@ -10,6 +13,7 @@ class UserHome extends StatefulWidget {
 
 class _UserHomeState extends State<UserHome> {
   String selectedCategory = 'All';
+  String userCity = 'Loading...';
 
   Future<String> getUserName() async {
     try {
@@ -40,6 +44,38 @@ class _UserHomeState extends State<UserHome> {
       return snapshot.docs.map((doc) => Service.fromFirestore(doc)).toList();
     });
   }
+
+  @override
+  void initState() {
+    super.initState();
+    _getCurrentCity();
+  }
+
+  Future<void> _getCurrentCity() async {
+    try {
+      LocationPermission permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+        if (permission == LocationPermission.denied) {
+          setState(() => userCity = 'Location access denied');
+          return;
+        }
+      }
+
+      Position position = await Geolocator.getCurrentPosition();
+      List<Placemark> placemarks = await placemarkFromCoordinates(
+        position.latitude,
+        position.longitude,
+      );
+
+      if (placemarks.isNotEmpty) {
+        setState(() => userCity = placemarks.first.locality ?? 'Unknown');
+      }
+    } catch (e) {
+      setState(() => userCity = 'Location error');
+    }
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -74,18 +110,18 @@ class _UserHomeState extends State<UserHome> {
                                     ),
                                   ),
                                   SizedBox(height: 4),
-                                  Row(
-                                    children: [
-                                      Icon(Icons.location_on, color: Colors.blue, size: 16),
-                                      SizedBox(width: 4),
-                                      Text(
-                                        'Surat',
-                                        style: TextStyle(
-                                          color: Colors.grey,
-                                          fontSize: 14,
+                                        Row(
+                                        children: [
+                                              Icon(Icons.location_on, color: Colors.blue, size: 16),
+                                              SizedBox(width: 4),
+                                              Text(
+                                                  userCity,
+                                                  style: TextStyle(
+                                                    color: Colors.grey,
+                                                    fontSize: 14,
                                         ),
-                                      ),
-                                    ],
+                                        ),
+                                        ],
                                   ),
                                 ],
                               );
