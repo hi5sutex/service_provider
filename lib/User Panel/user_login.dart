@@ -7,6 +7,8 @@ import 'package:service_provider/Provider Panel/screens/main.dart';
 import 'package:service_provider/Provider Panel/screens/register_screen.dart';
 import 'package:service_provider/Admin Panel/screens/main.dart';
 
+import '../global.dart';
+
 class LoginPage extends StatefulWidget {
   @override
   State<LoginPage> createState() => _LoginPageState();
@@ -165,6 +167,12 @@ class _LoginPageState extends State<LoginPage> {
               },
               child: const Text("Wanna become Provider? Register here"),
             ),
+            // Global.createShimmer(
+            //   text: 'Shimmer 1',
+            //   fontSize: 30.0,
+            //   baseColor: Colors.grey,
+            //   // highlightColor: Colors.lightBlueAccent,
+            // ),
           ],
         ),
       ),

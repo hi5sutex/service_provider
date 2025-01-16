@@ -106,6 +106,7 @@ flutter:
     - android/assets/washing_machine.png
     - android/assets/window_cleaning.png
     - android/assets/wooden work.png
+    - android/assets/default.png
       #categories
         #Appliance Repair
     - android/assets/categories_images/Appliance Repair/Air Conditioner Repair.png

@@ -38,15 +38,31 @@ class _BookingsScreenState extends State<BookingsScreen> {
       final serviceDoc = await FirebaseFirestore.instance.collection('services').doc(data['serviceId']).get();
       final providerDoc = await FirebaseFirestore.instance.collection('providers').doc(data['providerId']).get();
 
-      data['userName'] = userDoc['name'];
-      data['serviceName'] = serviceDoc['name'];
-      data['providerName'] = providerDoc['name'];
+      // Check if the user, service, and provider documents exist
+      if (userDoc.exists) {
+        data['userName'] = userDoc.data()?['name'] ?? 'Unknown'; // Default if field does not exist
+      } else {
+        data['userName'] = 'Unknown';
+      }
+
+      if (serviceDoc.exists) {
+        data['serviceName'] = serviceDoc.data()?['name'] ?? 'Unknown'; // Default if field does not exist
+      } else {
+        data['serviceName'] = 'Unknown';
+      }
+
+      if (providerDoc.exists) {
+        data['providerName'] = providerDoc.data()?['name'] ?? 'Unknown'; // Default if field does not exist
+      } else {
+        data['providerName'] = 'Unknown';
+      }
 
       bookings.add(data);
     }
 
     return bookings;
   }
+
 
   @override
   Widget build(BuildContext context) {

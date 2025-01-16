@@ -1,11 +1,11 @@
-
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:service_provider/Admin%20Panel/screens/bookings_screen.dart';
 import 'package:service_provider/Admin%20Panel/screens/payments_screen.dart';
 import 'package:service_provider/Admin%20Panel/screens/users_screen.dart';
-import 'package:service_provider/Admin Panel/screens/providers_screen.dart';
-import 'package:service_provider/Admin Panel/screens/services_screen.dart';
+import 'package:service_provider/Admin%20Panel/screens/providers_screen.dart';
+import 'package:service_provider/Admin%20Panel/screens/services_screen.dart';
+import 'package:service_provider/Admin%20Panel/screens/manage_categories.dart'; // Import ManageCategories
 
 class DashboardScreen extends StatelessWidget {
   const DashboardScreen({Key? key}) : super(key: key);
@@ -20,6 +20,7 @@ class DashboardScreen extends StatelessWidget {
         .get();
     final payments = await FirebaseFirestore.instance.collection('payments').get();
     final services = await FirebaseFirestore.instance.collection('services').get();
+    final categories = await FirebaseFirestore.instance.collection('categories').get();
 
     double totalRevenue = payments.docs.fold(0.0, (sum, doc) => sum + (doc['amount'] ?? 0));
 
@@ -30,16 +31,17 @@ class DashboardScreen extends StatelessWidget {
       'completedBookings': completedBookings.docs.length,
       'totalRevenue': totalRevenue,
       'totalServices': services.docs.length,
+      'totalCategories': categories.docs.length, // Added categories count
     };
   }
 
   void navigateOrShowMessage(BuildContext context, String title, Widget Function() screenBuilder) {
-    final drawerItems = ['Users', 'Providers', 'Services', 'Bookings', 'Revenue'];
-    if (drawerItems.contains(title)) {
+    final allowedItems = ['Users', 'Providers', 'Services', 'Bookings', 'Revenue', 'Manage Categories'];
+    if (allowedItems.contains(title)) {
       Navigator.push(context, MaterialPageRoute(builder: (_) => screenBuilder()));
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Don't have permission to access $title")),
+        SnackBar(content: Text("You don't have permission to access $title.")),
       );
     }
   }
@@ -47,7 +49,6 @@ class DashboardScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-
       body: FutureBuilder<Map<String, dynamic>>(
         future: fetchDashboardData(),
         builder: (context, snapshot) {
@@ -124,6 +125,20 @@ class DashboardScreen extends StatelessWidget {
                       ),
                     ],
                   ),
+                  const SizedBox(height: 20),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      _buildDashboardCard(
+                        title: 'Manage Categories',
+                        value: '${data['totalCategories']}', // Display total categories
+                        color: Colors.deepOrange.shade100,
+                        onTap: () =>
+                            navigateOrShowMessage(context, 'Manage Categories', () => ManageCategoriesScreen()),
+                      ),
+                      const Expanded(child: SizedBox()), // Placeholder for layout balance
+                    ],
+                  ),
                   const SizedBox(height: 30),
                   const Text(
                     'Quick Actions',
@@ -141,17 +156,15 @@ class DashboardScreen extends StatelessWidget {
                         },
                       ),
                       _buildQuickActionCard(
+                        icon: Icons.category,
+                        label: 'Manage Categories',
+                        onTap: () => navigateOrShowMessage(context, 'Manage Categories', () => ManageCategoriesScreen()),
+                      ),
+                      _buildQuickActionCard(
                         icon: Icons.analytics,
                         label: 'Analytics',
                         onTap: () {
                           // Navigate to Analytics Screen
-                        },
-                      ),
-                      _buildQuickActionCard(
-                        icon: Icons.people,
-                        label: 'Manage Users',
-                        onTap: () {
-                          // Navigate to Manage Users Screen
                         },
                       ),
                     ],
@@ -223,4 +236,3 @@ class DashboardScreen extends StatelessWidget {
     );
   }
 }
-

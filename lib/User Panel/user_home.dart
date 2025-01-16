@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:geolocator/geolocator.dart';
+// import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:service_provider/User%20Panel/subcategories_list.dart';
 
@@ -650,7 +650,7 @@ class ProviderCard extends StatelessWidget {
             fontSize: 14,
           ),
         ),
-        trailing: Icon(Icons.arrow_forward_ios, size: 16),
+        trailing: const Icon(Icons.arrow_forward_ios, size: 16),
       ),
     );
   }

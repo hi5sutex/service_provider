@@ -9,6 +9,7 @@ import 'bookings_screen.dart';
 import 'payments_screen.dart';
 import 'analytics_screen.dart';
 import 'notifications_screen.dart';
+import 'manage_categories.dart'; // Import ManageCategories page
 
 class MainAdminPanel extends StatefulWidget {
   @override
@@ -56,6 +57,7 @@ class _MainAdminPanelState extends State<MainAdminPanel> {
     {'title': 'Payments', 'widget': PaymentsScreen()},
     {'title': 'Analytics', 'widget': AnalyticsScreen()},
     {'title': 'Notifications', 'widget': NotificationsScreen()},
+    {'title': 'Manage Categories', 'widget': ManageCategoriesScreen()}, // Added Manage Categories
   ];
 
   void _onItemTapped(int index) {
@@ -104,6 +106,8 @@ class _MainAdminPanelState extends State<MainAdminPanel> {
               _buildDrawerItem(Icons.analytics_outlined, 'Analytics', 6),
             if (permissions['sendNotifications'] ?? false)
               _buildDrawerItem(Icons.notifications_outlined, 'Notifications', 7),
+            if (permissions['manageCategories'] ?? true)
+              _buildDrawerItem(Icons.category_outlined, 'Manage Categories', 8), // Drawer Item
             const Divider(),
             ListTile(
               leading: const Icon(Icons.logout),
@@ -113,10 +117,7 @@ class _MainAdminPanelState extends State<MainAdminPanel> {
           ],
         ),
       ),
-      body: AnimatedSwitcher(
-        duration: const Duration(milliseconds: 300),
-        child: _pages[_selectedIndex]['widget'],
-      ),
+      body: _pages[_selectedIndex]['widget'], // Directly display the selected widget
     );
   }
 
