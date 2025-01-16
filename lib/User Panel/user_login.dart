@@ -18,15 +18,14 @@ class _LoginPageState extends State<LoginPage> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
   bool isLoading = false;
+  bool _isObscure = true; // Control for password visibility
 
-  // Method to log in with email and password
   Future<void> loginWithEmailAndPassword() async {
     setState(() {
       isLoading = true;
     });
 
     try {
-      // Log in user with Firebase Auth
       UserCredential userCredential = await _auth.signInWithEmailAndPassword(
         email: emailController.text.trim(),
         password: passwordController.text.trim(),
@@ -34,57 +33,51 @@ class _LoginPageState extends State<LoginPage> {
 
       String uid = userCredential.user!.uid;
 
-      // Check if the user is in the 'admins' collection
       DocumentSnapshot adminDoc = await FirebaseFirestore.instance
           .collection('admins')
           .doc(uid)
           .get();
 
       if (adminDoc.exists) {
-        // User is an admin
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text("Login Successful as Admin!")),
         );
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
-            builder: (context) => MainAdminPanel(), // Navigate to Admin's Main Panel
+            builder: (context) => MainAdminPanel(),
           ),
         );
       } else {
-        // Check if the user is in the 'users' collection
         DocumentSnapshot userDoc = await FirebaseFirestore.instance
             .collection('users')
             .doc(uid)
             .get();
 
         if (userDoc.exists) {
-          // User is a normal user
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text("Login Successful as User!")),
           );
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(
-              builder: (context) => MainHome(), // Navigate to User's Main Home
+              builder: (context) => MainHome(),
             ),
           );
         } else {
-          // Check if the user is in the 'providers' collection
           DocumentSnapshot providerDoc = await FirebaseFirestore.instance
               .collection('providers')
               .doc(uid)
               .get();
 
           if (providerDoc.exists) {
-            // User is a provider
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(content: Text("Login Successful as Provider!")),
             );
             Navigator.pushReplacement(
               context,
               MaterialPageRoute(
-                builder: (context) => Main(), // Replace with Provider's Main Panel
+                builder: (context) => Main(),
               ),
             );
           } else {
@@ -113,62 +106,175 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
-
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Login Page")),
-      body: isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            TextFormField(
-              controller: emailController,
-              decoration: const InputDecoration(labelText: 'Email'),
-              keyboardType: TextInputType.emailAddress,
-            ),
-            TextFormField(
-              controller: passwordController,
-              decoration: const InputDecoration(labelText: 'Password'),
-              obscureText: true,
-            ),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: loginWithEmailAndPassword,
-              child: const Text("Login"),
-            ),
-            const SizedBox(height: 10),
-            TextButton(
-              onPressed: () {
-                // Navigate to registration page
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => RegistrationPage(), // Replace with your registration page
+      backgroundColor: Colors.white,
+      resizeToAvoidBottomInset: false,
+      body: Column(
+        children: [
+          Row(
+            children: [
+              Container(
+                height: MediaQuery.of(context).size.height * 0.27,
+                child: Padding(
+                  padding: const EdgeInsets.only(top: 80, left: 24),
+                  child: const Text(
+                    'Sign In',
+                    style: TextStyle(
+                      color: Colors.black,
+                      fontSize: 40,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
-                );
-              },
-              child: const Text("Don't have an account? Register here"),
-            ),
-            TextButton(
-              onPressed: () {
-                // Navigate to registration page
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => RegisterScreen(), // Replace with your registration page
+                ),
+              ),
+            ],
+          ),
+          Expanded(
+            child: Stack(
+              children: [
+                Container(
+                  decoration: const BoxDecoration(
+                    color: Color(0xFF060644),
+                    borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(50),
+                      topRight: Radius.circular(50),
+                    ),
                   ),
-                );
-              },
-              child: const Text("Wanna become Provider? Register here"),
+                  padding: const EdgeInsets.all(24.0),
+                  child: SingleChildScrollView(
+                    child: isLoading
+                        ? const Center(child: CircularProgressIndicator())
+                        : Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const SizedBox(height: 50),
+                        TextFormField(
+                          controller: emailController,
+                          decoration: InputDecoration(
+                            hintText: "Email",
+                            hintStyle: const TextStyle(
+                              color: Colors.black,
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(23.0),
+                              borderSide: BorderSide(
+                                color: Colors.black,
+                                width: 1.5,
+                              ),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(22.0),
+                            ),
+                            fillColor: Colors.grey[300],
+                            filled: true,
+                          ),
+                          keyboardType: TextInputType.emailAddress,
+                          style: const TextStyle(
+                            color: Colors.black,
+                            fontSize: 16,
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        TextFormField(
+                          controller: passwordController,
+                          decoration: InputDecoration(
+                            hintText: "Password",
+                            hintStyle: const TextStyle(
+                              color: Colors.black,
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(23.0),
+                              borderSide: BorderSide(
+                                color: Colors.black,
+                                width: 1.5,
+                              ),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(22.0),
+                            ),
+                            fillColor: Colors.grey[300],
+                            filled: true,
+                            suffixIcon: IconButton(
+                              icon: Icon(
+                                _isObscure
+                                    ? Icons.visibility
+                                    : Icons.visibility_off,
+                                color: Colors.black,
+                              ),
+                              onPressed: () {
+                                setState(() {
+                                  _isObscure = !_isObscure;
+                                });
+                              },
+                            ),
+                          ),
+                          obscureText: _isObscure,
+                          style: const TextStyle(
+                            color: Colors.black,
+                            fontSize: 16,
+                          ),
+                        ),
+                        const SizedBox(height: 30),
+                        ElevatedButton(
+                          onPressed: loginWithEmailAndPassword,
+                          child: const Text("Login"),
+                          style: ElevatedButton.styleFrom(
+                            minimumSize: const Size(double.infinity, 50),
+                            foregroundColor: Colors.black,
+                          ),
+                        ),
+                        const SizedBox(height: 40),
+                        Padding(
+                          padding: const EdgeInsets.only(left: 37),
+                          child: TextButton(
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) =>
+                                      RegistrationPage(),
+                                ),
+                              );
+                            },
+                            style: TextButton.styleFrom(
+                              foregroundColor: Colors.white,
+                            ),
+                            child: const Text(
+                                "Don't have an account? Register here"),
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.only(left: 28),
+                          child: TextButton(
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) =>
+                                      RegisterScreen(),
+                                ),
+                              );
+                            },
+                            style: TextButton.styleFrom(
+                              foregroundColor: Colors.white,
+                            ),
+                            child: const Text(
+                                "Wanna become Provider? Register here"),
+                          ),
+                        ),
+                        const SizedBox(height: 190),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
 }
-
