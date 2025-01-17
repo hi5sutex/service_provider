@@ -57,6 +57,7 @@ dependencies:
   intl: ^0.19.0
   shimmer: ^3.0.0
   geocoding: ^3.0.0
+  cached_network_image: ^3.4.1
   
 
 
@@ -68,6 +69,12 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
+  flutter_launcher_icons: "^0.14.3"
+
+flutter_launcher_icons:
+  android: "launcher_icon"
+  ios: true
+  image_path: "android/assets/app logo.jpg"
 
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is
@@ -110,6 +117,7 @@ flutter:
     - android/assets/wooden work.png
     - android/assets/default.png
     - android/assets/logo.png
+    - android/assets/app logo.jpg
       #categories
         #Appliance Repair
     - android/assets/categories_images/Appliance Repair/Air Conditioner Repair.png

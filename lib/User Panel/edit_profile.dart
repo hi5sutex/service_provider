@@ -3,6 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 class EditUserProfile extends StatefulWidget {
   @override
@@ -21,6 +24,9 @@ class _EditUserProfileState extends State<EditUserProfile> {
   String email = "";
   String profileImageUrl = "https://avatar.iran.liara.run/public";
   bool isLoading = true;
+
+  double? _latitude;
+  double? _longitude;
 
   @override
   void initState() {
@@ -53,48 +59,55 @@ class _EditUserProfileState extends State<EditUserProfile> {
     }
   }
 
-  Future<void> _updateProfile() async {
+  Future<void> _getCurrentLocation() async {
     try {
-      final pickedFile = await picker.pickImage(source: ImageSource.gallery);
-      if (pickedFile != null) {
-        String filePath = pickedFile.path;
+      LocationPermission permission = await Geolocator.checkPermission();
 
-        String uploadUrl = "https://api.cloudinary.com/v1_1/dpcjw0g5c/image/upload";
-        FormData formData = FormData.fromMap({
-          "file": await MultipartFile.fromFile(filePath),
-          "upload_preset": "flutter_unsigned_upload",
-        });
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+      }
 
-        Dio dio = Dio();
-        Response response = await dio.post(uploadUrl, data: formData);
+      if (permission == LocationPermission.deniedForever) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text("Location permission denied permanently. Enable it in settings."),
+        ));
+        return;
+      }
 
-        if (response.statusCode == 200) {
-          String imageUrl = response.data['secure_url'];
-          User? user = _auth.currentUser;
+      Position position = await Geolocator.getCurrentPosition(
+          desiredAccuracy: LocationAccuracy.high);
+      _latitude = position.latitude;
+      _longitude = position.longitude;
 
-          if (user != null) {
-            await FirebaseFirestore.instance
-                .collection('users')
-                .doc(user.uid)
-                .update({'profileImage': imageUrl});
+      String address = await _getHumanReadableAddress(_latitude!, _longitude!);
+      setState(() {
+        addressController.text = address;
+      });
 
-            setState(() {
-              profileImageUrl = imageUrl;
-            });
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text("Location: $address (Lat: $_latitude, Long: $_longitude)"),
+      ));
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Error fetching location: $e")),
+      );
+    }
+  }
 
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text("Profile picture updated successfully!")),
-            );
-          }
-        } else {
-          throw Exception("Failed to upload image to Cloudinary.");
-        }
+  Future<String> _getHumanReadableAddress(double lat, double lon) async {
+    final Uri url = Uri.parse(
+        "https://nominatim.openstreetmap.org/reverse?format=json&lat=$lat&lon=$lon");
+
+    try {
+      final response = await http.get(url);
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return data['display_name'] ?? "Unknown Location";
+      } else {
+        return "Error Fetching Address";
       }
     } catch (e) {
-      print('Error uploading profile picture: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Error uploading profile picture: $e")),
-      );
+      return "Error: $e";
     }
   }
 
@@ -117,7 +130,7 @@ class _EditUserProfileState extends State<EditUserProfile> {
           children: [
             Center(
               child: GestureDetector(
-                onTap: _updateProfile,
+                onTap: _getCurrentLocation,
                 child: CircleAvatar(
                   radius: 50,
                   backgroundImage: NetworkImage(profileImageUrl),
@@ -158,18 +171,36 @@ class _EditUserProfileState extends State<EditUserProfile> {
               ),
             ),
             SizedBox(height: 20),
-            TextField(
-              controller: addressController,
-              decoration: InputDecoration(
-                labelText: "Address (Area, City, State)",
-                border: OutlineInputBorder(),
-              ),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: addressController,
+                    decoration: InputDecoration(
+                      labelText: "Address (Area, City, State)",
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                ),
+                SizedBox(width: 8),
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.blue,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: IconButton(
+                    icon: Icon(Icons.location_on, color: Colors.white),
+                    onPressed: _getCurrentLocation,
+                  ),
+                ),
+              ],
             ),
             SizedBox(height: 20),
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: _updateProfile,
+                onPressed: () {},
                 child: Text("Save Changes"),
               ),
             ),
