@@ -209,9 +209,9 @@ class _ProviderBookingState extends State<ProviderBooking>
         title: Text('Bookings'),
         bottom: TabBar(
           controller: _tabController,
-          indicatorColor: Colors.blue,
+          indicatorColor: Color(0xFF060644),
           // Change this color as per your theme
-          labelColor: Colors.blue,
+          labelColor: Color(0xFF060644),
           unselectedLabelColor: Colors.grey,
           indicatorWeight: 3.0,
           tabs: [

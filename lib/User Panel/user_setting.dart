@@ -99,7 +99,7 @@ class _SettingsPageState extends State<SettingsPage> {
                 onPressed: () {},
                 style: ElevatedButton.styleFrom(
                   padding: EdgeInsets.symmetric(horizontal: 32, vertical: 12),
-                  backgroundColor: Colors.blue,
+                  backgroundColor: Color(0xFF060644),
                 ),
                 child: Text(
                   'Save Changes',

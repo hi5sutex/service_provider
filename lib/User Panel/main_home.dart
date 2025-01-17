@@ -40,7 +40,7 @@ class _MainHomeState extends State<MainHome> {
           _buildBottomNavItem(icon: Icons.account_circle, label: 'Account', index: 3),
         ],
         currentIndex: _selectedIndex,
-        selectedItemColor: Colors.blue,
+        selectedItemColor: Color(0xFF060644),
         unselectedItemColor: Colors.grey,
         onTap: _onItemTapped,
       ),

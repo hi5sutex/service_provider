@@ -54,7 +54,7 @@ class AvailableProvidersPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text('Available Service Providers'),
-        backgroundColor: Colors.blue,
+        backgroundColor: Color(0xFF060644),
       ),
       body: StreamBuilder<List<Provider>>(
         stream: getServiceProviders(),

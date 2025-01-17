@@ -63,8 +63,8 @@ class _SplashScreenState extends State<SplashScreen> {
               top: -75, // Adjusted position
               right: -75, // Shifted to the right
               child: Container(
-                width: 250, // Reduced size by 50%
-                height: 250, // Reduced size by 50%
+                width: 180, // Reduced size by 50%
+                height: 180, // Reduced size by 50%
                 decoration: BoxDecoration(
                   color: Colors.white, // White color
                   shape: BoxShape.circle,

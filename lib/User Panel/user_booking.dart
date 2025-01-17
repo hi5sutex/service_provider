@@ -78,9 +78,10 @@ class UserBooking extends StatelessWidget {
               onPressed: () {},
               style: ElevatedButton.styleFrom(
                 minimumSize: Size(double.infinity, 45), // Reduced height
-                backgroundColor: Colors.blue,
+                backgroundColor: Color(0xFF060644),
               ),
-              child: Text('Book New Service', style: TextStyle(fontSize: 14)),
+              child: Text('Book New Service', style: TextStyle(fontSize: 14,color: Color(
+                  0xFFFFFFFF))),
             ),
           ],
         ),
@@ -145,7 +146,7 @@ class BookingCard extends StatelessWidget {
                 ),
                 TextButton(
                   onPressed: () {},
-                  child: Text('Reschedule', style: TextStyle(color: Colors.blue, fontSize: 12)),
+                  child: Text('Reschedule', style: TextStyle(color: Color(0xFF060644), fontSize: 12)),
                 ),
                 TextButton(
                   onPressed: () {},

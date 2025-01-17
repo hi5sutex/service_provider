@@ -108,7 +108,7 @@ class _ProviderChatState extends State<ProviderChat> {
                     margin: EdgeInsets.only(top: 8),
                     padding: EdgeInsets.all(6),
                     decoration: BoxDecoration(
-                      color: Colors.blue,
+                      color: Color(0xFF060644),
                       shape: BoxShape.circle,
                     ),
                     child: Text(

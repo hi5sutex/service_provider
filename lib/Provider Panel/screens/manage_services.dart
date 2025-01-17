@@ -196,7 +196,7 @@ class ServiceItem extends StatelessWidget {
                         service['category'] ?? 'Category',
                         style: const TextStyle(
                           fontSize: 14,
-                          color: Colors.blue,
+                          color: Color(0xFF060644),
                         ),
                       ),
                     ],

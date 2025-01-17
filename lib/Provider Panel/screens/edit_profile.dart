@@ -286,7 +286,7 @@ class _EditProfileState extends State<EditProfile> {
                 SizedBox(width: 8),
                 Container(
                   decoration: BoxDecoration(
-                    color: Colors.blue,
+                    color: Color(0xFF060644),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: IconButton(

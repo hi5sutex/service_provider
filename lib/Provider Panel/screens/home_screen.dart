@@ -177,7 +177,7 @@ class ProviderHome extends StatelessWidget {
           CircleAvatar(
             radius: 30,
             backgroundColor: Colors.blue.shade50,
-            child: Icon(icon, color: Colors.blue, size: 28),
+            child: Icon(icon, color: Color(0xFF060644), size: 28),
           ),
           SizedBox(height: 5),
           Text(label, style: TextStyle(fontSize: 12)),

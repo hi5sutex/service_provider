@@ -227,7 +227,7 @@ class DashboardScreen extends StatelessWidget {
           CircleAvatar(
             radius: 30,
             backgroundColor: Colors.blue.shade50,
-            child: Icon(icon, color: Colors.blue, size: 28),
+            child: Icon(icon, color: Color(0xFF060644), size: 28),
           ),
           const SizedBox(height: 5),
           Text(label, style: const TextStyle(fontSize: 12)),

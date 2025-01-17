@@ -1,4 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="your_custom_color">#FF0000</color> <!-- Example color -->
+    <color name="primary">#060644</color> <!-- Example color -->
 </resources>

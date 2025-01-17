@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:service_provider/User Panel/user_verification.dart';
 import 'package:service_provider/User%20Panel/user_login.dart';
+import 'package:service_provider/welcome_screen.dart';
 
 class RegistrationPage extends StatefulWidget {
   @override
@@ -83,11 +84,42 @@ class _RegistrationPageState extends State<RegistrationPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.black),
+          onPressed: () {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => WelcomeScreen()),
+            );
+          },
+        ),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 12.0),
+            child: TextButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => LoginPage()),
+                );
+              },
+              child: const Text(
+                "Login",
+                style: TextStyle(color: Colors.black, fontSize: 18),
+              ),
+            ),
+          ),
+        ],
+      ),
+
       body: Column(
         children: [
           Container(
-            height: MediaQuery.of(context).size.height * 0.27,
-            padding: const EdgeInsets.only(top: 80, left: 24),
+            height: MediaQuery.of(context).size.height * 0.15,
+            padding: const EdgeInsets.only(top: 20, left: 24),
             alignment: Alignment.centerLeft,
             child: const Text(
               'Sign Up',
@@ -103,8 +135,8 @@ class _RegistrationPageState extends State<RegistrationPage> {
               decoration: const BoxDecoration(
                 color: Color(0xFF060644),
                 borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(50),
-                  topRight: Radius.circular(50),
+                  topLeft: Radius.circular(30.0),
+                  topRight: Radius.circular(30.0),
                 ),
               ),
               padding: const EdgeInsets.all(30),

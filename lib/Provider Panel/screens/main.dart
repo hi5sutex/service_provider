@@ -68,7 +68,7 @@ class _MainState extends State<Main> with SingleTickerProviderStateMixin {
           ),
         ],
         currentIndex: _selectedIndex,
-        selectedItemColor: Colors.blue,
+        selectedItemColor: Color(0xFF060644),
         unselectedItemColor: Colors.grey,
         onTap: _onItemTapped,
       ),

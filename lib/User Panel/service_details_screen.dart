@@ -62,7 +62,7 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
       backgroundColor: Colors.grey[100],
       appBar: AppBar(
         title: Text(serviceData?['name'] ?? 'Service Details'),
-        backgroundColor: Colors.blue,
+        backgroundColor: Color(0xFF060644),
       ),
       body: serviceData == null
           ? const Center(child: CircularProgressIndicator())
@@ -105,7 +105,7 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 20,
-                          color: Colors.blue,
+                          color: Color(0xFF060644),
                         ),
                       ),
                       SizedBox(height: 16),
