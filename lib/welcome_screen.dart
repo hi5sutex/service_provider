@@ -54,7 +54,7 @@ class WelcomeScreen extends StatelessWidget {
                 ),
               ),
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 30.0),
+                padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 10.0),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.start, // Align content to the top
                   crossAxisAlignment: CrossAxisAlignment.start,

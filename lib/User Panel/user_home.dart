@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/services.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:service_provider/User%20Panel/subcategories_list.dart';
@@ -79,6 +80,12 @@ class _UserHomeState extends State<UserHome> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.grey[50],
+      // appBar: AppBar(
+      //   backgroundColor: Color(0xFF060644),
+      //   systemOverlayStyle: SystemUiOverlayStyle(
+      //     statusBarColor: Color(0xFF060644),
+      //   ),
+      // ),
       body: SafeArea(
         child: Column(
           children: [
@@ -159,7 +166,7 @@ class _UserHomeState extends State<UserHome> {
                           child: IconButton(
                             icon: Icon(Icons.settings, color: Colors.white),
                             onPressed: () {
-                              Navigator.pushReplacement(
+                              Navigator.push(
                                 context,
                                 MaterialPageRoute(builder: (context) => SettingsPage()),
                               );
@@ -170,39 +177,39 @@ class _UserHomeState extends State<UserHome> {
                     ),
                   ),
                   // Enhanced Search Bar
-                  Container(
-                    margin: EdgeInsets.fromLTRB(20, 0, 20, 20),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(15),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.1),
-                          blurRadius: 10,
-                          offset: Offset(0, 5),
-                        ),
-                      ],
-                    ),
-                    child: TextField(
-                      decoration: InputDecoration(
-                        hintText: 'Search services...',
-                        hintStyle: TextStyle(color: Colors.grey[400]),
-                        prefixIcon: Icon(Icons.search, color: primaryColor),
-                        border: InputBorder.none,
-                        contentPadding:
-                        EdgeInsets.symmetric(horizontal: 20, vertical: 15),
-                      ),
-                    ),
-                  ),
+
                 ],
               ),
             ),
-
+            Container(
+              margin: EdgeInsets.fromLTRB(20, 15, 20, 15),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(15),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.1),
+                    blurRadius: 10,
+                    offset: Offset(0, 5),
+                  ),
+                ],
+              ),
+              child: TextField(
+                decoration: InputDecoration(
+                  hintText: 'Search services...',
+                  hintStyle: TextStyle(color: Colors.grey[400]),
+                  prefixIcon: Icon(Icons.search, color: primaryColor),
+                  border: InputBorder.none,
+                  contentPadding:
+                  EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+                ),
+              ),
+            ),
             // Enhanced Categories Section
             // Enhanced Categories Section
             Container(
-              margin: EdgeInsets.only(top: 20),
-              height: 50,
+              margin: EdgeInsets.only(top: 0),
+              height: 40,
               child: StreamBuilder<QuerySnapshot>(
                 stream: FirebaseFirestore.instance
                     .collection('categories')

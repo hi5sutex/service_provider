@@ -13,9 +13,15 @@ class SubcategoryWiseServices extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(subcategoryName),
+
+        title: Text(
+          subcategoryName,
+          style: TextStyle(color: Colors.white), // Set the text color to white
+        ),
         backgroundColor: Color(0xFF060644),
+        foregroundColor: Colors.white,
       ),
+
       body: StreamBuilder<QuerySnapshot>(
         stream: FirebaseFirestore.instance
             .collection('services')

@@ -297,7 +297,7 @@ class _UserProfileState extends State<UserProfile> {
                       top: Radius.circular(30),
                     ),
                   ),
-                  child: Column(
+                  child: SingleChildScrollView(child:  Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       ListTile(
@@ -351,7 +351,7 @@ class _UserProfileState extends State<UserProfile> {
                       ),
 
                     ],
-                  ),
+                  ),)
                 ),
 
               ),

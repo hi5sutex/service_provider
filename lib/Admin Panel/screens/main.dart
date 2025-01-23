@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:service_provider/User%20Panel/user_login.dart';
 import 'dashboard_screen.dart';
 import 'users_screen.dart';
 import 'providers_screen.dart';
@@ -69,7 +70,10 @@ class _MainAdminPanelState extends State<MainAdminPanel> {
 
   void _logout() async {
     await FirebaseAuth.instance.signOut();
-    Navigator.pushReplacementNamed(context, '/login');
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => LoginPage()),
+    );
   }
 
   @override

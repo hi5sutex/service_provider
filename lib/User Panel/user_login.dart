@@ -98,7 +98,7 @@ class _LoginPageState extends State<LoginPage> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
+        backgroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
           padding: const EdgeInsets.all(20.0),
@@ -131,8 +131,8 @@ class _LoginPageState extends State<LoginPage> {
       body: Column(
         children: [
           Container(
-            height: MediaQuery.of(context).size.height * 0.35,
-            padding: const EdgeInsets.only(top: 120, left: 24, right: 24),
+            height: MediaQuery.of(context).size.height * 0.28,
+            padding: const EdgeInsets.only(top: 60, left: 24, right: 24),
             alignment: Alignment.centerLeft,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -239,10 +239,7 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                       const SizedBox(height: 20),
                       // Updated text link for provider registration
-                      _buildRedirectLink(
-                        "Wanna become a Provider? Register here",
-                        RegisterScreen(),
-                      ),
+
                     ],
                   ),
                 ),
