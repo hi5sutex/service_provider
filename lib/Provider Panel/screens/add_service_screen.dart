@@ -58,9 +58,11 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
 
       if (snapshot.docs.isNotEmpty) {
         setState(() {
-          subcategories =
-              List<String>.from(snapshot.docs.first['subcategories']);
-          selectedSubcategory = null;
+          // Map subcategories to extract their names
+          subcategories = (snapshot.docs.first['subcategories'] as List)
+              .map<String>((subcategory) => subcategory['name'] as String)
+              .toList();
+          selectedSubcategory = null; // Reset selected subcategory
         });
       } else {
         setState(() {
@@ -72,9 +74,11 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
       print('Error fetching subcategories: $e');
       setState(() {
         subcategories = [];
+        selectedSubcategory = null;
       });
     }
   }
+
 
   Future<void> selectImages() async {
     final pickedFiles = await _picker.pickMultiImage();
@@ -142,9 +146,9 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
         // Upload images
         List<String> imageUrls = await uploadImagesToCloudinary();
 
-        // Add service to Firestore
-        DocumentReference newServiceRef =
-        await FirebaseFirestore.instance.collection('services').add({
+        // Add service to Pending Services Collection
+        DocumentReference pendingServiceRef =
+        await FirebaseFirestore.instance.collection('pending_services').add({
           'name': _nameController.text,
           'description': _descriptionController.text,
           'category': selectedCategory,
@@ -155,24 +159,18 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
           'images': imageUrls,
           'createdBy': providerId, // Dynamically set provider ID
           'createdAt': FieldValue.serverTimestamp(),
+          'status': 'pending', // Mark as pending for admin approval
         });
 
-        // Add the service ID to the provider's servicesOffered array
-        await FirebaseFirestore.instance
-            .collection('providers')
-            .doc(providerId)
-            .update({
-          'servicesOffered': FieldValue.arrayUnion([newServiceRef.id]),
-        });
-
+        // Notify user
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Service added successfully!')),
+          SnackBar(content: Text('Service submitted for approval!')),
         );
         Navigator.pop(context);
       } catch (e) {
         print('Error adding service: $e');
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to add service.')),
+          SnackBar(content: Text('Failed to submit service.')),
         );
       } finally {
         setState(() {
@@ -181,7 +179,6 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
       }
     }
   }
-
 
   Widget _buildDynamicList(String label, String hint, List<String> itemsList) {
     return Column(
@@ -307,7 +304,9 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
                       decoration: InputDecoration(labelText: 'Subcategory'),
                       items: subcategories
                           .map((subcategory) => DropdownMenuItem(
-                              value: subcategory, child: Text(subcategory)))
+                        value: subcategory,
+                        child: Text(subcategory),
+                      ))
                           .toList(),
                       onChanged: (value) {
                         setState(() {
@@ -315,8 +314,9 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
                         });
                       },
                       validator: (value) =>
-                          value == null ? 'Please select a subcategory' : null,
+                      value == null ? 'Please select a subcategory' : null,
                     ),
+
                     SizedBox(height: 16),
 
                     // What's Included

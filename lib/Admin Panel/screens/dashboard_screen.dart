@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:service_provider/Admin%20Panel/screens/PendingServicesScreen.dart';
 import 'package:service_provider/Admin%20Panel/screens/bookings_screen.dart';
 import 'package:service_provider/Admin%20Panel/screens/payments_screen.dart';
 import 'package:service_provider/Admin%20Panel/screens/users_screen.dart';
@@ -14,6 +15,7 @@ class DashboardScreen extends StatelessWidget {
     final totalUsers = await FirebaseFirestore.instance.collection('users').get();
     final totalProviders = await FirebaseFirestore.instance.collection('providers').get();
     final totalBookings = await FirebaseFirestore.instance.collection('bookings').get();
+    final pendingServices = await FirebaseFirestore.instance.collection('pending_services').get();
     final completedBookings = await FirebaseFirestore.instance
         .collection('bookings')
         .where('status', isEqualTo: 'Completed')
@@ -32,6 +34,7 @@ class DashboardScreen extends StatelessWidget {
       'totalRevenue': totalRevenue,
       'totalServices': services.docs.length,
       'totalCategories': categories.docs.length, // Added categories count
+      'totalPendingServices': pendingServices.docs.length,
     };
   }
 
@@ -136,7 +139,13 @@ class DashboardScreen extends StatelessWidget {
                         onTap: () =>
                             navigateOrShowMessage(context, 'Manage Categories', () => ManageCategoriesScreen()),
                       ),
-                      const Expanded(child: SizedBox()), // Placeholder for layout balance
+                      _buildDashboardCard(
+                        title: 'Pending Services',
+                        value: '${data['totalPendingServices']}',
+                        color: Colors.red.shade100,
+                        onTap: () => Navigator.push(
+                            context, MaterialPageRoute(builder: (_) => PendingServicesScreen())),
+                      ),
                     ],
                   ),
                   const SizedBox(height: 30),

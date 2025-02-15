@@ -12,6 +12,7 @@ class MainHome extends StatefulWidget {
 class _MainHomeState extends State<MainHome> {
   int _selectedIndex = 0;
 
+
   // List of pages for navigation
   final List<Widget> _pages = [
     UserHome(),
@@ -29,43 +30,93 @@ class _MainHomeState extends State<MainHome> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: _pages[_selectedIndex],
-      bottomNavigationBar: BottomNavigationBar(
-        backgroundColor: Colors.white,
-        type: BottomNavigationBarType.fixed,
-        items: [
-          _buildBottomNavItem(icon: Icons.home, label: 'Home', index: 0),
-          _buildBottomNavItem(icon: Icons.book_online, label: 'Booking', index: 1),
-          _buildBottomNavItem(icon: Icons.chat, label: 'Chat', index: 2),
-          _buildBottomNavItem(icon: Icons.account_circle, label: 'Account', index: 3),
+      backgroundColor: Color(0xFFf5f5f5), // Set the background color of the page here
+      body: Stack(
+        children: [
+          _pages[_selectedIndex], // Main content
+          Align(
+            alignment: Alignment.bottomCenter,
+            child: Container(
+              height: 70,
+              decoration: BoxDecoration(
+                color: Color(0xFF060644), // Black background color for navigation bar
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(20.0),
+                  topRight: Radius.circular(20.0),
+                ),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  _buildNavItem(
+                    icon: Icons.home,
+                    label: 'Home',
+                    index: 0,
+                  ),
+                  _buildNavItem(
+                    icon: Icons.book_online,
+                    label: 'Booking',
+                    index: 1,
+                  ),
+                  _buildNavItem(
+                    icon: Icons.message_outlined,
+                    label: 'Message',
+                    index: 2,
+                  ),
+                  _buildNavItem(
+                    icon: Icons.account_circle,
+                    label: 'Profile',
+                    index: 3,
+                  ),
+                ],
+              ),
+            ),
+          ),
         ],
-        currentIndex: _selectedIndex,
-        selectedItemColor: Color(0xFF060644),
-        unselectedItemColor: Colors.grey,
-        onTap: _onItemTapped,
       ),
     );
   }
 
-  BottomNavigationBarItem _buildBottomNavItem({required IconData icon, required String label, required int index}) {
-    return BottomNavigationBarItem(
-      icon: MouseRegion(
-        onEnter: (_) {
-          setState(() {
-            // Optionally, you can add a hover effect here
-          });
-        },
-        onExit: (_) {
-          setState(() {
-            // Reset hover effect if necessary
-          });
-        },
-        child: Icon(
-          icon,
-          size: _selectedIndex == index ? 30 : 22, // Slightly larger for selected item
+  Widget _buildNavItem({
+    required IconData icon,
+    required String label,
+    required int index,
+  }) {
+    final isSelected = _selectedIndex == index;
+
+    return GestureDetector(
+      onTap: () => _onItemTapped(index),
+      child: AnimatedContainer(
+        duration: Duration(milliseconds: 300),
+        padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        decoration: isSelected
+            ? BoxDecoration(
+          color: Color(0xFF7C4DFF), // Purple background for selected item
+          borderRadius: BorderRadius.circular(25),
+        )
+            : null,
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              icon,
+              color: isSelected ? Colors.white : Colors.grey, // Icon color
+              size: 24,
+            ),
+            if (isSelected)
+              SizedBox(width: 8), // Spacing between icon and label
+            if (isSelected)
+              Text(
+                label,
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 14,
+                ),
+              ),
+          ],
         ),
       ),
-      label: _selectedIndex == index ? label : '', // Show label only for selected item
     );
   }
 }
