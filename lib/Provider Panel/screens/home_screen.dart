@@ -1,22 +1,31 @@
 import 'package:flutter/material.dart';
-import 'add_service_screen.dart'; // Import your Add Service Screen
+import 'add_service_screen.dart';
 
 class ProviderHome extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    final Color primaryColor = Color(0xFF060644);
+    final Color secondaryColor = Colors.white;
+
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 1,
+        backgroundColor: secondaryColor,
+        elevation: 4,
+        shadowColor: primaryColor.withOpacity(0.1),
         title: Text(
           'Provider Dashboard',
+          style: TextStyle(
+            color: primaryColor,
+            fontWeight: FontWeight.w600,
+            fontSize: 20,
+          ),
         ),
+        iconTheme: IconThemeData(color: primaryColor),
         actions: [
           IconButton(
-            icon: Icon(Icons.notifications_none, color: Colors.grey),
-            onPressed: () {
-              // Handle notifications
-            },
+            icon: Icon(Icons.notifications_outlined, size: 28),
+            color: primaryColor,
+            onPressed: () {},
           ),
         ],
       ),
@@ -26,9 +35,16 @@ class ProviderHome extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Dashboard Overview
-            Text(
-              'Dashboard Overview',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8.0),
+              child: Text(
+                'Dashboard Overview',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                  color: primaryColor,
+                ),
+              ),
             ),
             SizedBox(height: 10),
             Row(
@@ -37,36 +53,46 @@ class ProviderHome extends StatelessWidget {
                 _buildDashboardCard(
                   title: 'Total Bookings',
                   value: '150',
-                  color: Colors.blue.shade100,
+                  primaryColor: primaryColor,
+                  secondaryColor: secondaryColor,
                 ),
                 _buildDashboardCard(
                   title: 'Earnings',
                   value: '\$3,450',
-                  color: Colors.green.shade100,
+                  primaryColor: primaryColor,
+                  secondaryColor: secondaryColor,
                 ),
                 _buildDashboardCard(
                   title: 'Ratings',
                   value: '4.8',
-                  color: Colors.orange.shade100,
+                  primaryColor: primaryColor,
+                  secondaryColor: secondaryColor,
                 ),
               ],
             ),
-            SizedBox(height: 20),
+            SizedBox(height: 24),
 
             // Quick Actions
-            Text(
-              'Quick Actions',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8.0),
+              child: Text(
+                'Quick Actions',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                  color: primaryColor,
+                ),
+              ),
             ),
             SizedBox(height: 10),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
                 _buildQuickActionCard(
-                  icon: Icons.add,
+                  icon: Icons.add_circle_outline,
                   label: 'Add Service',
+                  primaryColor: primaryColor,
                   onTap: () {
-                    // Navigate to Add Service screen
                     Navigator.push(
                       context,
                       MaterialPageRoute(builder: (context) => AddServiceScreen()),
@@ -74,60 +100,129 @@ class ProviderHome extends StatelessWidget {
                   },
                 ),
                 _buildQuickActionCard(
-                  icon: Icons.edit,
+                  icon: Icons.edit_note,
                   label: 'Edit Services',
-                  onTap: () {
-                    // Navigate to Edit Services screen
-                  },
+                  primaryColor: primaryColor,
+                  onTap: () {},
                 ),
                 _buildQuickActionCard(
-                  icon: Icons.analytics,
+                  icon: Icons.analytics_outlined,
                   label: 'Performance',
-                  onTap: () {
-                    // Navigate to Performance Analytics screen
-                  },
+                  primaryColor: primaryColor,
+                  onTap: () {},
                 ),
               ],
             ),
-            SizedBox(height: 20),
+            SizedBox(height: 24),
 
             // Recent Bookings
-            Text(
-              'Recent Bookings',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Recent Bookings',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                      color: primaryColor,
+                    ),
+                  ),
+                  TextButton(
+                    onPressed: () {},
+                    child: Text(
+                      'View All',
+                      style: TextStyle(color: primaryColor),
+                    ),
+                  ),
+                ],
+              ),
             ),
-            SizedBox(height: 10),
             Expanded(
               child: ListView.builder(
                 itemCount: recentBookings.length,
                 itemBuilder: (context, index) {
-                  return Card(
-                    margin: EdgeInsets.only(bottom: 10),
+                  return Container(
+                    margin: EdgeInsets.only(bottom: 8),
+                    decoration: BoxDecoration(
+                      color: secondaryColor,
+                      borderRadius: BorderRadius.circular(8),
+                      boxShadow: [
+                        BoxShadow(
+                          color: primaryColor.withOpacity(0.1),
+                          blurRadius: 4,
+                          offset: Offset(0, 2),
+                        ),
+                      ],
+                    ),
                     child: ListTile(
-                      leading: CircleAvatar(
-                        backgroundColor: Colors.blue.shade50,
-                        child: Icon(Icons.book_online, color: Colors.blue),
+                      contentPadding: EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 8,
                       ),
-                      title: Text(recentBookings[index]['clientName']!),
+                      leading: Container(
+                        width: 40,
+                        height: 40,
+                        decoration: BoxDecoration(
+                          color: primaryColor.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Icon(
+                          Icons.book_online,
+                          color: primaryColor,
+                          size: 20,
+                        ),
+                      ),
+                      title: Text(
+                        recentBookings[index]['clientName']!,
+                        style: TextStyle(
+                          fontWeight: FontWeight.w500,
+                          color: primaryColor,
+                        ),
+                      ),
                       subtitle: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
                             recentBookings[index]['service']!,
-                            style: TextStyle(color: Colors.grey, fontSize: 12),
+                            style: TextStyle(
+                              color: Colors.grey.shade600,
+                              fontSize: 12,
+                            ),
                           ),
+                          SizedBox(height: 4),
                           Text(
                             recentBookings[index]['date']!,
-                            style: TextStyle(color: Colors.grey, fontSize: 12),
+                            style: TextStyle(
+                              color: Colors.grey.shade600,
+                              fontSize: 12,
+                            ),
                           ),
                         ],
                       ),
-                      trailing: Text(
-                        recentBookings[index]['status']!,
-                        style: TextStyle(
-                          color: recentBookings[index]['status']! == 'Completed'
-                              ? Colors.green
-                              : Colors.orange,
+                      trailing: Container(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 6,
+                        ),
+                        decoration: BoxDecoration(
+                          color: recentBookings[index]['status']! ==
+                              'Completed'
+                              ? Colors.green.withOpacity(0.1)
+                              : Colors.orange.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: Text(
+                          recentBookings[index]['status']!,
+                          style: TextStyle(
+                            color: recentBookings[index]['status']! ==
+                                'Completed'
+                                ? Colors.green
+                                : Colors.orange,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                          ),
                         ),
                       ),
                     ),
@@ -141,27 +236,46 @@ class ProviderHome extends StatelessWidget {
     );
   }
 
-  Widget _buildDashboardCard({required String title, required String value, required Color color}) {
+  Widget _buildDashboardCard({
+    required String title,
+    required String value,
+    required Color primaryColor,
+    required Color secondaryColor,
+  }) {
     return Expanded(
       child: Container(
-        height: 100,
-        margin: EdgeInsets.symmetric(horizontal: 5),
-        padding: EdgeInsets.all(10),
+        height: 120,
+        margin: EdgeInsets.symmetric(horizontal: 6),
         decoration: BoxDecoration(
-          color: color,
+          color: secondaryColor,
           borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(
+              color: primaryColor.withOpacity(0.1),
+              blurRadius: 8,
+              offset: Offset(0, 4),
+            ),
+          ],
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text(
               title,
-              style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.grey.shade600,
+                fontWeight: FontWeight.w500,
+              ),
             ),
-            SizedBox(height: 5),
+            SizedBox(height: 8),
             Text(
               value,
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              style: TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.w600,
+                color: primaryColor,
+              ),
             ),
           ],
         ),
@@ -169,18 +283,39 @@ class ProviderHome extends StatelessWidget {
     );
   }
 
-  Widget _buildQuickActionCard({required IconData icon, required String label, required VoidCallback onTap}) {
+  Widget _buildQuickActionCard({
+    required IconData icon,
+    required String label,
+    required Color primaryColor,
+    required VoidCallback onTap,
+  }) {
     return InkWell(
       onTap: onTap,
+      borderRadius: BorderRadius.circular(20),
       child: Column(
         children: [
-          CircleAvatar(
-            radius: 30,
-            backgroundColor: Colors.blue.shade50,
-            child: Icon(icon, color: Color(0xFF060644), size: 28),
+          Container(
+            width: 64,
+            height: 64,
+            decoration: BoxDecoration(
+              color: primaryColor.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Icon(
+              icon,
+              color: primaryColor,
+              size: 28,
+            ),
           ),
-          SizedBox(height: 5),
-          Text(label, style: TextStyle(fontSize: 12)),
+          SizedBox(height: 8),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w500,
+              color: primaryColor,
+            ),
+          ),
         ],
       ),
     );

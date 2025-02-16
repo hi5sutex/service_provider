@@ -272,6 +272,10 @@ class _UserHomeState extends State<UserHome> {
             // Content Sections
             Expanded(
               child: SingleChildScrollView(
+                child: Padding(
+                  padding: EdgeInsets.only(
+                    bottom: MediaQuery.of(context).padding.bottom + 35, // extra space at bottom
+                  ),
                 child: Column(
                   children: [
                     _buildSectionHeader('Popular Services'),
@@ -285,6 +289,7 @@ class _UserHomeState extends State<UserHome> {
 
                     SizedBox(height: 20),
                   ],
+                ),
                 ),
               ),
             ),
@@ -712,49 +717,52 @@ class GridCategoryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      elevation: 5,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: Column(
-        children: [
-          // Image from network
-          Expanded(
-            child: ClipRRect(
-              borderRadius: BorderRadius.vertical(top: Radius.circular(10)),
-              child: Image.network(
-                imagePath,  // Image loaded from network URL
-                fit: BoxFit.cover,
-                width: double.infinity,
-                loadingBuilder: (context, child, loadingProgress) {
-                  if (loadingProgress == null) return child;
-                  return Center(
-                    child: CircularProgressIndicator(
-                        color: Color(0xFFFFFFFF)
-                    ),
-                  );
-                },
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16.0), // Added bottom padding
+      child: Card(
+        elevation: 5,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min, // Ensures it doesn't take extra space
+          children: [
+            Expanded(
+              child: ClipRRect(
+                borderRadius: BorderRadius.vertical(top: Radius.circular(10)),
+                child: Image.network(
+                  imagePath,
+                  fit: BoxFit.cover,
+                  width: double.infinity,
+                  loadingBuilder: (context, child, loadingProgress) {
+                    if (loadingProgress == null) return child;
+                    return Center(
+                      child: CircularProgressIndicator(
+                        color: Color(0xFFFFFFFF),
+                      ),
+                    );
+                  },
+                ),
               ),
             ),
-          ),
-          // Title for the category
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Text(
-              title,
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 16,
-                color: Colors.black,
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Text(
+                title,
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                  color: Colors.black,
+                ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
 }
+
 
 
 // Service Model

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:service_provider/User%20Panel/ConfirmBookingPage.dart';
 
 class ServiceDetailsScreen extends StatefulWidget {
   final String serviceId;
@@ -15,6 +16,9 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
   Map<String, dynamic>? providerData;
   late PageController _pageController;
   int _currentPage = 0;
+
+  DateTime? selectedDate;
+  String? selectedTime;
 
   @override
   void initState() {
@@ -61,8 +65,14 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
     return Scaffold(
       backgroundColor: Colors.grey[100],
       appBar: AppBar(
-        title: Text(serviceData?['name'] ?? 'Service Details'),
+        title: Text(serviceData?['name'] ?? 'Service Details',
+          style: TextStyle(
+            //fontWeight: FontWeight.bold,
+            //fontSize: 24,
+            color:  Color(0xFFFFFFFF),
+          ),),
         backgroundColor: Color(0xFF060644),
+        foregroundColor: Colors.white,
       ),
       body: serviceData == null
           ? const Center(child: CircularProgressIndicator())
@@ -273,6 +283,20 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
                     ),
                   ),
                 ),
+
+              SizedBox(height: 32),
+              Center(
+                child: ElevatedButton(
+                  onPressed: _showBookingSheet,
+                  child: Text('Book Now', style: TextStyle(color: Color(
+                      0xffffffff)),),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Color(0xFF6A9AFF),
+                    padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                ),
+              ),
             ],
           ),
         ),
@@ -341,4 +365,219 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
       ],
     );
   }
+
+  void _showBookingSheet() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            List<DateTime> availableDates = List.generate(
+              DateTime(DateTime.now().year, DateTime.now().month + 2, 0).day - DateTime.now().day + 1,
+                  (index) => DateTime.now().add(Duration(days: index)),
+            );
+
+            // Generate time slots dynamically
+            List<String> getTimeSlots() {
+              List<String> timeSlots = [];
+              DateTime now = DateTime.now();
+              DateTime startTime;
+
+              // Set the start time based on whether the selected date is today
+              if (selectedDate != null && selectedDate!.year == now.year && selectedDate!.month == now.month && selectedDate!.day == now.day) {
+                int nextMinute = now.minute >= 30 ? 0 : 30;
+                int nextHour = now.minute >= 30 ? now.hour + 1 : now.hour;
+                startTime = DateTime(now.year, now.month, now.day, nextHour, nextMinute);
+              } else {
+                startTime = DateTime(now.year, now.month, now.day, 9, 0);
+              }
+
+              DateTime endTime = DateTime(now.year, now.month, now.day, 19, 30);
+
+              while (startTime.isBefore(endTime)) {
+                String formattedTime = '${startTime.hour > 12 ? startTime.hour - 12 : startTime.hour}:${startTime.minute == 0 ? '00' : '30'} ${startTime.hour >= 12 ? 'PM' : 'AM'}';
+
+                // Avoid duplicates
+                if (!timeSlots.contains(formattedTime)) {
+                  timeSlots.add(formattedTime);
+                }
+
+                startTime = startTime.add(Duration(minutes: 30));
+              }
+
+
+
+              return timeSlots;
+            }
+
+
+            return Container(
+              padding: EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+              ),
+              height: MediaQuery.of(context).size.height * 0.65,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Title
+                  Text(
+                    'Choose Appointment Time',
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.black),
+                  ),
+                  SizedBox(height: 5),
+                  Text('Service will take approximately 45 minutes', style: TextStyle(color: Colors.grey, fontSize: 14)),
+                  SizedBox(height: 20),
+
+                  // Date Selection (Horizontal Scroll)
+                  Text('Select a Date', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                  SizedBox(height: 8),
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      children: availableDates.map((date) {
+                        bool isSelected = selectedDate != null &&
+                            selectedDate!.day == date.day &&
+                            selectedDate!.month == date.month;
+
+                        return GestureDetector(
+                          onTap: () {
+                            setModalState(() {
+                              selectedDate = date;
+                              selectedTime = null; // Reset time when date changes
+                            });
+                          },
+                          child: Container(
+                            margin: EdgeInsets.symmetric(horizontal: 6),
+                            padding: EdgeInsets.symmetric(vertical: 10, horizontal: 14),
+                            decoration: BoxDecoration(
+                              border: Border.all(color: isSelected ? Colors.deepPurple : Colors.grey.shade300),
+                              borderRadius: BorderRadius.circular(12),
+                              color: isSelected ? Colors.deepPurple[100] : Colors.grey.shade100,
+                              boxShadow: [
+                                if (isSelected) BoxShadow(color: Colors.deepPurple.shade100, blurRadius: 5, spreadRadius: 1)
+                              ],
+                            ),
+                            child: Column(
+                              children: [
+                                Text(
+                                  ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][date.weekday % 7],
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.bold,
+                                    color: isSelected ? Colors.deepPurple : Colors.black,
+                                  ),
+                                ),
+                                Text(
+                                  '${date.day}',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                    color: isSelected ? Colors.deepPurple : Colors.black,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      }).toList(),
+                    ),
+                  ),
+                  SizedBox(height: 20),
+
+                  // Time Slot Selection
+                  Text('Select Time Slot', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                  SizedBox(height: 8),
+                  Expanded(
+                    child: selectedDate == null
+                        ? Center(child: Text("Select a date first", style: TextStyle(color: Colors.grey, fontSize: 16)))
+                        : GridView.builder(
+                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 3, // 3 columns
+                        crossAxisSpacing: 10,
+                        mainAxisSpacing: 10,
+                        childAspectRatio: 2.5, // Adjusted for better display
+                      ),
+                      itemCount: getTimeSlots().length,
+                      itemBuilder: (context, i) {
+                        String timeSlot = getTimeSlots()[i];
+                        bool isSelected = selectedTime == timeSlot;
+
+                        return GestureDetector(
+                          onTap: () {
+                            setModalState(() => selectedTime = timeSlot);
+                          },
+                          child: Container(
+                            alignment: Alignment.center,
+                            padding: EdgeInsets.symmetric(vertical: 10, horizontal: 8),
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(10),
+                              color: isSelected ? Colors.deepPurple[100] : Colors.white,
+                              border: Border.all(color: isSelected ? Colors.deepPurple : Colors.grey.shade300),
+                              boxShadow: isSelected
+                                  ? [BoxShadow(color: Colors.deepPurple.shade100, blurRadius: 5, spreadRadius: 1)]
+                                  : [],
+                            ),
+                            child: Text(
+                              timeSlot,
+                              style: TextStyle(
+                                color: isSelected ? Colors.deepPurple[900] : Colors.black,
+                                fontWeight: FontWeight.w500,
+                                fontSize: 14,
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+
+                  SizedBox(height: 20),
+
+                  // Proceed Button
+                  ElevatedButton(
+                    onPressed: selectedDate != null && selectedTime != null
+                        ? () {
+                      Navigator.pop(context);
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => ConfirmBookingPage(
+                            date: selectedDate!,
+                            time: selectedTime!,
+                            serviceData: serviceData!,
+                          ),
+                        ),
+                      );
+                    }
+                        : null,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: selectedDate != null && selectedTime != null ? Colors.deepPurple : Colors.grey[400],
+                      padding: EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      elevation: 5,
+                    ),
+                    child: Center(
+                      child: Text(
+                        'Confirm Booking',
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+
+
 }
