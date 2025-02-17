@@ -42,6 +42,8 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
 
       if (serviceSnapshot.exists) {
         serviceData = serviceSnapshot.data() as Map<String, dynamic>;
+
+        // serviceData['serviceId'] = widget.serviceId;
         String providerId = serviceData!['createdBy'];
 
         DocumentSnapshot providerSnapshot = await FirebaseFirestore.instance
@@ -551,6 +553,7 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
                             date: selectedDate!,
                             time: selectedTime!,
                             serviceData: serviceData!,
+                            serviceId: widget.serviceId!,
                           ),
                         ),
                       );

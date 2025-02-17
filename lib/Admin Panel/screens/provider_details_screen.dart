@@ -37,30 +37,39 @@ class ProviderDetailsScreen extends StatelessWidget {
         .where('providerId', isEqualTo: providerId)
         .get();
 
-    List<Map<String, dynamic>> bookings = [];
-
-    for (var doc in bookingsSnapshot.docs) {
+    List<Map<String, dynamic>> bookings = bookingsSnapshot.docs.map((doc) {
       Map<String, dynamic> booking = doc.data() as Map<String, dynamic>;
+      booking['id'] = doc.id; // Add booking ID
+      return booking;
+    }).toList();
 
-      // Fetch user details
-      DocumentSnapshot userDoc = await FirebaseFirestore.instance
-          .collection('users')
-          .doc(booking['userId'])
-          .get();
-      booking['userName'] = (userDoc.data() as Map<String, dynamic>)['name'];
+    // Fetch user details and service details in parallel
+    await Future.wait(bookings.map((booking) async {
+      if (booking['userId'] != null) {
+        DocumentSnapshot userDoc = await FirebaseFirestore.instance
+            .collection('users')
+            .doc(booking['userId'])
+            .get();
+        if (userDoc.exists) {
+          booking['userName'] = (userDoc.data() as Map<String, dynamic>?)?['name'] ?? 'Unknown User';
+        }
+      }
 
-      // Fetch service name
-      DocumentSnapshot serviceDoc = await FirebaseFirestore.instance
-          .collection('services')
-          .doc(booking['serviceId'])
-          .get();
-      booking['serviceName'] = (serviceDoc.data() as Map<String, dynamic>)['name'];
+      if (booking['serviceId'] != null) {
+        DocumentSnapshot serviceDoc = await FirebaseFirestore.instance
+            .collection('services')
+            .doc(booking['serviceId'])
+            .get();
+        if (serviceDoc.exists) {
+          booking['serviceName'] = (serviceDoc.data() as Map<String, dynamic>?)?['name'] ?? 'Unknown Service';
+        }
+      }
 
-      // Format booking date
-      booking['bookingDate'] = booking['bookingDate'].toDate().toString();
-
-      bookings.add(booking);
-    }
+      // Format booking date safely
+      if (booking['bookingDate'] is Timestamp) {
+        booking['bookingDate'] = DateFormat('dd/MM/yyyy kk:mm').format((booking['bookingDate'] as Timestamp).toDate());
+      }
+    }));
 
     return bookings;
   }

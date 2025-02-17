@@ -8,12 +8,14 @@ import 'dart:convert';
 class ConfirmBookingPage extends StatefulWidget {
   final DateTime date;
   final String time;
+  final String serviceId;
   final Map<String, dynamic> serviceData;
 
   ConfirmBookingPage({
     required this.date,
     required this.time,
     required this.serviceData,
+    required this.serviceId,
   });
 
   @override
@@ -23,13 +25,15 @@ class ConfirmBookingPage extends StatefulWidget {
 class _ConfirmBookingPageState extends State<ConfirmBookingPage> {
   TextEditingController addressController = TextEditingController();
   String selectedPaymentMethod = 'Debit Card';
-  double servicePrice = 719.0;
   double taxRate = 0.11; // 11% tax
   double platformFeeRate = 0.01; // 1% platform fee
   double? _latitude;
   double? _longitude;
   bool isLoading = false;
   final _formKey = GlobalKey<FormState>();
+  double get servicePrice => widget.serviceData['price'] ?? 0.0;
+  String get providerId => widget.serviceData['createdBy'] ?? '';
+  String get serviceId => widget.serviceId;
 
   Widget _buildTextField({
     required TextEditingController controller,
@@ -77,6 +81,7 @@ class _ConfirmBookingPageState extends State<ConfirmBookingPage> {
       ),
     );
   }
+
 
   Future<void> _getCurrentLocation() async {
     setState(() => isLoading = true);
@@ -152,21 +157,25 @@ class _ConfirmBookingPageState extends State<ConfirmBookingPage> {
       User? user = FirebaseAuth.instance.currentUser;
       if (user != null) {
         CollectionReference bookings = FirebaseFirestore.instance.collection('bookings');
-        await bookings.add({
+
+        Map<String, dynamic> bookingData = {
           'userId': user.uid,
-          'serviceData': widget.serviceData,
+          'providerId': providerId,
+          'serviceId': serviceId,
+          'serviceDate': Timestamp.fromDate(widget.date),
           'bookingDate': FieldValue.serverTimestamp(),
           'location': {
             'latitude': _latitude,
             'longitude': _longitude,
-            'address': addressController.text,
+            'local': addressController.text, // Local address
           },
           'paymentAmount': calculateTotalAmount(),
-          'paymentMethod': selectedPaymentMethod,
-          'serviceDate': Timestamp.fromDate(widget.date),
-          'serviceTime': widget.time,
+          'paymentMode': selectedPaymentMethod,
+          'paymentStatus': 'Pending',
           'status': 'Pending',
-        });
+        };
+
+        await bookings.add(bookingData);
 
         _showSnackBar("Booking created successfully!");
         Navigator.pop(context);
@@ -176,6 +185,7 @@ class _ConfirmBookingPageState extends State<ConfirmBookingPage> {
     }
     setState(() => isLoading = false);
   }
+
 
   void _showSnackBar(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
