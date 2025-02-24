@@ -7,7 +7,8 @@ import 'dart:convert';
 
 class ConfirmBookingPage extends StatefulWidget {
   final DateTime date;
-  final String time;
+  final TimeOfDay time;
+  //final String time;
   final String serviceId;
   final Map<String, dynamic> serviceData;
 
@@ -158,11 +159,20 @@ class _ConfirmBookingPageState extends State<ConfirmBookingPage> {
       if (user != null) {
         CollectionReference bookings = FirebaseFirestore.instance.collection('bookings');
 
+        // Convert TimeOfDay to DateTime
+        DateTime selectedDateTime = DateTime(
+          widget.date.year,
+          widget.date.month,
+          widget.date.day,
+          widget.time.hour,
+          widget.time.minute,
+        );
+
         Map<String, dynamic> bookingData = {
           'userId': user.uid,
           'providerId': providerId,
           'serviceId': serviceId,
-          'serviceDate': Timestamp.fromDate(widget.date),
+          'serviceDate': Timestamp.fromDate(widget.date), // Store selected date
           'bookingDate': FieldValue.serverTimestamp(),
           'location': {
             'latitude': _latitude,
@@ -177,6 +187,18 @@ class _ConfirmBookingPageState extends State<ConfirmBookingPage> {
 
         await bookings.add(bookingData);
 
+        // Store service date and time in 'servicedate' collection
+        CollectionReference serviceDateCollection = FirebaseFirestore.instance.collection('servicedate');
+
+        await serviceDateCollection.add({
+          'userId': user.uid,
+          'serviceId': serviceId,
+          'providerId': providerId,
+          'serviceDate': Timestamp.fromDate(widget.date), // Store selected date
+          'serviceTime': Timestamp.fromDate(selectedDateTime), // Store selected time
+          'createdAt': FieldValue.serverTimestamp(),
+        });
+
         _showSnackBar("Booking created successfully!");
         Navigator.pop(context);
       }
@@ -185,6 +207,7 @@ class _ConfirmBookingPageState extends State<ConfirmBookingPage> {
     }
     setState(() => isLoading = false);
   }
+
 
 
   void _showSnackBar(String message) {
@@ -198,6 +221,9 @@ class _ConfirmBookingPageState extends State<ConfirmBookingPage> {
       ),
     );
   }
+
+
+  String? selectedPaymentImage;
 
   Widget _buildPaymentMethodSelector() {
     return Container(
@@ -233,15 +259,29 @@ class _ConfirmBookingPageState extends State<ConfirmBookingPage> {
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween, // ✅ Aligns dropdown to the right
                 children: [
-                  Icon(Icons.payment, color: Color(0xFF060644)),
-                  SizedBox(width: 12),
-                  Expanded(
-                    child: Text(
-                      selectedPaymentMethod,
-                      style: TextStyle(fontSize: 16),
+                  /// ✅ Payment Image
+                  SizedBox(
+                    width: 30,
+                    height: 30,
+                    child: Image.asset(
+                      selectedPaymentImage ?? 'android/assets/debit card.png',  // Default Debit Card Image
+                      fit: BoxFit.contain,
                     ),
                   ),
+                  SizedBox(width: 12),
+
+                  /// ✅ Payment Method Text (Flexible to prevent overflow)
+                  Expanded(
+                    child: Text(
+                      selectedPaymentMethod ?? 'Select Payment Method',
+                      style: TextStyle(fontSize: 16),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+
+                  /// ✅ Dropdown Icon (Now properly aligned to the right)
                   Icon(Icons.arrow_drop_down),
                 ],
               ),
@@ -251,6 +291,9 @@ class _ConfirmBookingPageState extends State<ConfirmBookingPage> {
       ),
     );
   }
+
+
+
 
   void _showPaymentMethodSelector() {
     showModalBottomSheet(
@@ -271,24 +314,54 @@ class _ConfirmBookingPageState extends State<ConfirmBookingPage> {
               ),
             ),
             SizedBox(height: 20),
-            ...['Debit Card', 'UPI', 'Cash on Delivery'].map((method) =>
-                ListTile(
-                  leading: Icon(Icons.payment, color: Color(0xFF060644)),
-                  title: Text(method),
-                  trailing: selectedPaymentMethod == method
-                      ? Icon(Icons.check_circle, color: Color(0xFF060644))
-                      : null,
-                  onTap: () {
-                    setState(() => selectedPaymentMethod = method);
-                    Navigator.pop(context);
-                  },
-                ),
-            ).toList(),
+            ListTile(
+              leading: Image.asset('android/assets/debit card.png', width: 30, height: 30), // Debit Card Image
+              title: Text('Debit Card'),
+              trailing: selectedPaymentMethod == 'Debit Card'
+                  ? Icon(Icons.check_circle, color: Color(0xFF060644))
+                  : null,
+              onTap: () {
+                setState(() {
+                  selectedPaymentMethod = 'Debit Card';
+                  selectedPaymentImage = 'android/assets/debit card.png';
+                });
+                Navigator.pop(context);
+              },
+            ),
+            ListTile(
+              leading: Image.asset('android/assets/Gpay.png', width: 30, height: 30), // UPI Image
+              title: Text('UPI'),
+              trailing: selectedPaymentMethod == 'UPI'
+                  ? Icon(Icons.check_circle, color: Color(0xFF060644))
+                  : null,
+              onTap: () {
+                setState(() {
+                  selectedPaymentMethod = 'UPI';
+                  selectedPaymentImage = 'android/assets/Gpay.png';
+                });
+                Navigator.pop(context);
+              },
+            ),
+            ListTile(
+              leading: Image.asset('android/assets/cash-on-delivery.png', width: 30, height: 30), // Cash on Delivery Image
+              title: Text('Cash on Delivery'),
+              trailing: selectedPaymentMethod == 'Cash on Delivery'
+                  ? Icon(Icons.check_circle, color: Color(0xFF060644))
+                  : null,
+              onTap: () {
+                setState(() {
+                  selectedPaymentMethod = 'Cash on Delivery';
+                  selectedPaymentImage = 'android/assets/cash-on-delivery.png';
+                });
+                Navigator.pop(context);
+              },
+            ),
           ],
         ),
       ),
     );
   }
+
 
   Widget _buildPaymentRow(String label, double amount, {bool isBold = false}) {
     final style = TextStyle(
@@ -443,20 +516,34 @@ class _ConfirmBookingPageState extends State<ConfirmBookingPage> {
                       child: ElevatedButton(
                         onPressed: isLoading ? null : _saveBooking,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Color(0xFF060644),
+                          backgroundColor: isLoading ? Colors.grey : Color(0xFF060644),
                           padding: EdgeInsets.symmetric(vertical: 16),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(8),
                           ),
                         ),
-                        child: Text(
-                          isLoading ? 'Processing...' : 'Request Booking',
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: Colors.white,
-                          ),
+                        child: isLoading
+                            ? Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                            ),
+                            SizedBox(width: 10),
+                            Text(
+                              'Processing...',
+                              style: TextStyle(fontSize: 16, color: Colors.white),
+                            ),
+                          ],
+                        )
+                            : Text(
+                          'Request Booking',
+                          style: TextStyle(fontSize: 16, color: Colors.white),
                         ),
                       ),
+
                     ),
                   ],
                 ),

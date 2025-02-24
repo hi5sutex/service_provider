@@ -4,18 +4,28 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/services.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
+import 'package:lottie/lottie.dart';
 import 'package:service_provider/User%20Panel/subcategories_list.dart';
+import 'package:service_provider/User%20Panel/user_profile.dart';
 import 'package:service_provider/User%20Panel/user_setting.dart';
 
 class UserHome extends StatefulWidget {
+  // Add callback to notify parent about loading state
+  final Function(bool isLoading)? onLoadingStateChanged;
+
+  UserHome({this.onLoadingStateChanged});
+
   @override
   _UserHomeState createState() => _UserHomeState();
 }
 
 class _UserHomeState extends State<UserHome> {
   String selectedCategory = 'All';
-  String userCity = 'Loading...';
+  String userCity = '';
+  bool _isLoading = true;
   final Color primaryColor = Color(0xFF060644);
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  String? _profileImageUrl;
 
   Future<String> getUserName() async {
     try {
@@ -35,6 +45,31 @@ class _UserHomeState extends State<UserHome> {
     }
   }
 
+  Future<void> _fetchProfilePic() async {
+    try {
+      User? user = _auth.currentUser;
+      if (user != null) {
+        DocumentSnapshot userDoc = await FirebaseFirestore.instance
+            .collection('users')
+            .doc(user.uid)
+            .get();
+
+        setState(() {
+          _profileImageUrl = userDoc['profileImage'] as String?;
+        });
+      }
+    } catch (e) {
+      print('Error fetching profile picture: $e');
+    }
+  }
+
+  void _changeStatusBarColor() {
+    SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
+      statusBarColor: Color(0xFF060644),
+      statusBarIconBrightness: Brightness.light,
+    ));
+  }
+
   Stream<List<Service>> getServices(String category) {
     Query query = FirebaseFirestore.instance.collection('services');
     if (category != 'All') {
@@ -48,7 +83,23 @@ class _UserHomeState extends State<UserHome> {
   @override
   void initState() {
     super.initState();
-    _getCurrentCity();
+    _changeStatusBarColor();
+    _fetchProfilePic();
+    _initializeData();
+  }
+
+  // Update loading state and notify parent
+  void _updateLoadingState(bool isLoading) {
+    setState(() => _isLoading = isLoading);
+    if (widget.onLoadingStateChanged != null) {
+      widget.onLoadingStateChanged!(isLoading);
+    }
+  }
+
+  Future<void> _initializeData() async {
+    _updateLoadingState(true);
+    await _getCurrentCity();
+    _updateLoadingState(false);
   }
 
   Future<void> _getCurrentCity() async {
@@ -79,223 +130,241 @@ class _UserHomeState extends State<UserHome> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[50],
-      // appBar: AppBar(
-      //   backgroundColor: Color(0xFF060644),
-      //   systemOverlayStyle: SystemUiOverlayStyle(
-      //     statusBarColor: Color(0xFF060644),
-      //   ),
-      // ),
-      body: SafeArea(
-        child: Column(
-          children: [
-            // Enhanced Header Section
-            Container(
-              decoration: BoxDecoration(
-                color: primaryColor,
-                borderRadius: BorderRadius.only(
-                  bottomLeft: Radius.circular(30),
-                  bottomRight: Radius.circular(30),
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: primaryColor.withOpacity(0.3),
-                    blurRadius: 10,
-                    offset: Offset(0, 5),
-                  ),
-                ],
+      backgroundColor: _isLoading ? Colors.white : Colors.grey[50],
+      // No appBar to make the loading screen fullscreen
+      body: _isLoading
+          ? _buildLoadingScreen()
+          : SafeArea(child: _buildMainContent()),
+      // Remove any bottom navigation bar or other UI elements while loading
+    );
+  }
+
+  // Loading screen with Lottie animation (fullscreen)
+  Widget _buildLoadingScreen() {
+    return Container(
+      width: MediaQuery.of(context).size.width,
+      height: MediaQuery.of(context).size.height,
+      color: Colors.white,
+      child: Center(
+        child: Lottie.asset(
+          'android/assets/location.json',
+          width: MediaQuery.of(context).size.width * 0.7,
+          height: MediaQuery.of(context).size.width * 0.7,
+          fit: BoxFit.contain,
+          repeat: true,
+          animate: true,
+        ),
+      ),
+    );
+  }
+
+  // Main content of the page
+  Widget _buildMainContent() {
+    return Column(
+      children: [
+        // Enhanced Header Section
+        Container(
+          decoration: BoxDecoration(
+            color: primaryColor,
+            borderRadius: BorderRadius.only(
+              bottomLeft: Radius.circular(20),
+              bottomRight: Radius.circular(20),
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: primaryColor.withOpacity(0.3),
+                blurRadius: 8,
+                offset: Offset(0, 4),
               ),
-              child: Column(
-                children: [
-                  // User Info and Settings
-                  Container(
-                    padding: EdgeInsets.fromLTRB(20, 20, 20, 15),
-                    child: Row(
+            ],
+          ),
+          padding: EdgeInsets.fromLTRB(16, 12, 16, 10),
+          child: Row(
+            children: [
+              Expanded(
+                child: FutureBuilder<String>(
+                  future: getUserName(),
+                  builder: (context, snapshot) {
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Expanded(
-                          child: FutureBuilder<String>(
-                            future: getUserName(),
-                            builder: (context, snapshot) {
-                              return Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    'Hello, ${snapshot.data ?? 'User'} 👋',
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 24,
-                                      fontWeight: FontWeight.bold,
-                                      letterSpacing: 0.5,
-                                    ),
-                                  ),
-                                  SizedBox(height: 8),
-                                  Container(
-                                    padding: EdgeInsets.symmetric(
-                                        horizontal: 12, vertical: 6),
-                                    decoration: BoxDecoration(
-                                      color: Colors.white.withOpacity(0.2),
-                                      borderRadius: BorderRadius.circular(20),
-                                    ),
-                                    child: Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        Icon(Icons.location_on,
-                                            color: Colors.white, size: 16),
-                                        SizedBox(width: 4),
-                                        Text(
-                                          userCity,
-                                          style: TextStyle(
-                                            color: Colors.white,
-                                            fontSize: 14,
-                                            fontWeight: FontWeight.w500,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ],
-                              );
-                            },
+                        Text(
+                          'Hello, ${snapshot.data ?? 'User'} 👋',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 20,
+                            fontWeight: FontWeight.w600,
+                            letterSpacing: 0.4,
                           ),
                         ),
+                        SizedBox(height: 5),
                         Container(
+                          padding: EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                           decoration: BoxDecoration(
                             color: Colors.white.withOpacity(0.2),
-                            borderRadius: BorderRadius.circular(12),
+                            borderRadius: BorderRadius.circular(16),
                           ),
-                          child: IconButton(
-                            icon: Icon(Icons.settings, color: Colors.white),
-                            onPressed: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(builder: (context) => SettingsPage()),
-                              );
-                            },
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.location_on, color: Colors.white, size: 14),
+                              SizedBox(width: 3),
+                              Text(
+                                userCity,
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       ],
-                    ),
-                  ),
-                  // Enhanced Search Bar
-
-                ],
-              ),
-            ),
-            Container(
-              margin: EdgeInsets.fromLTRB(20, 15, 20, 15),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(15),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
-                    blurRadius: 10,
-                    offset: Offset(0, 5),
-                  ),
-                ],
-              ),
-              child: TextField(
-                decoration: InputDecoration(
-                  hintText: 'Search services...',
-                  hintStyle: TextStyle(color: Colors.grey[400]),
-                  prefixIcon: Icon(Icons.search, color: primaryColor),
-                  border: InputBorder.none,
-                  contentPadding:
-                  EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+                    );
+                  },
                 ),
               ),
+              Container(
+                width: 36,
+                height: 36,
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(5),
+                ),
+                child: IconButton(
+                  padding: EdgeInsets.zero,
+                  constraints: BoxConstraints(),
+                  icon: _profileImageUrl != null
+                      ? CircleAvatar(
+                    radius: 14,
+                    backgroundImage: NetworkImage(_profileImageUrl!),
+                    backgroundColor: Colors.grey.shade300,
+                  )
+                      : const Icon(Icons.account_circle, color: Colors.white, size: 25),
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => UserProfile()),
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        ),
+
+        Container(
+          margin: EdgeInsets.fromLTRB(20, 15, 20, 15),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(15),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.1),
+                blurRadius: 10,
+                offset: Offset(0, 5),
+              ),
+            ],
+          ),
+          child: TextField(
+            decoration: InputDecoration(
+              hintText: 'Search services...',
+              hintStyle: TextStyle(color: Colors.grey[400]),
+              prefixIcon: Icon(Icons.search, color: primaryColor),
+              border: InputBorder.none,
+              contentPadding:
+              EdgeInsets.symmetric(horizontal: 20, vertical: 15),
             ),
-            // Enhanced Categories Section
-            // Enhanced Categories Section
-            Container(
-              margin: EdgeInsets.only(top: 0),
-              height: 40,
-              child: StreamBuilder<QuerySnapshot>(
-                stream: FirebaseFirestore.instance
-                    .collection('categories')
-                    .snapshots(),
-                builder: (context, snapshot) {
-                  if (!snapshot.hasData) {
-                    return Center(
-                        child: CircularProgressIndicator(color: primaryColor));
-                  }
+          ),
+        ),
+        // Categories Section
+        Container(
+          margin: EdgeInsets.only(top: 0),
+          height: 40,
+          child: StreamBuilder<QuerySnapshot>(
+            stream: FirebaseFirestore.instance
+                .collection('categories')
+                .snapshots(),
+            builder: (context, snapshot) {
+              if (!snapshot.hasData) {
+                return Center(
+                    child: CircularProgressIndicator(color: primaryColor));
+              }
 
-                  List<String> categories = ['All'];
-                  categories.addAll(snapshot.data!.docs
-                      .map((doc) => doc['name'] as String)
-                      .toList());
+              List<String> categories = ['All'];
+              categories.addAll(snapshot.data!.docs
+                  .map((doc) => doc['name'] as String)
+                  .toList());
 
-                  return ListView.builder(
-                    padding: EdgeInsets.symmetric(horizontal: 20),
-                    scrollDirection: Axis.horizontal,
-                    itemCount: categories.length,
-                    itemBuilder: (context, index) {
-                      return Padding(
-                        padding: EdgeInsets.only(right: 12),
-                        child: GestureDetector(
-                          onTap: () {
-                            setState(() => selectedCategory = categories[index]);
-                          },
-                          child: Container(
-                            decoration: BoxDecoration(
+              return ListView.builder(
+                padding: EdgeInsets.symmetric(horizontal: 20),
+                scrollDirection: Axis.horizontal,
+                itemCount: categories.length,
+                itemBuilder: (context, index) {
+                  return Padding(
+                    padding: EdgeInsets.only(right: 12),
+                    child: GestureDetector(
+                      onTap: () {
+                        setState(() => selectedCategory = categories[index]);
+                      },
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: categories[index] == selectedCategory
+                              ? primaryColor
+                              : Colors.transparent,
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(
+                            color: primaryColor,
+                            width: 1,
+                          ),
+                        ),
+                        padding: EdgeInsets.symmetric(vertical: 10, horizontal: 20),
+                        child: Center(
+                          child: Text(
+                            categories[index],
+                            style: TextStyle(
                               color: categories[index] == selectedCategory
-                                  ? primaryColor
-                                  : Colors.transparent,
-                              borderRadius: BorderRadius.circular(20),
-                              border: Border.all(
-                                color: primaryColor,
-                                width: 1,
-                              ),
-                            ),
-                            padding: EdgeInsets.symmetric(vertical: 10, horizontal: 20),
-                            child: Center(
-                              child: Text(
-                                categories[index],
-                                style: TextStyle(
-                                  color: categories[index] == selectedCategory
-                                      ? Colors.white
-                                      : primaryColor,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
+                                  ? Colors.white
+                                  : primaryColor,
+                              fontWeight: FontWeight.bold,
                             ),
                           ),
                         ),
-                      );
-                    },
+                      ),
+                    ),
                   );
                 },
-              ),
-            ),
-
-
-            // Content Sections
-            Expanded(
-              child: SingleChildScrollView(
-                child: Padding(
-                  padding: EdgeInsets.only(
-                    bottom: MediaQuery.of(context).padding.bottom + 35, // extra space at bottom
-                  ),
-                child: Column(
-                  children: [
-                    _buildSectionHeader('Popular Services'),
-                    _buildPopularServices(),
-
-                    _buildSectionHeader('Top Rated Providers'),
-                    _buildProviders(),
-
-                    _buildSectionHeader('All Categories'),
-                    _buildCategories(),
-
-                    SizedBox(height: 20),
-                  ],
-                ),
-                ),
-              ),
-            ),
-          ],
+              );
+            },
+          ),
         ),
-      ),
+
+        // Content Sections
+        Expanded(
+          child: SingleChildScrollView(
+            child: Padding(
+              padding: EdgeInsets.only(
+                bottom: MediaQuery.of(context).padding.bottom + 35,
+              ),
+              child: Column(
+                children: [
+                  _buildSectionHeader('Popular Services'),
+                  _buildPopularServices(),
+
+                  _buildSectionHeader('Top Rated Providers'),
+                  _buildProviders(),
+
+                  _buildSectionHeader('All Categories'),
+                  _buildCategories(),
+
+                  SizedBox(height: 20),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 
@@ -406,8 +475,8 @@ class _UserHomeState extends State<UserHome> {
           itemCount: categories.length,
           itemBuilder: (context, index) {
             final category = categories[index];
-            final categoryName = category['name'] ?? 'Unknown Category'; // Fallback value
-            final imageUrl = category['imageUrl'] ?? ''; // Fallback to empty string
+            final categoryName = category['name'] ?? 'Unknown Category';
+            final imageUrl = category['imageUrl'] ?? '';
 
             return GestureDetector(
               onTap: () {
@@ -420,7 +489,7 @@ class _UserHomeState extends State<UserHome> {
               },
               child: GridCategoryCard(
                 title: categoryName,
-                imagePath: imageUrl,  // Use image URL from database, fallback to empty string if null
+                imagePath: imageUrl,
               ),
             );
           },
@@ -428,9 +497,12 @@ class _UserHomeState extends State<UserHome> {
       },
     );
   }
-
-
 }
+
+// Service Model and other class definitions should remain the same
+
+// Service Model and other classes remain the same
+// ... Rest of the code (all the widget classes) should remain unchanged
 
 // Enhanced CategoryChip Widget
 class CategoryChip extends StatelessWidget {
