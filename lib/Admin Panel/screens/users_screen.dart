@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:shimmer/shimmer.dart';
 import 'package:service_provider/Admin%20Panel/screens/user_details_screen.dart';
 
 class UsersScreen extends StatefulWidget {
@@ -19,7 +20,6 @@ class _UsersScreenState extends State<UsersScreen> {
 
   Future<void> _checkPermissions() async {
     // Simulated permission check (replace with real logic)
-    // Example: Fetch admin permissions from Firebase or a local store
     setState(() {
       hasViewPermission = true; // Example: Replace with actual permission
       hasManagePermission = true; // Example: Replace with actual permission
@@ -39,24 +39,23 @@ class _UsersScreenState extends State<UsersScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Users'),
+        title: const Text('Users'),
       ),
       body: hasViewPermission
           ? FutureBuilder<List<Map<String, dynamic>>>(
         future: _fetchUsers(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(child: CircularProgressIndicator());
+            return _buildShimmerEffect();
           }
           if (snapshot.hasError) {
-            return Center(child: Text('Error loading users.'));
+            return const Center(child: Text('Error loading users.'));
           }
           if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return Center(child: Text('No users found.'));
+            return const Center(child: Text('No users found.'));
           }
 
           final users = snapshot.data!;
-
           return ListView.builder(
             padding: const EdgeInsets.all(16.0),
             itemCount: users.length,
@@ -67,27 +66,12 @@ class _UsersScreenState extends State<UsersScreen> {
           );
         },
       )
-          : Center(
+          : const Center(
         child: Text(
           'You do not have permission to view users.',
           style: TextStyle(fontSize: 16, color: Colors.redAccent),
         ),
       ),
-      floatingActionButton: hasManagePermission
-          ? FloatingActionButton(
-        onPressed: () {
-          // Implement add user or other management functionality
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Manage Users functionality coming soon!')),
-          );
-        },
-        backgroundColor: Colors.lightBlue,
-        child: Icon(
-          Icons.add,
-          color: Colors.white,
-        ),
-      )
-          : null,
     );
   }
 
@@ -160,5 +144,64 @@ class _UsersScreenState extends State<UsersScreen> {
     final date = timestamp.toDate();
     return '${date.day}/${date.month}/${date.year}';
   }
-}
 
+  Widget _buildShimmerEffect() {
+    return ListView.builder(
+      padding: const EdgeInsets.all(16.0),
+      itemCount: 5, // Show 5 shimmer cards as a placeholder
+      itemBuilder: (context, index) {
+        return Shimmer.fromColors(
+          baseColor: Colors.grey[300]!,
+          highlightColor: Colors.grey[100]!,
+          child: Card(
+            elevation: 4,
+            margin: const EdgeInsets.symmetric(vertical: 8),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Row(
+                children: [
+                  CircleAvatar(
+                    radius: 30,
+                    backgroundColor: Colors.grey[300],
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Container(
+                          width: 120,
+                          height: 16,
+                          color: Colors.grey[300],
+                        ),
+                        const SizedBox(height: 8),
+                        Container(
+                          width: 180,
+                          height: 14,
+                          color: Colors.grey[300],
+                        ),
+                        const SizedBox(height: 8),
+                        Container(
+                          width: 100,
+                          height: 14,
+                          color: Colors.grey[300],
+                        ),
+                        const SizedBox(height: 8),
+                        Container(
+                          width: 80,
+                          height: 12,
+                          color: Colors.grey[300],
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
