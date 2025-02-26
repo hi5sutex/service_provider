@@ -4,11 +4,11 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:razorpay_flutter/razorpay_flutter.dart';
 
 class ConfirmBookingPage extends StatefulWidget {
   final DateTime date;
   final TimeOfDay time;
-  //final String time;
   final String serviceId;
   final Map<String, dynamic> serviceData;
 
@@ -35,6 +35,31 @@ class _ConfirmBookingPageState extends State<ConfirmBookingPage> {
   double get servicePrice => widget.serviceData['price'] ?? 0.0;
   String get providerId => widget.serviceData['createdBy'] ?? '';
   String get serviceId => widget.serviceId;
+
+  // Razorpay instance
+  late Razorpay _razorpay;
+
+  @override
+  void initState() {
+    super.initState();
+    // Initialize Razorpay
+    _razorpay = Razorpay();
+    _razorpay.on(Razorpay.EVENT_PAYMENT_SUCCESS, _handlePaymentSuccess);
+    _razorpay.on(Razorpay.EVENT_PAYMENT_ERROR, _handlePaymentError);
+    _razorpay.on(Razorpay.EVENT_EXTERNAL_WALLET, _handleExternalWallet);
+
+    // Listen to address field changes to enable/disable button
+    addressController.addListener(() {
+      setState(() {}); // Rebuild UI when address changes
+    });
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    _razorpay.clear(); // Clear Razorpay listeners
+    addressController.dispose();
+  }
 
   Widget _buildTextField({
     required TextEditingController controller,
@@ -83,7 +108,6 @@ class _ConfirmBookingPageState extends State<ConfirmBookingPage> {
     );
   }
 
-
   Future<void> _getCurrentLocation() async {
     setState(() => isLoading = true);
     try {
@@ -102,9 +126,7 @@ class _ConfirmBookingPageState extends State<ConfirmBookingPage> {
       }
 
       Position position = await Geolocator.getCurrentPosition(
-          desiredAccuracy: LocationAccuracy.high
-      );
-
+          desiredAccuracy: LocationAccuracy.high);
       _latitude = position.latitude;
       _longitude = position.longitude;
 
@@ -120,8 +142,7 @@ class _ConfirmBookingPageState extends State<ConfirmBookingPage> {
 
   Future<String> _getHumanReadableAddress(double lat, double lon) async {
     final url = Uri.parse(
-        "https://nominatim.openstreetmap.org/reverse?format=json&lat=$lat&lon=$lon"
-    );
+        "https://nominatim.openstreetmap.org/reverse?format=json&lat=$lat&lon=$lon");
     try {
       final response = await http.get(url);
       if (response.statusCode == 200) {
@@ -148,18 +169,55 @@ class _ConfirmBookingPageState extends State<ConfirmBookingPage> {
     return servicePrice + taxAmount + platformFee;
   }
 
-  Future<void> _saveBooking() async {
+  void _openRazorpayCheckout() {
+    var options = {
+      'key': 'rzp_test_8MwbMjCkPlKzhh', // Replace with your Razorpay Test Key ID
+      'amount': (calculateTotalAmount() * 100).toInt(), // Amount in paise
+      'name': 'Service Booking',
+      'description': 'Payment for ${widget.serviceData['name'] ?? 'Service'}',
+      'prefill': {
+        'contact': FirebaseAuth.instance.currentUser?.phoneNumber ?? '',
+        'email': FirebaseAuth.instance.currentUser?.email ?? '',
+      },
+      'external': {
+        'wallets': ['paytm']
+      }
+    };
+
+    try {
+      _razorpay.open(options);
+    } catch (e) {
+      _showSnackBar("Error opening Razorpay: $e");
+      setState(() => isLoading = false);
+    }
+  }
+
+  void _handlePaymentSuccess(PaymentSuccessResponse response) {
+    _showSnackBar("Payment Successful! Payment ID: ${response.paymentId}");
+    _saveBooking(response.paymentId); // Save booking after successful payment
+  }
+
+  void _handlePaymentError(PaymentFailureResponse response) {
+    _showSnackBar("Payment Failed: ${response.message}");
+    setState(() => isLoading = false);
+  }
+
+  void _handleExternalWallet(ExternalWalletResponse response) {
+    _showSnackBar("External Wallet Selected: ${response.walletName}");
+  }
+
+  Future<void> _saveBooking(String? paymentId) async {
     if (!_formKey.currentState!.validate()) {
+      setState(() => isLoading = false);
       return;
     }
 
-    setState(() => isLoading = true);
     try {
       User? user = FirebaseAuth.instance.currentUser;
       if (user != null) {
-        CollectionReference bookings = FirebaseFirestore.instance.collection('bookings');
+        CollectionReference bookings =
+        FirebaseFirestore.instance.collection('bookings');
 
-        // Convert TimeOfDay to DateTime
         DateTime selectedDateTime = DateTime(
           widget.date.year,
           widget.date.month,
@@ -172,30 +230,31 @@ class _ConfirmBookingPageState extends State<ConfirmBookingPage> {
           'userId': user.uid,
           'providerId': providerId,
           'serviceId': serviceId,
-          'serviceDate': Timestamp.fromDate(widget.date), // Store selected date
+          'serviceDate': Timestamp.fromDate(widget.date),
           'bookingDate': FieldValue.serverTimestamp(),
           'location': {
             'latitude': _latitude,
             'longitude': _longitude,
-            'local': addressController.text, // Local address
+            'local': addressController.text,
           },
           'paymentAmount': calculateTotalAmount(),
           'paymentMode': selectedPaymentMethod,
-          'paymentStatus': 'Pending',
+          'paymentStatus': paymentId != null ? 'Completed' : 'Pending',
+          'paymentId': paymentId, // Store Razorpay payment ID
           'status': 'Pending',
         };
 
         await bookings.add(bookingData);
 
-        // Store service date and time in 'servicedate' collection
-        CollectionReference serviceDateCollection = FirebaseFirestore.instance.collection('servicedate');
+        CollectionReference serviceDateCollection =
+        FirebaseFirestore.instance.collection('servicedate');
 
         await serviceDateCollection.add({
           'userId': user.uid,
           'serviceId': serviceId,
           'providerId': providerId,
-          'serviceDate': Timestamp.fromDate(widget.date), // Store selected date
-          'serviceTime': Timestamp.fromDate(selectedDateTime), // Store selected time
+          'serviceDate': Timestamp.fromDate(widget.date),
+          'serviceTime': Timestamp.fromDate(selectedDateTime),
           'createdAt': FieldValue.serverTimestamp(),
         });
 
@@ -208,8 +267,6 @@ class _ConfirmBookingPageState extends State<ConfirmBookingPage> {
     setState(() => isLoading = false);
   }
 
-
-
   void _showSnackBar(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -221,7 +278,6 @@ class _ConfirmBookingPageState extends State<ConfirmBookingPage> {
       ),
     );
   }
-
 
   String? selectedPaymentImage;
 
@@ -259,29 +315,24 @@ class _ConfirmBookingPageState extends State<ConfirmBookingPage> {
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween, // ✅ Aligns dropdown to the right
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  /// ✅ Payment Image
                   SizedBox(
                     width: 30,
                     height: 30,
                     child: Image.asset(
-                      selectedPaymentImage ?? 'android/assets/debit card.png',  // Default Debit Card Image
+                      selectedPaymentImage ?? 'android/assets/debit card.png',
                       fit: BoxFit.contain,
                     ),
                   ),
                   SizedBox(width: 12),
-
-                  /// ✅ Payment Method Text (Flexible to prevent overflow)
                   Expanded(
                     child: Text(
-                      selectedPaymentMethod ?? 'Select Payment Method',
+                      selectedPaymentMethod,
                       style: TextStyle(fontSize: 16),
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
-
-                  /// ✅ Dropdown Icon (Now properly aligned to the right)
                   Icon(Icons.arrow_drop_down),
                 ],
               ),
@@ -291,9 +342,6 @@ class _ConfirmBookingPageState extends State<ConfirmBookingPage> {
       ),
     );
   }
-
-
-
 
   void _showPaymentMethodSelector() {
     showModalBottomSheet(
@@ -315,7 +363,8 @@ class _ConfirmBookingPageState extends State<ConfirmBookingPage> {
             ),
             SizedBox(height: 20),
             ListTile(
-              leading: Image.asset('android/assets/debit card.png', width: 30, height: 30), // Debit Card Image
+              leading:
+              Image.asset('android/assets/debit card.png', width: 30, height: 30),
               title: Text('Debit Card'),
               trailing: selectedPaymentMethod == 'Debit Card'
                   ? Icon(Icons.check_circle, color: Color(0xFF060644))
@@ -329,7 +378,7 @@ class _ConfirmBookingPageState extends State<ConfirmBookingPage> {
               },
             ),
             ListTile(
-              leading: Image.asset('android/assets/Gpay.png', width: 30, height: 30), // UPI Image
+              leading: Image.asset('android/assets/Gpay.png', width: 30, height: 30),
               title: Text('UPI'),
               trailing: selectedPaymentMethod == 'UPI'
                   ? Icon(Icons.check_circle, color: Color(0xFF060644))
@@ -343,7 +392,8 @@ class _ConfirmBookingPageState extends State<ConfirmBookingPage> {
               },
             ),
             ListTile(
-              leading: Image.asset('android/assets/cash-on-delivery.png', width: 30, height: 30), // Cash on Delivery Image
+              leading: Image.asset('android/assets/cash-on-delivery.png',
+                  width: 30, height: 30),
               title: Text('Cash on Delivery'),
               trailing: selectedPaymentMethod == 'Cash on Delivery'
                   ? Icon(Icons.check_circle, color: Color(0xFF060644))
@@ -361,7 +411,6 @@ class _ConfirmBookingPageState extends State<ConfirmBookingPage> {
       ),
     );
   }
-
 
   Widget _buildPaymentRow(String label, double amount, {bool isBold = false}) {
     final style = TextStyle(
@@ -423,6 +472,9 @@ class _ConfirmBookingPageState extends State<ConfirmBookingPage> {
     );
   }
 
+  // Check if address is filled to enable/disable button
+  bool get _isAddressFilled => addressController.text.trim().isNotEmpty;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -450,7 +502,6 @@ class _ConfirmBookingPageState extends State<ConfirmBookingPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Address Section
                     Container(
                       decoration: BoxDecoration(
                         color: Colors.white,
@@ -497,26 +548,28 @@ class _ConfirmBookingPageState extends State<ConfirmBookingPage> {
                         ],
                       ),
                     ),
-
                     SizedBox(height: 20),
-
-                    // Updated Payment Summary Section
                     _buildPaymentSummary(),
-
                     SizedBox(height: 20),
-
-                    // Payment Method Section
                     _buildPaymentMethodSelector(),
-
                     SizedBox(height: 24),
-
-                    // Request Booking Button
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
-                        onPressed: isLoading ? null : _saveBooking,
+                        onPressed: _isAddressFilled && !isLoading
+                            ? () {
+                          setState(() => isLoading = true);
+                          if (selectedPaymentMethod == 'Cash on Delivery') {
+                            _saveBooking(null); // No payment ID for COD
+                          } else {
+                            _openRazorpayCheckout(); // Open Razorpay for other methods
+                          }
+                        }
+                            : null, // Button disabled if address is empty or loading
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: isLoading ? Colors.grey : Color(0xFF060644),
+                          backgroundColor: _isAddressFilled && !isLoading
+                              ? Color(0xFF060644) // Enabled color
+                              : Colors.grey, // Disabled color
                           padding: EdgeInsets.symmetric(vertical: 16),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(8),
@@ -529,7 +582,8 @@ class _ConfirmBookingPageState extends State<ConfirmBookingPage> {
                             SizedBox(
                               width: 20,
                               height: 20,
-                              child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                              child: CircularProgressIndicator(
+                                  color: Colors.white, strokeWidth: 2),
                             ),
                             SizedBox(width: 10),
                             Text(
@@ -543,7 +597,6 @@ class _ConfirmBookingPageState extends State<ConfirmBookingPage> {
                           style: TextStyle(fontSize: 16, color: Colors.white),
                         ),
                       ),
-
                     ),
                   ],
                 ),
