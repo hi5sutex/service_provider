@@ -4,7 +4,184 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:shimmer/shimmer.dart';
 
-class UserBooking extends StatelessWidget {
+class UserBooking extends StatefulWidget {
+  @override
+  _UserBookingState createState() => _UserBookingState();
+}
+
+class _UserBookingState extends State<UserBooking> {
+  final TextEditingController _searchController = TextEditingController();
+  String _searchQuery = '';
+  bool _isLoading = true;
+
+  // Store all necessary data locally to avoid multiple Firebase calls
+  Map<String, String> _serviceNames = {};
+  Map<String, Map<String, dynamic>> _providerDetails = {};
+  List<Map<String, dynamic>> _bookings = [];
+  List<Map<String, dynamic>> _filteredBookings = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _searchController.addListener(_onSearchChanged);
+    _loadInitialData();
+  }
+
+  @override
+  void dispose() {
+    _searchController.removeListener(_onSearchChanged);
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  // Load all necessary data once at the beginning
+  Future<void> _loadInitialData() async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final currentUser = FirebaseAuth.instance.currentUser;
+
+      // Get all services first
+      final servicesSnapshot = await FirebaseFirestore.instance
+          .collection('services')
+          .get();
+
+      for (var doc in servicesSnapshot.docs) {
+        String name = doc.data()['name']?.toString() ?? '';
+        if (name.isNotEmpty) {
+          _serviceNames[doc.id] = name;
+        }
+      }
+
+      // Get user's bookings
+      final bookingsSnapshot = await FirebaseFirestore.instance
+          .collection('bookings')
+          .where('userId', isEqualTo: currentUser?.uid)
+          .get();
+
+      // Extract provider IDs from bookings to fetch them in a single batch
+      Set<String> providerIds = {};
+
+      for (var doc in bookingsSnapshot.docs) {
+        var data = doc.data();
+        String? providerId = data['providerId'] as String?;
+        if (providerId != null) {
+          providerIds.add(providerId);
+        }
+      }
+
+      // Fetch all providers in a single batch
+      if (providerIds.isNotEmpty) {
+        final providerQueries = providerIds.map((id) =>
+            FirebaseFirestore.instance.collection('providers').doc(id).get()
+        ).toList();
+
+        final providerSnapshots = await Future.wait(providerQueries);
+
+        for (var snapshot in providerSnapshots) {
+          if (snapshot.exists) {
+            _providerDetails[snapshot.id] = {
+              'name': snapshot.data()?['name'] ?? 'Unknown Provider',
+              'profileImage': snapshot.data()?['profileImage'] ?? 'https://via.placeholder.com/50'
+            };
+          }
+        }
+      }
+
+      // Process all bookings and prepare the complete data
+      for (var doc in bookingsSnapshot.docs) {
+        var data = doc.data();
+        String serviceId = data['serviceId'] ?? '';
+        String providerId = data['providerId'] ?? '';
+
+        // Format dates
+        String formattedServiceDate = data['serviceDate'] != null
+            ? formatDate(data['serviceDate'] as Timestamp)
+            : 'Not specified';
+
+        String formattedBookingDate = data['bookingDate'] != null
+            ? formatDate(data['bookingDate'] as Timestamp)
+            : 'Not specified';
+
+        String serviceTime = data['serviceDate'] != null
+            ? formatTime(data['serviceDate'] as Timestamp)
+            : 'Not specified';
+
+        // Get service name with proper capitalization
+        String serviceName = 'Unknown Service';
+        if (_serviceNames.containsKey(serviceId)) {
+          serviceName = _serviceNames[serviceId]!;
+          // Capitalize first letter of each word
+          serviceName = serviceName.split(' ').map((word) =>
+          word.isNotEmpty ? word[0].toUpperCase() + word.substring(1) : ''
+          ).join(' ');
+        }
+
+        // Get provider details
+        String providerName = 'Unknown Provider';
+        String providerImage = 'https://via.placeholder.com/50';
+        if (_providerDetails.containsKey(providerId)) {
+          providerName = _providerDetails[providerId]!['name'] ?? providerName;
+          providerImage = _providerDetails[providerId]!['profileImage'] ?? providerImage;
+        }
+
+        // Create complete booking record
+        _bookings.add({
+          'id': doc.id,
+          'serviceId': serviceId,
+          'serviceName': serviceName,
+          'serviceNameLower': serviceName.toLowerCase(), // For case-insensitive search
+          'serviceDate': formattedServiceDate,
+          'serviceTime': serviceTime,
+          'bookingDate': formattedBookingDate,
+          'providerId': providerId,
+          'providerName': providerName,
+          'providerImage': providerImage,
+          'location': data['location'] != null && data['location'] is Map
+              ? data['location']['local'] ?? 'Unknown Location'
+              : 'Unknown Location',
+          'price': '\$${data['paymentAmount'] ?? '0'}',
+          'rawData': data, // Keep original data for reference if needed
+        });
+      }
+
+      // Initialize filtered bookings with all bookings
+      _filteredBookings = List.from(_bookings);
+
+    } catch (e) {
+      print("Error loading data: $e");
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
+  void _onSearchChanged() {
+    final query = _searchController.text.trim().toLowerCase();
+    setState(() {
+      _searchQuery = query;
+      _performLocalSearch();
+    });
+  }
+
+  void _performLocalSearch() {
+    if (_searchQuery.isEmpty) {
+      setState(() {
+        _filteredBookings = List.from(_bookings);
+      });
+      return;
+    }
+
+    setState(() {
+      _filteredBookings = _bookings.where((booking) {
+        return booking['serviceNameLower'].contains(_searchQuery);
+      }).toList();
+    });
+  }
+
   String formatDate(Timestamp timestamp) {
     return DateFormat('dd MMM yyyy, hh:mm a').format(timestamp.toDate());
   }
@@ -13,47 +190,8 @@ class UserBooking extends StatelessWidget {
     return DateFormat('hh:mm a').format(timestamp.toDate());
   }
 
-  Future<Map<String, dynamic>> fetchBookingDetails(String serviceId, String providerId) async {
-    String serviceName = 'Loading...';
-    String providerName = 'Loading...';
-    String providerImage = 'https://via.placeholder.com/50';
-
-    try {
-      var serviceSnapshot = await FirebaseFirestore.instance
-          .collection('services')
-          .doc(serviceId)
-          .get();
-      if (serviceSnapshot.exists) {
-        serviceName = serviceSnapshot.data()?['name'] ?? 'Unknown Service';
-      }
-    } catch (e) {
-      print("Error fetching service: $e");
-    }
-
-    try {
-      var providerSnapshot = await FirebaseFirestore.instance
-          .collection('providers')
-          .doc(providerId)
-          .get();
-      if (providerSnapshot.exists) {
-        providerImage = providerSnapshot.data()?['profileImage'] ?? providerImage;
-        providerName = providerSnapshot.data()?['name'] ?? 'Unknown Provider';
-      }
-    } catch (e) {
-      print("Error fetching provider details: $e");
-    }
-
-    return {
-      'serviceName': serviceName,
-      'providerName': providerName,
-      'providerImage': providerImage,
-    };
-  }
-
   @override
   Widget build(BuildContext context) {
-    final currentUser = FirebaseAuth.instance.currentUser;
-
     return Scaffold(
       appBar: AppBar(
         title: Text('Confirmed Bookings', style: TextStyle(color: Colors.black)),
@@ -66,96 +204,50 @@ class UserBooking extends StatelessWidget {
         child: Column(
           children: [
             TextField(
+              controller: _searchController,
               decoration: InputDecoration(
-                hintText: 'Search bookings...',
+                hintText: 'Search by service name...',
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8.0),
                 ),
                 prefixIcon: Icon(Icons.search),
+                suffixIcon: _searchQuery.isNotEmpty
+                    ? IconButton(
+                  icon: Icon(Icons.clear),
+                  onPressed: () {
+                    _searchController.clear();
+                  },
+                )
+                    : null,
               ),
               style: TextStyle(fontSize: 14),
             ),
             SizedBox(height: 12),
 
             Expanded(
-              child: StreamBuilder(
-                stream: FirebaseFirestore.instance
-                    .collection('bookings')
-                    .where('userId', isEqualTo: currentUser?.uid)
-                    .snapshots(),
-                builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return ListView.builder(
-                      itemCount: 3, // Show 3 shimmer cards while loading
-                      itemBuilder: (context, index) => ShimmerBookingCard(),
-                    );
-                  }
-
-                  if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                    return Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Image.network(
-                            'https://via.placeholder.com/200',
-                            height: 200,
-                          ),
-                          Text(
-                            'No Bookings Yet',
-                            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
-                          ),
-                        ],
-                      ),
-                    );
-                  }
-
-                  return ListView(
-                    children: snapshot.data!.docs.map((doc) {
-                      var data = doc.data() as Map<String, dynamic>;
-
-                      String formattedServiceDate = data['serviceDate'] != null
-                          ? formatDate(data['serviceDate'] as Timestamp)
-                          : 'Not specified';
-
-                      String formattedBookingDate = data['bookingDate'] != null
-                          ? formatDate(data['bookingDate'] as Timestamp)
-                          : 'Not specified';
-
-                      String serviceTime = data['serviceDate'] != null
-                          ? formatTime(data['serviceDate'] as Timestamp)
-                          : 'Not specified';
-
-                      return FutureBuilder<Map<String, dynamic>>(
-                        future: fetchBookingDetails(
-                          data['serviceId'] ?? '',
-                          data['providerId'] ?? '',
-                        ),
-                        builder: (context, detailsSnapshot) {
-                          if (detailsSnapshot.connectionState == ConnectionState.waiting) {
-                            return ShimmerBookingCard();
-                          }
-
-                          final details = detailsSnapshot.data ?? {
-                            'serviceName': 'Unknown Service',
-                            'providerName': 'Unknown Provider',
-                            'providerImage': 'https://via.placeholder.com/50',
-                          };
-
-                          return BookingCard(
-                            serviceName: details['serviceName'],
-                            serviceDate: formattedServiceDate,
-                            serviceTime: serviceTime,
-                            bookingDate: formattedBookingDate,
-                            providerName: details['providerName'],
-                            providerImage: details['providerImage'],
-                            location: data['location'] != null && data['location'] is Map
-                                ? data['location']['local'] ?? 'Unknown Location'
-                                : 'Unknown Location',
-                            price: '\$${data['paymentAmount'] ?? '0'}',
-                          );
-                        },
-                      );
-                    }).toList(),
+              child: _isLoading
+                  ? ListView.builder(
+                itemCount: 3, // Show 3 shimmer cards while loading
+                itemBuilder: (context, index) => ShimmerBookingCard(),
+              )
+                  : _bookings.isEmpty
+                  ? _buildEmptyState('No Bookings Yet')
+                  : _filteredBookings.isEmpty
+                  ? _buildEmptyState('No matching bookings found',
+                  subtitle: 'Try a different search term')
+                  : ListView.builder(
+                itemCount: _filteredBookings.length,
+                itemBuilder: (context, index) {
+                  final booking = _filteredBookings[index];
+                  return BookingCard(
+                    serviceName: booking['serviceName'],
+                    serviceDate: booking['serviceDate'],
+                    serviceTime: booking['serviceTime'],
+                    bookingDate: booking['bookingDate'],
+                    providerName: booking['providerName'],
+                    providerImage: booking['providerImage'],
+                    location: booking['location'],
+                    price: booking['price'],
                   );
                 },
               ),
@@ -175,8 +267,34 @@ class UserBooking extends StatelessWidget {
       ),
     );
   }
+
+  Widget _buildEmptyState(String message, {String? subtitle}) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          // Image.network(
+          //   'https://via.placeholder.com/200',
+          //   height: 200,
+          // ),
+          Text(
+            message,
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
+          ),
+          if (subtitle != null) ...[
+            SizedBox(height: 8),
+            Text(
+              subtitle,
+              style: TextStyle(fontSize: 14, color: Colors.grey),
+            ),
+          ]
+        ],
+      ),
+    );
+  }
 }
 
+// Keep the ShimmerBookingCard and BookingCard classes as they were
 class ShimmerBookingCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
