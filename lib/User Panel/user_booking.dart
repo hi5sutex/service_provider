@@ -273,10 +273,7 @@ class _UserBookingState extends State<UserBooking> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          // Image.network(
-          //   'https://via.placeholder.com/200',
-          //   height: 200,
-          // ),
+
           Text(
             message,
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
