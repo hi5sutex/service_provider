@@ -350,6 +350,14 @@ class _UserProfileState extends State<UserProfile> {
                         onTap: () => _showLogoutConfirmation(context),
                       ),
 
+                      ListTile(
+                        leading: Icon(Icons.abc , color: Colors.red,),
+                        title: Text("chat"),
+                        onTap: (){
+                          
+                        },
+                      )
+
                     ],
                   ),)
                 ),

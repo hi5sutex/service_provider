@@ -85,7 +85,9 @@ class _SettingsPageState extends State<SettingsPage> {
             _buildSettingCard(
               icon: Icons.help_outline,
               title: 'Help Center',
-              onTap: () {},
+              onTap: () {
+
+              },
             ),
             _buildSettingCard(
               icon: Icons.description,

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:shimmer/shimmer.dart';
 import 'package:service_provider/Admin%20Panel/screens/provider_details_screen.dart';
 
 class ProvidersScreen extends StatefulWidget {
@@ -19,7 +20,6 @@ class _ProvidersScreenState extends State<ProvidersScreen> {
 
   Future<void> _checkPermissions() async {
     // Simulated permission check (replace with real logic)
-    // Example: Fetch admin permissions from Firebase or a local store
     setState(() {
       hasViewPermission = true; // Example: Replace with actual permission
       hasManagePermission = true; // Example: Replace with actual permission
@@ -39,24 +39,23 @@ class _ProvidersScreenState extends State<ProvidersScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Providers'),
+        title: const Text('Providers'),
       ),
       body: hasViewPermission
           ? FutureBuilder<List<Map<String, dynamic>>>(
         future: _fetchProviders(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(child: CircularProgressIndicator());
+            return _buildShimmerEffect();
           }
           if (snapshot.hasError) {
-            return Center(child: Text('Error loading providers.'));
+            return const Center(child: Text('Error loading providers.'));
           }
           if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return Center(child: Text('No providers found.'));
+            return const Center(child: Text('No providers found.'));
           }
 
           final providers = snapshot.data!;
-
           return ListView.builder(
             padding: const EdgeInsets.all(16.0),
             itemCount: providers.length,
@@ -67,27 +66,12 @@ class _ProvidersScreenState extends State<ProvidersScreen> {
           );
         },
       )
-          : Center(
+          : const Center(
         child: Text(
           'You do not have permission to view providers.',
           style: TextStyle(fontSize: 16, color: Colors.redAccent),
         ),
       ),
-      floatingActionButton: hasManagePermission
-          ? FloatingActionButton(
-        onPressed: () {
-          // Implement add provider or other management functionality
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Manage Providers functionality coming soon!')),
-          );
-        },
-        backgroundColor: Colors.lightBlue,
-        child: Icon(
-          Icons.add,
-          color: Colors.white,
-        ),
-      )
-          : null,
     );
   }
 
@@ -113,8 +97,10 @@ class _ProvidersScreenState extends State<ProvidersScreen> {
             children: [
               CircleAvatar(
                 radius: 30,
-                backgroundImage: NetworkImage(provider['profileImage'] ??
-                    'https://res.cloudinary.com/dpcjw0g5c/image/upload/v1735399079/icons8-user-default-100_hakusn.png'),
+                backgroundImage: NetworkImage(
+                  provider['profileImage'] ??
+                      'https://res.cloudinary.com/dpcjw0g5c/image/upload/v1735399079/icons8-user-default-100_hakusn.png',
+                ),
                 backgroundColor: Colors.grey.shade300,
               ),
               const SizedBox(width: 16),
@@ -144,6 +130,68 @@ class _ProvidersScreenState extends State<ProvidersScreen> {
                     Text(
                       'Joined: ${_formatTimestamp(provider['createdAt'])}',
                       style: TextStyle(fontSize: 12, color: Colors.grey.shade500),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildShimmerEffect() {
+    return ListView.builder(
+      padding: const EdgeInsets.all(16.0),
+      itemCount: 5,
+      itemBuilder: (context, index) => _buildShimmerCard(),
+    );
+  }
+
+  Widget _buildShimmerCard() {
+    return Shimmer.fromColors(
+      baseColor: Colors.grey[300]!,
+      highlightColor: Colors.grey[100]!,
+      child: Card(
+        elevation: 4,
+        margin: const EdgeInsets.symmetric(vertical: 8),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Row(
+            children: [
+              CircleAvatar(
+                radius: 30,
+                backgroundColor: Colors.grey[300],
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      width: 120,
+                      height: 16,
+                      color: Colors.grey[300],
+                    ),
+                    const SizedBox(height: 4),
+                    Container(
+                      width: 180,
+                      height: 14,
+                      color: Colors.grey[300],
+                    ),
+                    const SizedBox(height: 4),
+                    Container(
+                      width: 100,
+                      height: 14,
+                      color: Colors.grey[300],
+                    ),
+                    const SizedBox(height: 4),
+                    Container(
+                      width: 80,
+                      height: 12,
+                      color: Colors.grey[300],
                     ),
                   ],
                 ),

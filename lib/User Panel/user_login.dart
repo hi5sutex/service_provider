@@ -8,6 +8,8 @@ import 'package:service_provider/Provider%20Panel/screens/register_screen.dart';
 import 'package:service_provider/Admin%20Panel/screens/main.dart';
 import 'package:service_provider/welcome_screen.dart';
 
+import '../Provider Panel/screens/all_user_chat_list.dart';
+
 class LoginPage extends StatefulWidget {
   @override
   _LoginPageState createState() => _LoginPageState();
@@ -63,21 +65,18 @@ class _LoginPageState extends State<LoginPage> {
       _navigateToPage(context, MainAdminPanel(), "Admin");
       return;
     }
-
     DocumentSnapshot userDoc =
     await FirebaseFirestore.instance.collection('users').doc(uid).get();
     if (userDoc.exists) {
       _navigateToPage(context, MainHome(), "User");
       return;
     }
-
     DocumentSnapshot providerDoc =
     await FirebaseFirestore.instance.collection('providers').doc(uid).get();
     if (providerDoc.exists) {
       _navigateToPage(context, Main(), "Provider");
       return;
     }
-
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text("Error: User role not recognized")),
     );

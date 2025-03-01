@@ -19,6 +19,8 @@ class ConfirmBookingPage extends StatefulWidget {
     required this.serviceId,
   });
 
+
+
   @override
   _ConfirmBookingPageState createState() => _ConfirmBookingPageState();
 }
@@ -218,7 +220,7 @@ class _ConfirmBookingPageState extends State<ConfirmBookingPage> {
         CollectionReference bookings =
         FirebaseFirestore.instance.collection('bookings');
 
-        DateTime selectedDateTime = DateTime(
+        DateTime serviceDateTime = DateTime(
           widget.date.year,
           widget.date.month,
           widget.date.day,
@@ -230,7 +232,7 @@ class _ConfirmBookingPageState extends State<ConfirmBookingPage> {
           'userId': user.uid,
           'providerId': providerId,
           'serviceId': serviceId,
-          'serviceDate': Timestamp.fromDate(widget.date),
+          'serviceDate': Timestamp.fromDate(serviceDateTime),
           'bookingDate': FieldValue.serverTimestamp(),
           'location': {
             'latitude': _latitude,
@@ -244,19 +246,30 @@ class _ConfirmBookingPageState extends State<ConfirmBookingPage> {
           'status': 'Pending',
         };
 
+        ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                "Booking Confirmed!\n"
+                    "Date: ${widget.date.toString().substring(0, 10)}\n"
+                    "Time: ${widget.time.format(context)}\n"
+                    "Service: ${widget.serviceData['name'] ?? 'Unknown'}",
+              ),
+              duration: Duration(seconds: 5),
+            ),
+        );
         await bookings.add(bookingData);
 
-        CollectionReference serviceDateCollection =
-        FirebaseFirestore.instance.collection('servicedate');
+        // CollectionReference serviceDateCollection =
+        // FirebaseFirestore.instance.collection('servicedate');
 
-        await serviceDateCollection.add({
-          'userId': user.uid,
-          'serviceId': serviceId,
-          'providerId': providerId,
-          'serviceDate': Timestamp.fromDate(widget.date),
-          'serviceTime': Timestamp.fromDate(selectedDateTime),
-          'createdAt': FieldValue.serverTimestamp(),
-        });
+        // await serviceDateCollection.add({
+        //   'userId': user.uid,
+        //   'serviceId': serviceId,
+        //   'providerId': providerId,
+        //   'serviceDate': Timestamp.fromDate(widget.date),
+        //   'serviceTime': Timestamp.fromDate(serviceDateTime),
+        //   'createdAt': FieldValue.serverTimestamp(),
+        // });
 
         _showSnackBar("Booking created successfully!");
         Navigator.pop(context);

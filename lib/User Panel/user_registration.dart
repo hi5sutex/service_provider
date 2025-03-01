@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:email_otp/email_otp.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/services.dart';
 import 'package:service_provider/User Panel/user_verification.dart';
 import 'package:service_provider/User%20Panel/user_login.dart';
 import 'package:service_provider/welcome_screen.dart';
@@ -58,6 +59,18 @@ class _RegistrationPageState extends State<RegistrationPage> {
           const SnackBar(content: Text("OTP sent to your email")),
         );
 
+        // Create a user chatroom document
+        await FirebaseFirestore.instance
+            .collection('user_chatroom')
+            .doc(emailController.text)
+            .set({
+          'name': nameController.text,
+          'phone': phoneController.text,
+          'email': emailController.text,
+          'createdAt': FieldValue.serverTimestamp(),
+          'role': 'user', // Add a role to distinguish users
+        });
+
         // Save user data temporarily and navigate to OTP Verification
         Navigator.push(
           context,
@@ -87,6 +100,10 @@ class _RegistrationPageState extends State<RegistrationPage> {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
+        systemOverlayStyle: SystemUiOverlayStyle(
+          statusBarColor: Colors.white, // Ensures status bar remains white
+          statusBarIconBrightness: Brightness.dark, // Keeps icons dark for visibility
+        ),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.black),
           onPressed: () {
@@ -113,8 +130,12 @@ class _RegistrationPageState extends State<RegistrationPage> {
             ),
           ),
         ],
+        flexibleSpace: Container(
+          decoration: BoxDecoration(
+            color: Colors.white, // Keeps background fixed even when scrolling
+          ),
+        ),
       ),
-
       body: Column(
         children: [
           Container(

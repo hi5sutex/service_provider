@@ -1,6 +1,9 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:service_provider/User%20Panel/ConfirmBookingPage.dart';
+
+import 'chat_funtionality/chat_screen.dart';
 
 class ServiceDetailsScreen extends StatefulWidget {
   final String serviceId;
@@ -13,6 +16,9 @@ class ServiceDetailsScreen extends StatefulWidget {
 }
 
 class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+
   Map<String, dynamic>? serviceData;
   Map<String, dynamic>? providerData;
   late PageController _pageController;
@@ -33,6 +39,8 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
     _pageController.dispose();
     super.dispose();
   }
+
+
 
   TimeOfDay _parseTime(String time) {
     final RegExp regex = RegExp(r'^(\d{1,2}):(\d{2})\s?(AM|PM)$');
@@ -59,6 +67,31 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
     final period = time.period == DayPeriod.am ? 'AM' : 'PM';
     return '${hour == 0 ? 12 : hour}:$minute $period';
   }
+
+  // chat added
+  Future<DocumentSnapshot?> _findMatchingUser(String email) async {
+    // Search in users collection
+    final usersQuery = await FirebaseFirestore.instance
+        .collection('users')
+        .where('email', isEqualTo: email)
+        .get();
+
+    if (usersQuery.docs.isNotEmpty) {
+      return usersQuery.docs.first;
+    }
+
+    // Search in providers collection
+    final providersQuery = await FirebaseFirestore.instance
+        .collection('providers')
+        .where('email', isEqualTo: email)
+        .get();
+
+    if (providersQuery.docs.isNotEmpty) {
+      return providersQuery.docs.first;
+    }
+
+    return null; // No match found
+  } // ----------
 
   Future<void> _fetchServiceAndProviderDetails() async {
     try {
@@ -282,6 +315,7 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
                 ),
               ),
               SizedBox(height: 32),
+              // chat added
               if (providerData != null)
                 Card(
                   shape: RoundedRectangleBorder(
@@ -311,15 +345,57 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
                             children: [
                               Text(providerData!['phone'] ?? 'N/A'),
                               Text(providerData!['email'] ?? 'N/A'),
-                              Text(providerData!['address']?['string'] ??
-                                  'N/A'),
+                              Text(providerData!['address']?['string'] ?? 'N/A'),
                             ],
                           ),
                         ),
+                        // Add the Chat Button if email matches
+                        // if (providerData!['email'] != null)
+                        if (providerData!['email'] != null)
+                          FutureBuilder<DocumentSnapshot?>(
+                            future: _findMatchingUser(providerData!['email']),
+                            builder: (context, snapshot) {
+                              if (snapshot.connectionState == ConnectionState.waiting) {
+                                return Center(child: CircularProgressIndicator());
+                              }
+
+                              if (snapshot.hasData && snapshot.data != null) {
+                                final matchedUserId = snapshot.data!.id;
+                                final currentUser = _auth.currentUser;
+
+                                return Container(
+                                  width: double.infinity,
+                                  padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                                  child: ElevatedButton(
+                                    onPressed: () {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) => ChatScreen(
+                                            userId: currentUser!.uid, // Current user's ID
+                                            receiverId: matchedUserId, // Receiver's ID
+                                            senderEmail: currentUser.email!, // Current user's email
+                                            receiverEmail: providerData!['email'], // Receiver's email
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                    child: Text('Message'),
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: Color(0xffffffff),
+                                    ),
+                                  ),
+                                );
+                              }
+
+                              return SizedBox.shrink(); // No match found
+                            },
+                          ),
                       ],
                     ),
                   ),
                 ),
+              // chat added
               SizedBox(height: 32),
               Center(
                 child: ElevatedButton(
@@ -660,6 +736,4 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
         );
       },
     );
-  }
-
-  }
+  } }
