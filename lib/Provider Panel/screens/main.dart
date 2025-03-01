@@ -5,6 +5,8 @@ import 'package:service_provider/Provider Panel/screens/chat_screen.dart';
 import 'package:service_provider/Provider Panel/screens/profile_screen.dart';
 import 'package:service_provider/Provider Panel/screens/add_dummy_bookings.dart';
 
+import '../../User Panel/chat_funtionality/all_users_screen.dart';
+
 class Main extends StatefulWidget {
   @override
   _MainState createState() => _MainState();
@@ -17,7 +19,7 @@ class _MainState extends State<Main> with SingleTickerProviderStateMixin {
   final List<Widget> _pages = [
     ProviderHome(),
     ProviderBooking(),
-    ProviderChat(),
+    AllUsersScreen(),
     ProviderProfile(),
     // AddDummyBookings(),
   ];

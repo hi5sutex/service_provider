@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:service_provider/User Panel/user_home.dart';
-import 'package:service_provider/User Panel/user_chat.dart';
 import 'package:service_provider/User Panel/user_profile.dart';
 import 'package:service_provider/User Panel/user_booking.dart';
+import 'chat_funtionality/all_users_screen.dart';
 
 class MainHome extends StatefulWidget {
   @override
@@ -17,7 +17,7 @@ class _MainHomeState extends State<MainHome> {
   final List<Widget> _pages = [
     UserHome(),
     UserBooking(),
-    UserChat(),
+    AllUsersScreen(),
     UserProfile(),
   ];
 

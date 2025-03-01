@@ -6,6 +6,8 @@ import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
+import 'chat_funtionality/all_users_screen.dart';
+
 class EditUserProfile extends StatefulWidget {
   @override
   _EditUserProfileState createState() => _EditUserProfileState();
@@ -318,8 +320,9 @@ class _EditUserProfileState extends State<EditUserProfile> {
                           ),
                         ),
                       ),
-                      SizedBox(height: 30),
+
                     ],
+
                   ),
                 ),
               ),

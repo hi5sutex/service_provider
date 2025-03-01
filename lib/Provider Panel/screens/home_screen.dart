@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../User Panel/chat_funtionality/all_users_screen.dart';
 import 'add_service_screen.dart';
 
 class ProviderHome extends StatelessWidget {
@@ -9,6 +10,7 @@ class ProviderHome extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
+
         backgroundColor: secondaryColor,
         elevation: 4,
         shadowColor: primaryColor.withOpacity(0.1),
@@ -95,7 +97,8 @@ class ProviderHome extends StatelessWidget {
                   onTap: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => AddServiceScreen()),
+                      MaterialPageRoute(
+                          builder: (context) => AddServiceScreen()),
                     );
                   },
                 ),
@@ -207,8 +210,7 @@ class ProviderHome extends StatelessWidget {
                           vertical: 6,
                         ),
                         decoration: BoxDecoration(
-                          color: recentBookings[index]['status']! ==
-                              'Completed'
+                          color: recentBookings[index]['status']! == 'Completed'
                               ? Colors.green.withOpacity(0.1)
                               : Colors.orange.withOpacity(0.1),
                           borderRadius: BorderRadius.circular(16),
@@ -216,10 +218,10 @@ class ProviderHome extends StatelessWidget {
                         child: Text(
                           recentBookings[index]['status']!,
                           style: TextStyle(
-                            color: recentBookings[index]['status']! ==
-                                'Completed'
-                                ? Colors.green
-                                : Colors.orange,
+                            color:
+                                recentBookings[index]['status']! == 'Completed'
+                                    ? Colors.green
+                                    : Colors.orange,
                             fontSize: 12,
                             fontWeight: FontWeight.w500,
                           ),
