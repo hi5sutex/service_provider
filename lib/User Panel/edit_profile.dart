@@ -6,7 +6,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
-import 'chat_funtionality/all_users_screen.dart';
+import 'chat_funtionality/ChatListScreen.dart';
 
 class EditUserProfile extends StatefulWidget {
   @override

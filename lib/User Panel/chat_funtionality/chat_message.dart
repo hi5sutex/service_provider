@@ -1,10 +1,12 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 class ChatMessage {
   final String senderId;
   final String receiverId;
   final String senderEmail;
   final String receiverEmail;
   final String message;
-  final DateTime timestamp;
+  final Timestamp timestamp;
 
   ChatMessage({
     required this.senderId,
@@ -15,7 +17,19 @@ class ChatMessage {
     required this.timestamp,
   });
 
-  // Convert ChatMessage to a Map for Firestore
+  // Convert Firestore data to ChatMessage
+  factory ChatMessage.fromMap(Map<String, dynamic> data) {
+    return ChatMessage(
+      senderId: data['senderId'] ?? '',
+      receiverId: data['receiverId'] ?? '',
+      senderEmail: data['senderEmail'] ?? '',
+      receiverEmail: data['receiverEmail'] ?? '',
+      message: data['message'] ?? '',
+      timestamp: data['timestamp'] as Timestamp? ?? Timestamp.now(),
+    );
+  }
+
+  // Convert ChatMessage to Firestore data
   Map<String, dynamic> toMap() {
     return {
       'senderId': senderId,
@@ -25,17 +39,5 @@ class ChatMessage {
       'message': message,
       'timestamp': timestamp,
     };
-  }
-
-  // Create a ChatMessage from a Firestore Map
-  factory ChatMessage.fromMap(Map<String, dynamic> map) {
-    return ChatMessage(
-      senderId: map['senderId'],
-      receiverId: map['receiverId'],
-      senderEmail: map['senderEmail'],
-      receiverEmail: map['receiverEmail'],
-      message: map['message'],
-      timestamp: map['timestamp']?.toDate() ?? DateTime.now(), // Handle null timestamp
-    );
   }
 }

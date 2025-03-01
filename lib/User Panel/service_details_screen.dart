@@ -1,9 +1,8 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:service_provider/User%20Panel/ConfirmBookingPage.dart';
-
-import 'chat_funtionality/chat_screen.dart';
+import 'package:service_provider/User Panel/ConfirmBookingPage.dart';
+import 'package:service_provider/User Panel/chat_funtionality/chat_screen.dart';
 
 class ServiceDetailsScreen extends StatefulWidget {
   final String serviceId;
@@ -40,8 +39,6 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
     super.dispose();
   }
 
-
-
   TimeOfDay _parseTime(String time) {
     final RegExp regex = RegExp(r'^(\d{1,2}):(\d{2})\s?(AM|PM)$');
     final match = regex.firstMatch(time);
@@ -68,34 +65,9 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
     return '${hour == 0 ? 12 : hour}:$minute $period';
   }
 
-  // chat added
-  Future<DocumentSnapshot?> _findMatchingUser(String email) async {
-    // Search in users collection
-    final usersQuery = await FirebaseFirestore.instance
-        .collection('users')
-        .where('email', isEqualTo: email)
-        .get();
-
-    if (usersQuery.docs.isNotEmpty) {
-      return usersQuery.docs.first;
-    }
-
-    // Search in providers collection
-    final providersQuery = await FirebaseFirestore.instance
-        .collection('providers')
-        .where('email', isEqualTo: email)
-        .get();
-
-    if (providersQuery.docs.isNotEmpty) {
-      return providersQuery.docs.first;
-    }
-
-    return null; // No match found
-  } // ----------
-
   Future<void> _fetchServiceAndProviderDetails() async {
     try {
-      DocumentSnapshot serviceSnapshot = await FirebaseFirestore.instance
+      DocumentSnapshot serviceSnapshot = await _firestore
           .collection('services')
           .doc(widget.serviceId)
           .get();
@@ -104,7 +76,7 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
         serviceData = serviceSnapshot.data() as Map<String, dynamic>;
         String providerId = serviceData!['createdBy'];
 
-        DocumentSnapshot providerSnapshot = await FirebaseFirestore.instance
+        DocumentSnapshot providerSnapshot = await _firestore
             .collection('providers')
             .doc(providerId)
             .get();
@@ -120,6 +92,26 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
     }
   }
 
+  void _navigateToChat(BuildContext context) {
+    final currentUser = _auth.currentUser;
+    if (currentUser != null && currentUser.email != null && providerData != null) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => ChatScreen(
+            userId: currentUser.uid,              // Current user's UID
+            receiverId: serviceData!['createdBy'], // Provider's UID
+            senderEmail: currentUser.email!,      // Current user's email
+            receiverEmail: providerData!['email'], // Provider's email
+          ),
+        ),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('You must be logged in to send messages.')),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -128,9 +120,7 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
       appBar: AppBar(
         title: Text(
           serviceData?['name'] ?? 'Service Details',
-          style: TextStyle(
-            color: Color(0xFFFFFFFF),
-          ),
+          style: TextStyle(color: Color(0xFFFFFFFF)),
         ),
         backgroundColor: Color(0xFF060644),
         foregroundColor: Colors.white,
@@ -165,8 +155,8 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
                       SizedBox(height: 8),
                       Text(
                         'Category: ${serviceData!['category'] ?? 'N/A'}',
-                        style: TextStyle(
-                            color: Colors.grey[700], fontSize: 16),
+                        style:
+                        TextStyle(color: Colors.grey[700], fontSize: 16),
                       ),
                       SizedBox(height: 16),
                       Text(
@@ -209,22 +199,20 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
                           ),
                         ),
                         SizedBox(height: 8),
-                        ...(serviceData!['whatsIncluded']
-                        as List<dynamic>)
+                        ...(serviceData!['whatsIncluded'] as List<dynamic>)
                             .map(
-                              (item) =>
-                              Padding(
-                                padding:
-                                const EdgeInsets.symmetric(vertical: 4),
-                                child: Row(
-                                  children: [
-                                    Icon(Icons.check_circle,
-                                        color: Colors.green),
-                                    SizedBox(width: 8),
-                                    Expanded(child: Text(item.toString())),
-                                  ],
-                                ),
-                              ),
+                              (item) => Padding(
+                            padding:
+                            const EdgeInsets.symmetric(vertical: 4),
+                            child: Row(
+                              children: [
+                                Icon(Icons.check_circle,
+                                    color: Colors.green),
+                                SizedBox(width: 8),
+                                Expanded(child: Text(item.toString())),
+                              ],
+                            ),
+                          ),
                         ),
                       ],
                     ),
@@ -255,19 +243,18 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
                         ...(serviceData!['responsibilities']
                         as List<dynamic>)
                             .map(
-                              (item) =>
-                              Padding(
-                                padding:
-                                const EdgeInsets.symmetric(vertical: 4),
-                                child: Row(
-                                  children: [
-                                    Icon(Icons.arrow_right,
-                                        color: Colors.blue),
-                                    SizedBox(width: 8),
-                                    Expanded(child: Text(item.toString())),
-                                  ],
-                                ),
-                              ),
+                              (item) => Padding(
+                            padding:
+                            const EdgeInsets.symmetric(vertical: 4),
+                            child: Row(
+                              children: [
+                                Icon(Icons.arrow_right,
+                                    color: Colors.blue),
+                                SizedBox(width: 8),
+                                Expanded(child: Text(item.toString())),
+                              ],
+                            ),
+                          ),
                         ),
                       ],
                     ),
@@ -293,8 +280,7 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
                       ),
                       SizedBox(height: 16),
                       ListTile(
-                        leading:
-                        Icon(Icons.access_time, color: Colors.blue),
+                        leading: Icon(Icons.access_time, color: Colors.blue),
                         title: Text('Flexible Scheduling'),
                         subtitle: Text('Book at your convenient time'),
                       ),
@@ -302,8 +288,8 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
                         leading:
                         Icon(Icons.verified_user, color: Colors.blue),
                         title: Text('Verified Providers'),
-                        subtitle: Text(
-                            'All providers are verified and trusted'),
+                        subtitle:
+                        Text('All providers are verified and trusted'),
                       ),
                       ListTile(
                         leading: Icon(Icons.thumb_up, color: Colors.blue),
@@ -314,8 +300,7 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
                   ),
                 ),
               ),
-              SizedBox(height: 32),
-              // chat added
+              SizedBox(height: 24),
               if (providerData != null)
                 Card(
                   shape: RoundedRectangleBorder(
@@ -345,57 +330,32 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
                             children: [
                               Text(providerData!['phone'] ?? 'N/A'),
                               Text(providerData!['email'] ?? 'N/A'),
-                              Text(providerData!['address']?['string'] ?? 'N/A'),
+                              Text(providerData!['address']?['string'] ??
+                                  'N/A'),
                             ],
                           ),
                         ),
-                        // Add the Chat Button if email matches
-                        // if (providerData!['email'] != null)
-                        if (providerData!['email'] != null)
-                          FutureBuilder<DocumentSnapshot?>(
-                            future: _findMatchingUser(providerData!['email']),
-                            builder: (context, snapshot) {
-                              if (snapshot.connectionState == ConnectionState.waiting) {
-                                return Center(child: CircularProgressIndicator());
-                              }
-
-                              if (snapshot.hasData && snapshot.data != null) {
-                                final matchedUserId = snapshot.data!.id;
-                                final currentUser = _auth.currentUser;
-
-                                return Container(
-                                  width: double.infinity,
-                                  padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-                                  child: ElevatedButton(
-                                    onPressed: () {
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (context) => ChatScreen(
-                                            userId: currentUser!.uid, // Current user's ID
-                                            receiverId: matchedUserId, // Receiver's ID
-                                            senderEmail: currentUser.email!, // Current user's email
-                                            receiverEmail: providerData!['email'], // Receiver's email
-                                          ),
-                                        ),
-                                      );
-                                    },
-                                    child: Text('Message'),
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: Color(0xffffffff),
-                                    ),
-                                  ),
-                                );
-                              }
-
-                              return SizedBox.shrink(); // No match found
-                            },
+                        SizedBox(height: 16),
+                        Container(
+                          width: double.infinity,
+                          child: ElevatedButton(
+                            onPressed: () => _navigateToChat(context),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Color(0xFF060644),
+                              foregroundColor: Colors.white,
+                              padding: EdgeInsets.symmetric(
+                                  horizontal: 16.0, vertical: 12.0),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12.0),
+                              ),
+                            ),
+                            child: Text('Message Provider'),
                           ),
+                        ),
                       ],
                     ),
                   ),
                 ),
-              // chat added
               SizedBox(height: 32),
               Center(
                 child: ElevatedButton(
@@ -404,8 +364,8 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
                       style: TextStyle(color: Color(0xffffffff))),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Color(0xFF6A9AFF),
-                    padding: EdgeInsets.symmetric(
-                        horizontal: 24, vertical: 12),
+                    padding:
+                    EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12)),
                   ),
@@ -453,11 +413,10 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
                 child: Image.network(
                   images[index],
                   fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) =>
-                      Container(
-                        color: Colors.grey[300],
-                        child: Icon(Icons.image, size: 80, color: Colors.grey),
-                      ),
+                  errorBuilder: (context, error, stackTrace) => Container(
+                    color: Colors.grey[300],
+                    child: Icon(Icons.image, size: 80, color: Colors.grey),
+                  ),
                 ),
               );
             },
@@ -489,17 +448,13 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
-      builder: (context) { // Added builder parameter
+      builder: (context) {
         return StatefulBuilder(
-          builder: (context, setModalState) { // Added builder parameter
+          builder: (context, setModalState) {
             List<DateTime> availableDates = List.generate(
-              DateTime(DateTime
-                  .now()
-                  .year, DateTime
-                  .now()
-                  .month + 2, 0).day - DateTime
-                  .now()
-                  .day + 1,
+              DateTime(DateTime.now().year, DateTime.now().month + 2, 0).day -
+                  DateTime.now().day +
+                  1,
                   (index) => DateTime.now().add(Duration(days: index)),
             );
 
@@ -508,13 +463,14 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
               DateTime now = DateTime.now();
               DateTime startTime;
 
-              if (selectedDate != null && selectedDate!.year == now.year &&
+              if (selectedDate != null &&
+                  selectedDate!.year == now.year &&
                   selectedDate!.month == now.month &&
                   selectedDate!.day == now.day) {
                 int nextMinute = now.minute >= 30 ? 0 : 30;
                 int nextHour = now.minute >= 30 ? now.hour + 1 : now.hour;
-                startTime = DateTime(
-                    now.year, now.month, now.day, nextHour, nextMinute);
+                startTime =
+                    DateTime(now.year, now.month, now.day, nextHour, nextMinute);
               } else {
                 startTime = DateTime(now.year, now.month, now.day, 9, 0);
               }
@@ -522,10 +478,8 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
               DateTime endTime = DateTime(now.year, now.month, now.day, 19, 30);
 
               while (startTime.isBefore(endTime)) {
-                String formattedTime = '${startTime.hour > 12 ? startTime.hour -
-                    12 : startTime.hour}:${startTime.minute == 0
-                    ? '00'
-                    : '30'} ${startTime.hour >= 12 ? 'PM' : 'AM'}';
+                String formattedTime =
+                    '${startTime.hour > 12 ? startTime.hour - 12 : startTime.hour}:${startTime.minute == 0 ? '00' : '30'} ${startTime.hour >= 12 ? 'PM' : 'AM'}';
                 if (!timeSlots.contains(formattedTime)) {
                   timeSlots.add(formattedTime);
                 }
@@ -535,10 +489,7 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
             }
 
             return Container(
-              height: MediaQuery
-                  .of(context)
-                  .size
-                  .height * 0.65,
+              height: MediaQuery.of(context).size.height * 0.65,
               padding: EdgeInsets.all(20),
               decoration: BoxDecoration(
                 color: Colors.white,
@@ -549,7 +500,8 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
                 children: [
                   Text(
                     'Choose Appointment Time',
-                    style: TextStyle(fontSize: 20,
+                    style: TextStyle(
+                        fontSize: 20,
                         fontWeight: FontWeight.bold,
                         color: Colors.black),
                   ),
@@ -557,8 +509,9 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
                   Text('Service will take approximately 45 minutes',
                       style: TextStyle(color: Colors.grey, fontSize: 14)),
                   SizedBox(height: 20),
-                  Text('Select a Date', style: TextStyle(
-                      fontSize: 16, fontWeight: FontWeight.bold)),
+                  Text('Select a Date',
+                      style:
+                      TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                   SizedBox(height: 8),
                   SingleChildScrollView(
                     scrollDirection: Axis.horizontal,
@@ -581,17 +534,19 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
                                 vertical: 10, horizontal: 14),
                             decoration: BoxDecoration(
                               border: Border.all(
-                                  color: isSelected ? Colors.deepPurple : Colors
-                                      .grey.shade300),
+                                  color: isSelected
+                                      ? Colors.deepPurple
+                                      : Colors.grey.shade300),
                               borderRadius: BorderRadius.circular(12),
                               color: isSelected
                                   ? Colors.deepPurple[100]
                                   : Colors.grey.shade100,
                               boxShadow: [
-                                if (isSelected) BoxShadow(
-                                    color: Colors.deepPurple.shade100,
-                                    blurRadius: 5,
-                                    spreadRadius: 1)
+                                if (isSelected)
+                                  BoxShadow(
+                                      color: Colors.deepPurple.shade100,
+                                      blurRadius: 5,
+                                      spreadRadius: 1)
                               ],
                             ),
                             child: Column(
@@ -632,16 +587,19 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
                     ),
                   ),
                   SizedBox(height: 20),
-                  Text('Select Time Slot', style: TextStyle(
-                      fontSize: 16, fontWeight: FontWeight.bold)),
+                  Text('Select Time Slot',
+                      style:
+                      TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                   SizedBox(height: 8),
                   Expanded(
                     child: selectedDate == null
                         ? Center(
-                        child: Text("Select a date first", style: TextStyle(
-                            color: Colors.grey, fontSize: 16)))
+                        child: Text("Select a date first",
+                            style:
+                            TextStyle(color: Colors.grey, fontSize: 16)))
                         : GridView.builder(
-                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      gridDelegate:
+                      SliverGridDelegateWithFixedCrossAxisCount(
                         crossAxisCount: 3,
                         crossAxisSpacing: 10,
                         mainAxisSpacing: 10,
@@ -650,12 +608,13 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
                       itemCount: getTimeSlots().length,
                       itemBuilder: (context, i) {
                         String timeSlot = getTimeSlots()[i];
-                        bool isSelected = selectedTime == _parseTime(timeSlot);
+                        bool isSelected =
+                            selectedTime == _parseTime(timeSlot);
 
                         return GestureDetector(
                           onTap: () {
-                            setModalState(() =>
-                            selectedTime = _parseTime(timeSlot));
+                            setModalState(
+                                    () => selectedTime = _parseTime(timeSlot));
                           },
                           child: Container(
                             alignment: Alignment.center,
@@ -667,11 +626,14 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
                                   ? Colors.deepPurple[100]
                                   : Colors.white,
                               border: Border.all(
-                                  color: isSelected ? Colors.deepPurple : Colors
-                                      .grey.shade300),
+                                  color: isSelected
+                                      ? Colors.deepPurple
+                                      : Colors.grey.shade300),
                               boxShadow: isSelected
                                   ? [
-                                BoxShadow(color: Colors.deepPurple.shade100,
+                                BoxShadow(
+                                    color:
+                                    Colors.deepPurple.shade100,
                                     blurRadius: 5,
                                     spreadRadius: 1)
                               ]
@@ -700,22 +662,20 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) =>
-                              ConfirmBookingPage(
-                                date: selectedDate!,
-                                time: selectedTime!,
-                                // Pass the selectedTime as TimeOfDay
-                                serviceData: serviceData!,
-                                serviceId: widget.serviceId,
-                              ),
+                          builder: (context) => ConfirmBookingPage(
+                            date: selectedDate!,
+                            time: selectedTime!,
+                            serviceData: serviceData!,
+                            serviceId: widget.serviceId,
+                          ),
                         ),
                       );
                     }
                         : null,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: selectedDate != null &&
-                          selectedTime != null ? Colors.deepPurple : Colors
-                          .grey[400],
+                      backgroundColor: selectedDate != null && selectedTime != null
+                          ? Colors.deepPurple
+                          : Colors.grey[400],
                       padding: EdgeInsets.symmetric(vertical: 14),
                       shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12)),
@@ -724,8 +684,10 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
                     child: Center(
                       child: Text(
                         'Confirm Booking',
-                        style: TextStyle(fontSize: 16, fontWeight: FontWeight
-                            .bold, color: Colors.white),
+                        style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white),
                       ),
                     ),
                   ),
@@ -736,4 +698,5 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
         );
       },
     );
-  } }
+  }
+}

@@ -2,7 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
-import 'package:service_provider/Provider%20Panel/screens/live_tracking.dart'; // Ensure this path is correct
+import 'package:service_provider/Provider%20Panel/screens/live_tracking.dart';
 import 'package:shimmer/shimmer.dart';
 
 class ProviderBooking extends StatefulWidget {
@@ -10,7 +10,8 @@ class ProviderBooking extends StatefulWidget {
   _ProviderBookingState createState() => _ProviderBookingState();
 }
 
-class _ProviderBookingState extends State<ProviderBooking> with SingleTickerProviderStateMixin {
+class _ProviderBookingState extends State<ProviderBooking>
+    with SingleTickerProviderStateMixin {
   late TabController _tabController;
   final String? providerId = FirebaseAuth.instance.currentUser?.uid;
 
@@ -18,6 +19,7 @@ class _ProviderBookingState extends State<ProviderBooking> with SingleTickerProv
   void initState() {
     super.initState();
     _tabController = TabController(length: 4, vsync: this);
+    // Check for expired bookings when the page loads
     checkAndUpdateExpiredBookings();
   }
 
@@ -27,14 +29,18 @@ class _ProviderBookingState extends State<ProviderBooking> with SingleTickerProv
     super.dispose();
   }
 
+  // Function to check and update expired bookings
   Future<void> checkAndUpdateExpiredBookings() async {
     final now = DateTime.now();
+
+    // Get all pending and confirmed bookings for this provider
     final bookingsSnapshot = await FirebaseFirestore.instance
         .collection('bookings')
         .where('providerId', isEqualTo: providerId)
-        .where('status', whereIn: ['Pending', 'Ongoing'])
+        .where('status', whereIn: ['Pending', 'Confirmed'])
         .get();
 
+    // Batch write to update all expired bookings at once
     final batch = FirebaseFirestore.instance.batch();
     bool hasBatchOperations = false;
 
@@ -42,6 +48,7 @@ class _ProviderBookingState extends State<ProviderBooking> with SingleTickerProv
       final bookingData = doc.data();
       final serviceDate = (bookingData['serviceDate'] as Timestamp).toDate();
 
+      // If the service date/time has passed, mark as cancelled
       if (serviceDate.isBefore(now)) {
         batch.update(doc.reference, {
           'status': 'Cancelled',
@@ -52,6 +59,7 @@ class _ProviderBookingState extends State<ProviderBooking> with SingleTickerProv
       }
     }
 
+    // Commit the batch if there are any operations
     if (hasBatchOperations) {
       await batch.commit();
     }
@@ -72,27 +80,37 @@ class _ProviderBookingState extends State<ProviderBooking> with SingleTickerProv
       })
           .toList();
 
-      if (status == 'Pending' || status == 'Ongoing') {
+      if (status == 'Pending' || status == 'Confirmed') {
+        // Sort by closest upcoming date first
         bookings.sort((a, b) {
           DateTime aDate = (a['serviceDate'] as Timestamp).toDate();
           DateTime bDate = (b['serviceDate'] as Timestamp).toDate();
+
+          // Compare dates first (ignoring time)
           DateTime aJustDate = DateTime(aDate.year, aDate.month, aDate.day);
           DateTime bJustDate = DateTime(bDate.year, bDate.month, bDate.day);
           DateTime nowJustDate = DateTime(now.year, now.month, now.day);
 
+          // Calculate difference in days from today
           int aDayDiff = aJustDate.difference(nowJustDate).inDays;
           int bDayDiff = bJustDate.difference(nowJustDate).inDays;
 
-          if (aDayDiff < 0 && bDayDiff >= 0) return 1;
-          if (bDayDiff < 0 && aDayDiff >= 0) return -1;
+          // Negative day difference means past date
+          if (aDayDiff < 0 && bDayDiff >= 0) return 1; // b comes first
+          if (bDayDiff < 0 && aDayDiff >= 0) return -1; // a comes first
 
+          // If both dates are in the past or both in the future, compare difference
           if (aDayDiff != bDayDiff) {
+            // For future dates, smaller difference (closer date) comes first
+            // For past dates, smaller absolute difference (more recent) comes first
             return aDayDiff.abs() - bDayDiff.abs();
           }
 
+          // If dates are the same day, sort by time
           return aDate.compareTo(bDate);
         });
       } else {
+        // For completed and cancelled, most recent first
         bookings.sort((a, b) {
           DateTime aDate = (a['serviceDate'] as Timestamp).toDate();
           DateTime bDate = (b['serviceDate'] as Timestamp).toDate();
@@ -104,6 +122,7 @@ class _ProviderBookingState extends State<ProviderBooking> with SingleTickerProv
     });
   }
 
+  // Method to show booking details in a bottom sheet
   void _showBookingDetailsBottomSheet(Map<String, dynamic> booking) {
     final DateFormat dateFormat = DateFormat('dd MMM, yyyy');
     final DateFormat timeFormat = DateFormat('h:mm a');
@@ -112,14 +131,22 @@ class _ProviderBookingState extends State<ProviderBooking> with SingleTickerProv
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      shape: const RoundedRectangleBorder(
+      shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (BuildContext context) {
         return FutureBuilder<Map<String, dynamic>?>(
           future: Future.wait([
-            FirebaseFirestore.instance.collection('users').doc(booking['userId']).get().then((doc) => doc.data()),
-            FirebaseFirestore.instance.collection('services').doc(booking['serviceId']).get().then((doc) => doc.data())
+            FirebaseFirestore.instance
+                .collection('users')
+                .doc(booking['userId'])
+                .get()
+                .then((doc) => doc.data()),
+            FirebaseFirestore.instance
+                .collection('services')
+                .doc(booking['serviceId'])
+                .get()
+                .then((doc) => doc.data())
           ]).then((results) {
             return {'userData': results[0], 'serviceData': results[1]};
           }),
@@ -127,15 +154,15 @@ class _ProviderBookingState extends State<ProviderBooking> with SingleTickerProv
             if (snapshot.connectionState == ConnectionState.waiting) {
               return Container(
                 height: MediaQuery.of(context).size.height * 0.6,
-                padding: const EdgeInsets.all(20),
-                child: const Center(child: CircularProgressIndicator()),
+                padding: EdgeInsets.all(20),
+                child: Center(child: CircularProgressIndicator()),
               );
             }
 
             if (!snapshot.hasData || snapshot.data == null) {
               return Container(
                 height: MediaQuery.of(context).size.height * 0.3,
-                child: const Center(child: Text("No details available")),
+                child: Center(child: Text("No details available")),
               );
             }
 
@@ -145,27 +172,34 @@ class _ProviderBookingState extends State<ProviderBooking> with SingleTickerProv
 
             return Container(
               height: MediaQuery.of(context).size.height * 0.8,
-              padding: const EdgeInsets.only(top: 10),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
+                  // Close button at top right
                   Align(
                     alignment: Alignment.topRight,
                     child: IconButton(
-                      icon: const Icon(Icons.close),
+                      icon: Icon(Icons.close),
                       onPressed: () => Navigator.pop(context),
                     ),
                   ),
+
+                  // Order status title
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 20.0),
                     child: Align(
                       alignment: Alignment.centerLeft,
-                      child: const Text(
+                      child: Text(
                         "Order status",
-                        style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                        style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
                   ),
+
+                  // Service name and provider name
                   Padding(
                     padding: const EdgeInsets.all(20.0),
                     child: Column(
@@ -173,45 +207,60 @@ class _ProviderBookingState extends State<ProviderBooking> with SingleTickerProv
                       children: [
                         Text(
                           serviceData['name'] ?? 'Service Name',
-                          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w500,
+                          ),
                         ),
-                        const SizedBox(height: 8),
+                        SizedBox(height: 8),
                         Row(
                           children: [
                             CircleAvatar(
                               radius: 12,
                               backgroundImage: NetworkImage(userData['profileImage'] ?? ''),
                             ),
-                            const SizedBox(width: 8),
+                            SizedBox(width: 8),
                             Text(
                               userData['name'] ?? 'User Name',
-                              style: TextStyle(fontSize: 14, color: Colors.grey[700]),
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: Colors.grey[700],
+                              ),
                             ),
                           ],
                         ),
                       ],
                     ),
                   ),
+
+                  // Details section
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 20.0),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
+                        Text(
                           "Details",
-                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
-                        const SizedBox(height: 16),
+                        SizedBox(height: 16),
+
+                        // Time row
                         Row(
                           children: [
-                            const Icon(Icons.access_time, color: Colors.grey),
-                            const SizedBox(width: 12),
+                            Icon(Icons.access_time, color: Colors.grey),
+                            SizedBox(width: 12),
                             Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  timeFormat.format(serviceDate),
-                                  style: const TextStyle(fontWeight: FontWeight.w500),
+                                  //"${booking['duration'] ?? '2 h 30 min'}",
+                                  "${timeFormat.format(serviceDate)}",
+                                  style: TextStyle(fontWeight: FontWeight.w500),
+                                  //"${timeFormat.format(serviceDate)} ?? '2 h 30 min'",
                                 ),
                                 Text(
                                   "Service time",
@@ -221,21 +270,24 @@ class _ProviderBookingState extends State<ProviderBooking> with SingleTickerProv
                             ),
                           ],
                         ),
-                        const SizedBox(height: 16),
+                        SizedBox(height: 16),
+
+                        // Location row
+                        // Location row
                         Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Icon(Icons.location_on, color: Colors.grey),
-                            const SizedBox(width: 12),
-                            Expanded(
+                            Icon(Icons.location_on, color: Colors.grey),
+                            SizedBox(width: 12),
+                            Expanded(  // Add this to make the column take remaining width
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
                                     booking['location']['local'] ?? 'Location',
-                                    style: const TextStyle(fontWeight: FontWeight.w500),
-                                    overflow: TextOverflow.ellipsis,
-                                    maxLines: 2,
+                                    style: TextStyle(fontWeight: FontWeight.w500),
+                                    overflow: TextOverflow.ellipsis,  // Optional: truncate with ellipsis
+                                    maxLines: 2,  // Optional: limit to 2 lines
                                   ),
                                   Text(
                                     "Location",
@@ -246,17 +298,19 @@ class _ProviderBookingState extends State<ProviderBooking> with SingleTickerProv
                             ),
                           ],
                         ),
-                        const SizedBox(height: 16),
+                        SizedBox(height: 16),
+
+                        // Date row
                         Row(
                           children: [
-                            const Icon(Icons.calendar_today, color: Colors.grey),
-                            const SizedBox(width: 12),
+                            Icon(Icons.calendar_today, color: Colors.grey),
+                            SizedBox(width: 12),
                             Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
                                   dateFormat.format(serviceDate),
-                                  style: const TextStyle(fontWeight: FontWeight.w500),
+                                  style: TextStyle(fontWeight: FontWeight.w500),
                                 ),
                                 Text(
                                   "Date",
@@ -266,17 +320,19 @@ class _ProviderBookingState extends State<ProviderBooking> with SingleTickerProv
                             ),
                           ],
                         ),
-                        const SizedBox(height: 16),
+                        SizedBox(height: 16),
+
+                        // Price row
                         Row(
                           children: [
-                            const Icon(Icons.attach_money, color: Colors.grey),
-                            const SizedBox(width: 12),
+                            Icon(Icons.attach_money, color: Colors.grey),
+                            SizedBox(width: 12),
                             Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  "₹${booking['paymentAmount']}",
-                                  style: const TextStyle(fontWeight: FontWeight.w500),
+                                  "₹${booking['paymentAmount']} ",
+                                  style: TextStyle(fontWeight: FontWeight.w500),
                                 ),
                                 Text(
                                   "Price",
@@ -289,50 +345,64 @@ class _ProviderBookingState extends State<ProviderBooking> with SingleTickerProv
                       ],
                     ),
                   ),
-                  const Spacer(),
+
+                  // Additional booking details can be added here
+
+                  Spacer(),
+
+                  // Action buttons
                   Padding(
                     padding: const EdgeInsets.all(20.0),
                     child: Row(
                       children: [
-                        if (booking['status'] == 'Pending' || booking['status'] == 'Ongoing')
+                        if (booking['status'] == 'Pending' || booking['status'] == 'Confirmed')
                           Expanded(
                             child: OutlinedButton(
                               onPressed: () {
+                                // Handle cancel order logic
                                 Navigator.pop(context);
                                 _showCancelConfirmationDialog(booking);
                               },
                               style: OutlinedButton.styleFrom(
-                                side: const BorderSide(color: Colors.red),
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                                padding: const EdgeInsets.symmetric(vertical: 12),
+                                side: BorderSide(color: Colors.red),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                padding: EdgeInsets.symmetric(vertical: 12),
                               ),
-                              child: const Text('Cancel order', style: TextStyle(color: Colors.red)),
+                              child: Text(
+                                'Cancel order',
+                                style: TextStyle(color: Colors.red),
+                              ),
                             ),
                           ),
-                        if (booking['status'] == 'Pending' || booking['status'] == 'Ongoing')
-                          const SizedBox(width: 16),
+                        if (booking['status'] == 'Pending' || booking['status'] == 'Confirmed')
+                          SizedBox(width: 16),
                         Expanded(
                           child: ElevatedButton(
                             onPressed: () {
+                              // Handle confirm payment or complete service
                               if (booking['status'] == 'Pending') {
                                 _confirmBooking(booking['bId']);
-                              } else if (booking['status'] == 'Ongoing') {
-                                _navigateToLiveTracking(booking);
+                              } else if (booking['status'] == 'Confirmed') {
+                                _completeBooking(booking['bId']);
                               }
                               Navigator.pop(context);
                             },
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF060644),
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                              padding: const EdgeInsets.symmetric(vertical: 12),
+                              backgroundColor: Color(0xFF060644),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              padding: EdgeInsets.symmetric(vertical: 12),
                             ),
                             child: Text(
                               booking['status'] == 'Pending'
-                                  ? 'Confirm Booking'
-                                  : booking['status'] == 'Ongoing'
-                                  ? 'Complete Order'
+                                  ? 'Confirm booking'
+                                  : booking['status'] == 'Confirmed'
+                                  ? 'Complete service'
                                   : 'Close',
-                              style: const TextStyle(color: Colors.white),
+                              style: TextStyle(color: Colors.white),
                             ),
                           ),
                         ),
@@ -348,6 +418,7 @@ class _ProviderBookingState extends State<ProviderBooking> with SingleTickerProv
     );
   }
 
+  // Show cancel confirmation dialog
   void _showCancelConfirmationDialog(Map<String, dynamic> booking) {
     TextEditingController reasonController = TextEditingController();
 
@@ -355,15 +426,15 @@ class _ProviderBookingState extends State<ProviderBooking> with SingleTickerProv
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text('Cancel Booking'),
+          title: Text('Cancel Booking'),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Text('Are you sure you want to cancel this booking?'),
-              const SizedBox(height: 16),
+              Text('Are you sure you want to cancel this booking?'),
+              SizedBox(height: 16),
               TextField(
                 controller: reasonController,
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   labelText: 'Reason for cancellation',
                   border: OutlineInputBorder(),
                 ),
@@ -374,14 +445,14 @@ class _ProviderBookingState extends State<ProviderBooking> with SingleTickerProv
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text('No'),
+              child: Text('No'),
             ),
             TextButton(
               onPressed: () {
                 Navigator.pop(context);
                 _cancelBooking(booking['bId'], reasonController.text);
               },
-              child: const Text('Yes, Cancel', style: TextStyle(color: Colors.red)),
+              child: Text('Yes, Cancel', style: TextStyle(color: Colors.red)),
             ),
           ],
         );
@@ -389,6 +460,7 @@ class _ProviderBookingState extends State<ProviderBooking> with SingleTickerProv
     );
   }
 
+  // Cancel booking method
   Future<void> _cancelBooking(String bookingId, String reason) async {
     await FirebaseFirestore.instance.collection('bookings').doc(bookingId).update({
       'status': 'Cancelled',
@@ -397,28 +469,48 @@ class _ProviderBookingState extends State<ProviderBooking> with SingleTickerProv
     });
 
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Booking cancelled successfully')),
+      SnackBar(content: Text('Booking cancelled successfully')),
     );
   }
 
+  // Confirm booking method
   Future<void> _confirmBooking(String bookingId) async {
     await FirebaseFirestore.instance.collection('bookings').doc(bookingId).update({
-      'status': 'Ongoing',
+      'status': 'Confirmed',
       'confirmedAt': Timestamp.now(),
     });
 
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Booking confirmed and moved to Ongoing')),
+      SnackBar(content: Text('Booking confirmed successfully')),
     );
   }
 
-  void _navigateToLiveTracking(Map<String, dynamic> booking) {
+  // Complete booking method
+  Future<void> _completeBooking(String bookingId) async {
+    await FirebaseFirestore.instance.collection('bookings').doc(bookingId).update({
+      'status': 'Completed',
+      'completedAt': Timestamp.now(),
+    });
+
+    // Fetch the booking details to get the customer's location
+    DocumentSnapshot bookingDoc = await FirebaseFirestore.instance
+        .collection('bookings')
+        .doc(bookingId)
+        .get();
+
+    Map<String, dynamic> bookingData = bookingDoc.data() as Map<String, dynamic>;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Service marked as completed')),
+    );
+
+    // Navigate to the live tracking page
     Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => LiveTrackingPage(
-          bookingId: booking['bId'],
-          bookingData: booking,
+          bookingId: bookingId,
+          bookingData: bookingData,
         ),
       ),
     );
@@ -431,8 +523,16 @@ class _ProviderBookingState extends State<ProviderBooking> with SingleTickerProv
 
     return FutureBuilder<Map<String, dynamic>?>(
       future: Future.wait([
-        FirebaseFirestore.instance.collection('users').doc(booking['userId']).get().then((doc) => doc.data()),
-        FirebaseFirestore.instance.collection('services').doc(booking['serviceId']).get().then((doc) => doc.data())
+        FirebaseFirestore.instance
+            .collection('users')
+            .doc(booking['userId'])
+            .get()
+            .then((doc) => doc.data()),
+        FirebaseFirestore.instance
+            .collection('services')
+            .doc(booking['serviceId'])
+            .get()
+            .then((doc) => doc.data())
       ]).then((results) {
         return {'userData': results[0], 'serviceData': results[1]};
       }),
@@ -442,15 +542,16 @@ class _ProviderBookingState extends State<ProviderBooking> with SingleTickerProv
             baseColor: Colors.grey[300]!,
             highlightColor: Colors.grey[100]!,
             child: Card(
-              margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+              margin: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
               elevation: 4,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12)),
               child: Container(height: 120),
             ),
           );
         }
         if (!snapshot.hasData || snapshot.data == null) {
-          return const SizedBox();
+          return SizedBox();
         }
 
         final data = snapshot.data as Map<String, dynamic>;
@@ -458,9 +559,10 @@ class _ProviderBookingState extends State<ProviderBooking> with SingleTickerProv
         final serviceData = data['serviceData'];
 
         return Card(
-          margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+          margin: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
           elevation: 4,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape:
+          RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           child: Padding(
             padding: const EdgeInsets.all(12.0),
             child: Column(
@@ -470,19 +572,21 @@ class _ProviderBookingState extends State<ProviderBooking> with SingleTickerProv
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     CircleAvatar(
-                      backgroundImage: NetworkImage(userData['profileImage'] ?? ''),
+                      backgroundImage:
+                      NetworkImage(userData['profileImage'] ?? ''),
                       radius: 28,
                     ),
-                    const SizedBox(width: 12),
+                    SizedBox(width: 12),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
                             userData['name'] ?? 'User Name',
-                            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                            style: TextStyle(
+                                fontSize: 16, fontWeight: FontWeight.bold),
                           ),
-                          const SizedBox(height: 2),
+                          SizedBox(height: 2),
                           Text(
                             booking['location']['local'] ?? 'Location',
                             style: TextStyle(color: Colors.grey[600]),
@@ -492,39 +596,39 @@ class _ProviderBookingState extends State<ProviderBooking> with SingleTickerProv
                         ],
                       ),
                     ),
+                    // View Details button - Updated to show bottom sheet
                     SizedBox(
                       height: 32,
                       child: ElevatedButton(
                         onPressed: () {
-                          if (booking['status'] == 'Ongoing') {
-                            _navigateToLiveTracking(booking); // Direct navigation for Ongoing
-                          } else {
-                            _showBookingDetailsBottomSheet(booking); // Bottom sheet for others
-                          }
+                          _showBookingDetailsBottomSheet(booking);
                         },
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF060644),
-                          padding: const EdgeInsets.symmetric(horizontal: 8),
-                          textStyle: const TextStyle(fontSize: 12),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+                          backgroundColor: Color(0xFF060644),
+                          padding: EdgeInsets.symmetric(horizontal: 8),
+                          textStyle: TextStyle(fontSize: 12),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(6),
+                          ),
                         ),
-                        child: const Text(
+                        child: Text(
                           'View Details',
-                          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                          style: TextStyle(
+                              color: Colors.white, fontWeight: FontWeight.bold),
                         ),
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 12),
+                SizedBox(height: 12),
                 if (serviceData != null)
                   Text(
                     serviceData['name'] ?? 'Service Name',
                     style: TextStyle(fontSize: 14, color: Colors.grey[700]),
                   ),
-                const Divider(height: 20, thickness: 1),
+                Divider(height: 20, thickness: 1),
                 Padding(
-                  padding: const EdgeInsets.only(right: 16),
+                  padding: EdgeInsets.only(right: 16),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -545,13 +649,14 @@ class _ProviderBookingState extends State<ProviderBooking> with SingleTickerProv
                           ),
                         ],
                       ),
+                      // Show status text
                       Text(
                         booking['status'],
                         style: TextStyle(
                           color: booking['status'] == 'Pending'
                               ? Colors.orange
-                              : booking['status'] == 'Ongoing'
-                              ? Colors.blue
+                              : booking['status'] == 'Confirmed'
+                              ? Colors.blueGrey
                               : booking['status'] == 'Completed'
                               ? Colors.green
                               : Colors.red,
@@ -561,6 +666,7 @@ class _ProviderBookingState extends State<ProviderBooking> with SingleTickerProv
                     ],
                   ),
                 ),
+                // Show cancel reason if available
                 if (booking['status'] == 'Cancelled' && booking['cancelReason'] != null)
                   Padding(
                     padding: const EdgeInsets.only(top: 8.0),
@@ -581,14 +687,14 @@ class _ProviderBookingState extends State<ProviderBooking> with SingleTickerProv
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Bookings'),
+        title: Text('Bookings'),
         bottom: TabBar(
           controller: _tabController,
-          indicatorColor: const Color(0xFF060644),
-          labelColor: const Color(0xFF060644),
+          indicatorColor: Color(0xFF060644),
+          labelColor: Color(0xFF060644),
           unselectedLabelColor: Colors.grey,
           indicatorWeight: 3.0,
-          tabs: const [
+          tabs: [
             Tab(text: 'Pending'),
             Tab(text: 'Ongoing'),
             Tab(text: 'Completed'),
@@ -598,20 +704,22 @@ class _ProviderBookingState extends State<ProviderBooking> with SingleTickerProv
       ),
       body: RefreshIndicator(
         onRefresh: () async {
+          // Check for expired bookings when the user manually refreshes
           await checkAndUpdateExpiredBookings();
-          setState(() {});
+          setState(() {}); // Refresh the UI
         },
         child: TabBarView(
           controller: _tabController,
-          children: ['Pending', 'Ongoing', 'Completed', 'Cancelled'].map((status) {
+          children:
+          ['Pending', 'Confirmed', 'Completed', 'Cancelled'].map((status) {
             return StreamBuilder<List<Map<String, dynamic>>>(
               stream: fetchBookings(status),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator());
+                  return Center(child: CircularProgressIndicator());
                 }
                 if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                  return const Center(child: Text('No bookings found'));
+                  return Center(child: Text('No bookings found'));
                 }
                 return ListView.builder(
                   itemCount: snapshot.data!.length,
