@@ -8,6 +8,7 @@ class ChatScreen extends StatefulWidget {
   final String receiverId;
   final String senderEmail;
   final String receiverEmail;
+  final String providerName;
 
   const ChatScreen({
     Key? key,
@@ -15,6 +16,7 @@ class ChatScreen extends StatefulWidget {
     required this.receiverId,
     required this.senderEmail,
     required this.receiverEmail,
+    required this.providerName,
   }) : super(key: key);
 
   @override
@@ -37,9 +39,31 @@ class _ChatScreenState extends State<ChatScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.receiverEmail),
-        backgroundColor: const Color(0xFF060644),
-        foregroundColor: Colors.white,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.black),
+          onPressed: () {
+            Navigator.pop(context);
+          },
+        ),
+        title: Row(
+          children: [
+            const CircleAvatar(
+              radius: 20,
+              backgroundImage: NetworkImage('https://avatar.iran.liara.run/public'),
+            ),
+            const SizedBox(width: 12),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(widget.providerName, style: const TextStyle(color: Colors.black)), // Use provider name
+                const Text('Online', style: TextStyle(color: Colors.green, fontSize: 12)),
+              ],
+            ),
+          ],
+        ),
+        backgroundColor: Colors.white,
+        elevation: 1,
+        iconTheme: const IconThemeData(color: Colors.black),
       ),
       body: Column(
         children: [
@@ -62,35 +86,16 @@ class _ChatScreenState extends State<ChatScreen> {
                   });
                   return ListView.builder(
                     controller: _scrollController,
+                    padding: const EdgeInsets.all(16),
                     reverse: true, // Latest messages at the bottom
                     itemCount: messages.length,
                     itemBuilder: (context, index) {
                       final message = messages[index];
-                      final isMe = message.senderEmail == widget.senderEmail;
-                      return ListTile(
-                        title: Align(
-                          alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
-                          child: Container(
-                            padding: const EdgeInsets.all(10.0),
-                            margin: const EdgeInsets.symmetric(vertical: 4.0),
-                            decoration: BoxDecoration(
-                              color: isMe ? Colors.blue[100] : Colors.grey[200],
-                              borderRadius: BorderRadius.circular(12.0),
-                            ),
-                            child: Text(
-                              message.message,
-                              style: const TextStyle(fontSize: 16),
-                            ),
-                          ),
-                        ),
-                        subtitle: Padding(
-                          padding: const EdgeInsets.only(top: 4.0),
-                          child: Text(
-                            '${message.senderEmail} • ${message.timestamp.toDate().toString().substring(11, 16)}',
-                            style: const TextStyle(fontSize: 12, color: Colors.grey),
-                            textAlign: isMe ? TextAlign.right : TextAlign.left,
-                          ),
-                        ),
+                      final isSender = message.senderEmail == widget.senderEmail;
+                      return buildChatBubble(
+                        isSender: isSender,
+                        text: message.message,
+                        time: message.timestamp.toDate().toString().substring(11, 16),
                       );
                     },
                   );
@@ -98,46 +103,94 @@ class _ChatScreenState extends State<ChatScreen> {
               },
             ),
           ),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: _messageController,
-                    decoration: const InputDecoration(
-                      hintText: 'Type a message...',
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.all(Radius.circular(12.0)),
-                      ),
-                      contentPadding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 10.0),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                IconButton(
-                  icon: const Icon(Icons.send, color: Color(0xFF060644)),
-                  onPressed: () async {
-                    if (_messageController.text.trim().isNotEmpty) {
-                      try {
-                        await _chatService.sendMessage(
-                          senderId: widget.userId,
-                          receiverId: widget.receiverId,
-                          senderEmail: widget.senderEmail,
-                          receiverEmail: widget.receiverEmail,
-                          message: _messageController.text.trim(),
-                        );
-                        _messageController.clear();
-                      } catch (e) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text('Failed to send message: $e')),
-                        );
-                      }
-                    }
-                  },
-                ),
-              ],
+          buildMessageInput(),
+        ],
+      ),
+    );
+  }
+
+  Widget buildChatBubble({required bool isSender, required String text, required String time}) {
+    return Align(
+      alignment: isSender ? Alignment.centerRight : Alignment.centerLeft,
+      child: Container(
+        margin: const EdgeInsets.symmetric(vertical: 4),
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: isSender ? Colors.blue : Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: const [
+            BoxShadow(
+              color: Colors.black12,
+              blurRadius: 4,
+              offset: Offset(0, 2),
             ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              text,
+              style: TextStyle(color: isSender ? Colors.white : Colors.black),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              time,
+              style: TextStyle(
+                fontSize: 10,
+                color: isSender ? Colors.white70 : Colors.grey,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget buildMessageInput() {
+    return Container(
+      padding: const EdgeInsets.all(8),
+      color: Colors.white,
+      child: Row(
+        children: [
+          IconButton(
+            icon: const Icon(Icons.attachment, color: Colors.grey),
+            onPressed: () {
+              // Add attachment functionality here if needed
+            },
+          ),
+          Expanded(
+            child: TextField(
+              controller: _messageController,
+              decoration: const InputDecoration(
+                hintText: 'Type a message...',
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.all(Radius.circular(30)),
+                ),
+                contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 0),
+              ),
+            ),
+          ),
+          IconButton(
+            icon: const Icon(Icons.send, color: Colors.blue),
+            onPressed: () async {
+              if (_messageController.text.trim().isNotEmpty) {
+                try {
+                  await _chatService.sendMessage(
+                    senderId: widget.userId,
+                    receiverId: widget.receiverId,
+                    senderEmail: widget.senderEmail,
+                    receiverEmail: widget.receiverEmail,
+                    message: _messageController.text.trim(),
+                  );
+                  _messageController.clear();
+                } catch (e) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Failed to send message: $e')),
+                  );
+                }
+              }
+            },
           ),
         ],
       ),
