@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:intl/intl.dart';
+import 'package:shimmer/shimmer.dart';
 import 'package:service_provider/Admin%20Panel/screens/booking_details_screen.dart';
 
 class UserDetailsScreen extends StatelessWidget {
@@ -23,15 +24,12 @@ class UserDetailsScreen extends StatelessWidget {
 
     List<Map<String, dynamic>> bookings = bookingsSnapshot.docs.map((doc) => doc.data() as Map<String, dynamic>).toList();
 
-    // Fetch service details for each booking
     for (var booking in bookings) {
       DocumentSnapshot serviceDoc = await FirebaseFirestore.instance
           .collection('services')
           .doc(booking['serviceId'])
           .get();
-
       booking['serviceName'] = (serviceDoc.data() as Map<String, dynamic>)['name'];
-      booking['bookingDate'] = booking['bookingDate'].toDate().toString(); // Format booking date
     }
 
     return bookings;
@@ -50,23 +48,23 @@ class UserDetailsScreen extends StatelessWidget {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: Text('Delete User'),
-          content: Text('Are you sure you want to delete this user?'),
+          title: const Text('Delete User'),
+          content: const Text('Are you sure you want to delete this user?'),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
-              child: Text('Cancel'),
+              child: const Text('Cancel'),
             ),
             TextButton(
               onPressed: () async {
                 await FirebaseFirestore.instance.collection('users').doc(userId).delete();
                 Navigator.of(context).pop();
                 ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('User deleted successfully!')),
+                  const SnackBar(content: Text('User deleted successfully!')),
                 );
                 Navigator.of(context).pop();
               },
-              child: Text('Delete', style: TextStyle(color: Colors.red)),
+              child: const Text('Delete', style: TextStyle(color: Colors.red)),
             ),
           ],
         );
@@ -83,22 +81,21 @@ class UserDetailsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('User Details'),
+        title: const Text('User Details'),
       ),
       body: FutureBuilder<Map<String, dynamic>>(
         future: _fetchUserDetails(),
         builder: (context, userSnapshot) {
           if (userSnapshot.connectionState == ConnectionState.waiting) {
-            return Center(child: CircularProgressIndicator());
+            return _buildUserShimmerEffect();
           }
           if (userSnapshot.hasError || !userSnapshot.hasData) {
-            return Center(child: Text('Error loading user details.'));
+            return const Center(child: Text('Error loading user details.'));
           }
 
           final user = userSnapshot.data!;
-
           return ListView(
-            padding: EdgeInsets.all(16.0),
+            padding: const EdgeInsets.all(16.0),
             children: [
               Center(
                 child: CircleAvatar(
@@ -114,7 +111,7 @@ class UserDetailsScreen extends StatelessWidget {
               Center(
                 child: Text(
                   user['name'] ?? 'N/A',
-                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                  style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                 ),
               ),
               const SizedBox(height: 8),
@@ -129,78 +126,48 @@ class UserDetailsScreen extends StatelessWidget {
               Center(
                 child: Text(
                   user['createdAt'] != null
-                      ? DateFormat('dd/MM/yyyy  kk:mm').format((user['createdAt'] as Timestamp).toDate()) // Format the Timestamp
+                      ? DateFormat('dd/MM/yyyy HH:mm').format((user['createdAt'] as Timestamp).toDate())
                       : 'N/A',
                   style: TextStyle(fontSize: 16, color: Colors.grey),
                 ),
               ),
               const SizedBox(height: 16),
-              Divider(),
+              const Divider(),
               const SizedBox(height: 16),
-              _isAdmin()
-                  ? Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  ElevatedButton(
-                    onPressed: () {
-                      // Implement edit functionality here
+              if (_isAdmin())
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                  child: ElevatedButton(
+                    onPressed: () async {
+                      await FirebaseFirestore.instance.collection('users').doc(userId).update({'isBlocked': true});
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('User blocked successfully!')),
+                      );
                     },
-                    child: Text('Edit User'),
-                  ),
-                  const SizedBox(width: 16),
-                  ElevatedButton(
-                    onPressed: () => _showDeleteConfirmation(context),
-                    child: Text('Delete User'),
                     style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                    child: const Text('Block User', style: TextStyle(color: Colors.white),),
                   ),
-                ],
-              )
-                  : SizedBox(),
+                ),
               const SizedBox(height: 16),
               FutureBuilder<List<Map<String, dynamic>>>(
                 future: _fetchUserBookings(),
                 builder: (context, bookingSnapshot) {
                   if (bookingSnapshot.connectionState == ConnectionState.waiting) {
-                    return Center(child: CircularProgressIndicator());
+                    return _buildBookingsShimmerEffect();
                   }
                   if (bookingSnapshot.hasError || !bookingSnapshot.hasData) {
-                    return Text('No bookings found.');
+                    return const Text('No bookings found.');
                   }
                   final bookings = bookingSnapshot.data!;
-
                   return Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
                         'Bookings (${bookings.length}):',
-                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                       ),
                       const SizedBox(height: 8),
-                      ...bookings.map((booking) {
-                        return Card(
-                          margin: EdgeInsets.symmetric(vertical: 8),
-                          child: ListTile(
-                            title: Text('Service: ${booking['serviceName']}'),
-                            subtitle: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text('Status: ${booking['status']}'),
-                                SizedBox(height: 4),
-                                Text(
-                                  'Booking Date: ${booking['bookingDate']}',
-
-                                ),
-                              ],
-                            ),
-                            trailing: Icon(Icons.arrow_forward),
-                            onTap: () {
-                              Navigator.of(context).push(MaterialPageRoute(
-                                builder: (context) => BookingDetailsScreen(bookingData: booking),
-                              ));
-                            },
-                          ),
-                        );
-                      }).toList(),
+                      ...bookings.map((booking) => _buildBookingCard(booking, context)).toList(),
                     ],
                   );
                 },
@@ -210,31 +177,21 @@ class UserDetailsScreen extends StatelessWidget {
                 future: _fetchUserPayments(),
                 builder: (context, paymentSnapshot) {
                   if (paymentSnapshot.connectionState == ConnectionState.waiting) {
-                    return Center(child: CircularProgressIndicator());
+                    return _buildPaymentsShimmerEffect();
                   }
                   if (paymentSnapshot.hasError || !paymentSnapshot.hasData) {
-                    return Text('No payments found.');
+                    return const Text('No payments found.');
                   }
                   final payments = paymentSnapshot.data!;
-
                   return Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
                         'Payments (${payments.length}):',
-                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                       ),
                       const SizedBox(height: 8),
-                      ...payments.map((payment) {
-                        return Card(
-                          margin: EdgeInsets.symmetric(vertical: 8),
-                          child: ListTile(
-                            title: Text('Amount: ${payment['paymentAmount']}'),
-                            subtitle: Text('Date: ${payment['paymentDate']}'),
-                            trailing: Icon(Icons.receipt),
-                          ),
-                        );
-                      }).toList(),
+                      ...payments.map((payment) => _buildPaymentCard(payment)).toList(),
                     ],
                   );
                 },
@@ -246,9 +203,139 @@ class UserDetailsScreen extends StatelessWidget {
     );
   }
 
-  String _formatTimestamp(Timestamp? timestamp) {
-    if (timestamp == null) return 'N/A';
-    final date = timestamp.toDate();
-    return '${date.day}/${date.month}/${date.year}';
+  Widget _buildBookingCard(Map<String, dynamic> booking, BuildContext context) {
+    final bookingDate = (booking['bookingDate'] as Timestamp?)?.toDate();
+    final serviceDate = (booking['serviceDate'] as Timestamp?)?.toDate();
+
+    return Card(
+      margin: const EdgeInsets.symmetric(vertical: 8),
+      child: ListTile(
+        title: Text(
+          booking['serviceName'] ?? 'Unknown Service',
+          style: const TextStyle(fontWeight: FontWeight.bold),
+        ),
+        subtitle: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const SizedBox(height: 4),
+            Text('Status: ${booking['status'] ?? 'N/A'}'),
+            Text('Service Date: ${serviceDate != null ? DateFormat('dd MMM yyyy HH:mm').format(serviceDate) : 'N/A'}'),
+            Text('Location: ${booking['location']?['local'] ?? 'N/A'}'),
+            Text('Payment: ${booking['paymentAmount'] ?? 'N/A'} (${booking['paymentStatus'] ?? 'N/A'})'),
+          ],
+        ),
+        trailing: const Icon(Icons.arrow_forward),
+        onTap: () {
+          Navigator.of(context).push(MaterialPageRoute(
+            builder: (context) => BookingDetailsScreen(bookingData: booking),
+          ));
+        },
+      ),
+    );
+  }
+
+  Widget _buildPaymentCard(Map<String, dynamic> payment) {
+    final paymentDate = (payment['paymentDate'] as Timestamp?)?.toDate();
+    return Card(
+      margin: const EdgeInsets.symmetric(vertical: 8),
+      child: ListTile(
+        title: Text('Amount: ${payment['paymentAmount'] ?? 'N/A'}'),
+        subtitle: Text(
+          'Date: ${paymentDate != null ? DateFormat('dd MMM yyyy HH:mm').format(paymentDate) : 'N/A'}',
+        ),
+        trailing: const Icon(Icons.receipt),
+      ),
+    );
+  }
+
+  Widget _buildUserShimmerEffect() {
+    return Shimmer.fromColors(
+      baseColor: Colors.grey[300]!,
+      highlightColor: Colors.grey[100]!,
+      child: ListView(
+        padding: const EdgeInsets.all(16.0),
+        children: [
+          Center(
+            child: CircleAvatar(radius: 80, backgroundColor: Colors.grey[300]),
+          ),
+          const SizedBox(height: 16),
+          Center(child: Container(width: 150, height: 24, color: Colors.grey[300])),
+          const SizedBox(height: 8),
+          Center(child: Container(width: 200, height: 16, color: Colors.grey[300])),
+          const SizedBox(height: 4),
+          Center(child: Container(width: 120, height: 16, color: Colors.grey[300])),
+          const SizedBox(height: 4),
+          Center(child: Container(width: 140, height: 16, color: Colors.grey[300])),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBookingsShimmerEffect() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Shimmer.fromColors(
+          baseColor: Colors.grey[300]!,
+          highlightColor: Colors.grey[100]!,
+          child: Container(width: 120, height: 18, color: Colors.grey[300]),
+        ),
+        const SizedBox(height: 8),
+        ...List.generate(
+          3,
+              (_) => Shimmer.fromColors(
+            baseColor: Colors.grey[300]!,
+            highlightColor: Colors.grey[100]!,
+            child: Card(
+              margin: const EdgeInsets.symmetric(vertical: 8),
+              child: ListTile(
+                title: Container(width: 150, height: 16, color: Colors.grey[300]),
+                subtitle: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const SizedBox(height: 4),
+                    Container(width: 100, height: 14, color: Colors.grey[300]),
+                    const SizedBox(height: 4),
+                    Container(width: 180, height: 14, color: Colors.grey[300]),
+                    const SizedBox(height: 4),
+                    Container(width: 120, height: 14, color: Colors.grey[300]),
+                  ],
+                ),
+                trailing: const Icon(Icons.arrow_forward, color: Colors.transparent),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildPaymentsShimmerEffect() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Shimmer.fromColors(
+          baseColor: Colors.grey[300]!,
+          highlightColor: Colors.grey[100]!,
+          child: Container(width: 120, height: 18, color: Colors.grey[300]),
+        ),
+        const SizedBox(height: 8),
+        ...List.generate(
+          3,
+              (_) => Shimmer.fromColors(
+            baseColor: Colors.grey[300]!,
+            highlightColor: Colors.grey[100]!,
+            child: Card(
+              margin: const EdgeInsets.symmetric(vertical: 8),
+              child: ListTile(
+                title: Container(width: 100, height: 16, color: Colors.grey[300]),
+                subtitle: Container(width: 140, height: 14, color: Colors.grey[300]),
+                trailing: const Icon(Icons.receipt, color: Colors.transparent),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
   }
 }

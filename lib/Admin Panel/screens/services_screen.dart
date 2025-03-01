@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:shimmer/shimmer.dart';
 import 'package:service_provider/Admin%20Panel/screens/service_details_screen.dart';
 
 class ServicesScreen extends StatefulWidget {
@@ -19,7 +20,6 @@ class _ServicesScreenState extends State<ServicesScreen> {
 
   Future<void> _checkPermissions() async {
     // Simulated permission check (replace with real logic)
-    // Example: Fetch admin permissions from Firebase or a local store
     setState(() {
       hasViewPermission = true; // Example: Replace with actual permission
       hasManagePermission = true; // Example: Replace with actual permission
@@ -39,24 +39,23 @@ class _ServicesScreenState extends State<ServicesScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Services'),
+        title: const Text('Services'),
       ),
       body: hasViewPermission
           ? FutureBuilder<List<Map<String, dynamic>>>(
         future: _fetchServices(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(child: CircularProgressIndicator());
+            return _buildShimmerEffect();
           }
           if (snapshot.hasError) {
-            return Center(child: Text('Error loading services.'));
+            return const Center(child: Text('Error loading services.'));
           }
           if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return Center(child: Text('No services found.'));
+            return const Center(child: Text('No services found.'));
           }
 
           final services = snapshot.data!;
-
           return ListView.builder(
             padding: const EdgeInsets.all(16.0),
             itemCount: services.length,
@@ -67,27 +66,12 @@ class _ServicesScreenState extends State<ServicesScreen> {
           );
         },
       )
-          : Center(
+          : const Center(
         child: Text(
           'You do not have permission to view services.',
           style: TextStyle(fontSize: 16, color: Colors.redAccent),
         ),
       ),
-      floatingActionButton: hasManagePermission
-          ? FloatingActionButton(
-        onPressed: () {
-          // Implement add service or other management functionality
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Manage Services functionality coming soon!')),
-          );
-        },
-        backgroundColor: Colors.lightBlue,
-        child: Icon(
-          Icons.add,
-          color: Colors.white,
-        ),
-      )
-          : null,
     );
   }
 
@@ -135,6 +119,41 @@ class _ServicesScreenState extends State<ServicesScreen> {
                 'Price: ₹${service['price']?.toString() ?? 'N/A'}',
                 style: TextStyle(fontSize: 14, color: Colors.grey.shade500),
               ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildShimmerEffect() {
+    return ListView.builder(
+      padding: const EdgeInsets.all(16.0),
+      itemCount: 5, // Show 5 shimmer cards as placeholders
+      itemBuilder: (context, index) => _buildShimmerCard(),
+    );
+  }
+
+  Widget _buildShimmerCard() {
+    return Shimmer.fromColors(
+      baseColor: Colors.grey[300]!,
+      highlightColor: Colors.grey[100]!,
+      child: Card(
+        elevation: 4,
+        margin: const EdgeInsets.symmetric(vertical: 8),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(width: 150, height: 16, color: Colors.grey[300]),
+              const SizedBox(height: 4),
+              Container(width: 100, height: 14, color: Colors.grey[300]),
+              const SizedBox(height: 4),
+              Container(width: 120, height: 14, color: Colors.grey[300]),
+              const SizedBox(height: 4),
+              Container(width: 80, height: 14, color: Colors.grey[300]),
             ],
           ),
         ),
