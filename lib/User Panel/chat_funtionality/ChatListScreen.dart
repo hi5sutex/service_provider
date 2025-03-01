@@ -102,11 +102,13 @@ class _ChatListScreenState extends State<ChatListScreen> {
                 builder: (context, providerSnapshot) {
                   String providerName = 'Unknown Provider';
                   String serviceName = 'Unknown Service';
+                  String providerId = '';
 
                   if (providerSnapshot.hasData &&
                       providerSnapshot.data!.docs.isNotEmpty) {
                     final providerDoc = providerSnapshot.data!.docs.first;
                     providerName = providerDoc['name'] ?? 'Unknown Provider';
+                    providerId = providerDoc.id;
 
                     // Fetch service name (assuming provider has a service reference)
                     // This is a placeholder; adjust based on your data structure
@@ -115,7 +117,9 @@ class _ChatListScreenState extends State<ChatListScreen> {
 
                   return buildChatListItem(
                     chatRoomId: contact['chatRoomId'],
+                    providerId: providerId,
                     providerName: providerName,
+                    providerEmail: contact['email'],
                     service: serviceName,
                     time: contact['timestamp'] != null
                         ? _formatTimeAgo(contact['timestamp'].toDate())
@@ -133,14 +137,22 @@ class _ChatListScreenState extends State<ChatListScreen> {
 
   Widget buildChatListItem({
     required String chatRoomId,
+    required String providerId,
     required String providerName,
+    required String providerEmail,
     required String service,
     required String time,
     int unreadCount = 0,
   }) {
     return GestureDetector(
       onTap: () {
-        _navigateToChat(context, chatRoomId, providerName); // Pass provider name
+        _navigateToChat(
+            context,
+            chatRoomId,
+            providerId,
+            providerEmail,
+            providerName
+        );
       },
       child: Container(
         margin: const EdgeInsets.symmetric(vertical: 8.0),
@@ -209,24 +221,30 @@ class _ChatListScreenState extends State<ChatListScreen> {
     );
   }
 
-  void _navigateToChat(BuildContext context, String chatRoomId, String providerName) async {
+  void _navigateToChat(
+      BuildContext context,
+      String chatRoomId,
+      String receiverId,
+      String receiverEmail,
+      String providerName
+      ) async {
     if (currentUserId != null && currentUserEmail != null) {
-      // Fetch receiverId from chatRoomId (split the ID)
+      // Get the receiver info based on the chatroom
       final parts = chatRoomId.split('-');
-      final receiverId = parts[0] == currentUserId ? parts[1] : parts[0];
+      final chatReceiverId = parts[0] == currentUserId ? parts[1] : parts[0];
 
-      // Get the receiver email
-      final receiverEmail = await _getReceiverEmail(chatRoomId);
+      // If we don't have the provider ID, use the one from the chatroom
+      final finalReceiverId = receiverId.isEmpty ? chatReceiverId : receiverId;
 
       Navigator.push(
         context,
         MaterialPageRoute(
           builder: (context) => ChatScreen(
             userId: currentUserId!,
-            receiverId: receiverId,
+            receiverId: finalReceiverId,
             senderEmail: currentUserEmail!,
             receiverEmail: receiverEmail,
-            providerName: providerName, // Pass provider name
+            providerName: providerName, // Pass the provider name
           ),
         ),
       );
@@ -234,30 +252,6 @@ class _ChatListScreenState extends State<ChatListScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('You must be logged in to view chats.')),
       );
-    }
-  }
-
-  Future<String> _getReceiverEmail(String chatRoomId) async {
-    try {
-      final snapshot = await _firestore
-          .collection('user_chatroom')
-          .doc(chatRoomId)
-          .get();
-
-      if (snapshot.exists) {
-        final data = snapshot.data();
-        if (data != null && data.containsKey('participants')) {
-          final participants = data['participants'] as List<dynamic>;
-          return participants.firstWhere(
-                  (email) => email != currentUserEmail,
-              orElse: () => ''
-          );
-        }
-      }
-      return '';
-    } catch (e) {
-      print('Error getting receiver email: $e');
-      return '';
     }
   }
 
