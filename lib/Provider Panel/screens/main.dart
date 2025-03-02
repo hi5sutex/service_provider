@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:service_provider/Provider Panel/screens/home_screen.dart';
-import 'package:service_provider/Provider Panel/screens/booking_screen.dart';
+// import 'package:service_provider/Provider Panel/screens/booking_screen.dart';
 import 'package:service_provider/Provider Panel/screens/chat_screen.dart';
 import 'package:service_provider/Provider Panel/screens/profile_screen.dart';
 import 'package:service_provider/Provider Panel/screens/add_dummy_bookings.dart';
+import 'package:service_provider/Provider%20Panel/screens/all_user_chat_list.dart';
+import 'package:service_provider/Provider%20Panel/screens/bookings/provider_booking.dart';
 
 import '../../User Panel/chat_funtionality/ChatListScreen.dart';
 
@@ -19,7 +21,7 @@ class _MainState extends State<Main> with SingleTickerProviderStateMixin {
   final List<Widget> _pages = [
     ProviderHome(),
     ProviderBooking(),
-    ChatListScreen(),
+    ProviderChatListScreen(),
     ProviderProfile(),
     // AddDummyBookings(),
   ];

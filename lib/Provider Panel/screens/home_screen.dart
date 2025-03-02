@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:service_provider/Admin%20Panel/screens/notifications_screen.dart';
+import 'package:service_provider/Provider%20Panel/screens/notification.dart';
 // import 'pa /User Panel/chat_funtionality/ChatListScreen.dart';
 import 'add_service_screen.dart';
 
@@ -27,7 +29,14 @@ class ProviderHome extends StatelessWidget {
           IconButton(
             icon: Icon(Icons.notifications_outlined, size: 28),
             color: primaryColor,
-            onPressed: () {},
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => NotificationPage(),
+                ),
+              );
+            },
           ),
         ],
       ),

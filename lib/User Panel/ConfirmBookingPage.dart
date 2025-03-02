@@ -244,32 +244,22 @@ class _ConfirmBookingPageState extends State<ConfirmBookingPage> {
           'paymentStatus': paymentId != null ? 'Completed' : 'Pending',
           'paymentId': paymentId, // Store Razorpay payment ID
           'status': 'Pending',
+          'isNotificationCleared': false, // Add this for notification tracking
+          'clearedAt': null, // Initial value for when notification is cleared
         };
 
         ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                "Booking Confirmed!\n"
-                    "Date: ${widget.date.toString().substring(0, 10)}\n"
-                    "Time: ${widget.time.format(context)}\n"
-                    "Service: ${widget.serviceData['name'] ?? 'Unknown'}",
-              ),
-              duration: Duration(seconds: 5),
+          SnackBar(
+            content: Text(
+              "Booking Confirmed!\n"
+                  "Date: ${widget.date.toString().substring(0, 10)}\n"
+                  "Time: ${widget.time.format(context)}\n"
+                  "Service: ${widget.serviceData['name'] ?? 'Unknown'}",
             ),
+            duration: Duration(seconds: 5),
+          ),
         );
         await bookings.add(bookingData);
-
-        // CollectionReference serviceDateCollection =
-        // FirebaseFirestore.instance.collection('servicedate');
-
-        // await serviceDateCollection.add({
-        //   'userId': user.uid,
-        //   'serviceId': serviceId,
-        //   'providerId': providerId,
-        //   'serviceDate': Timestamp.fromDate(widget.date),
-        //   'serviceTime': Timestamp.fromDate(serviceDateTime),
-        //   'createdAt': FieldValue.serverTimestamp(),
-        // });
 
         _showSnackBar("Booking created successfully!");
         Navigator.pop(context);
