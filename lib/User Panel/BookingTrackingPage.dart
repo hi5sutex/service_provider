@@ -30,29 +30,29 @@ class BookingTrackingPage extends StatelessWidget {
     switch (status) {
       case 'Pending':
         stages.add({
-          'title': 'Order Placed',
-          'description': 'We have received your order',
+          'title': 'Booking Placed',
+          'description': 'We have received your Booking Request',
           'date': bookingDate,
           'color': Colors.orange, // Orange for Pending
           'isActive': true,
         });
         stages.add({
-          'title': 'Order Confirmed',
-          'description': 'We have been confirmed your order',
+          'title': 'Booking Confirmed',
+          'description': 'We have been confirmed your Booking',
           'date': 'Not specified',
           'color': Colors.green,
           'isActive': false,
         });
         stages.add({
-          'title': 'Order Processed',
-          'description': 'We are preparing your order',
+          'title': 'Booking Processed',
+          'description': 'Provider is On the Way...',
           'date': 'Not specified',
           'color': Colors.blue[800]!,
           'isActive': false,
         });
         stages.add({
-          'title': 'Order Completed',
-          'description': 'Your order has been completed',
+          'title': 'Booking Completed',
+          'description': 'Your Booking has been completed',
           'date': 'Not specified',
           'color': Colors.blue[800]!,
           'isActive': false,
@@ -61,29 +61,29 @@ class BookingTrackingPage extends StatelessWidget {
 
       case 'Confirmed':
         stages.add({
-          'title': 'Order Placed',
-          'description': 'We have received your order',
+          'title': 'Booking Placed',
+          'description': 'We have received your Booking',
           'date': bookingDate,
           'color': Colors.orange, // Orange for Pending (completed stage)
           'isActive': true,
         });
         stages.add({
-          'title': 'Order Confirmed',
-          'description': 'We have been confirmed your order',
+          'title': 'Booking Confirmed',
+          'description': 'We have been confirmed your Booking',
           'date': confirmedAt,
           'color': Colors.green, // Green for Confirmed
           'isActive': true,
         });
         stages.add({
-          'title': 'Order Processed',
-          'description': 'We are preparing your order',
+          'title': 'Booking Processed',
+          'description': 'Provider is On the Way...',
           'date': 'Not specified',
           'color': Colors.blue[800]!,
           'isActive': false,
         });
         stages.add({
-          'title': 'Order Completed',
-          'description': 'Your order has been completed',
+          'title': 'Booking Completed',
+          'description': 'Your Booking has been completed',
           'date': 'Not specified',
           'color': Colors.blue[800]!,
           'isActive': false,
@@ -92,29 +92,29 @@ class BookingTrackingPage extends StatelessWidget {
 
       case 'Ongoing':
         stages.add({
-          'title': 'Order Placed',
-          'description': 'We have received your order',
+          'title': 'Booking Placed',
+          'description': 'We have received your Booking',
           'date': bookingDate,
           'color': Colors.orange, // Orange for Pending (completed stage)
           'isActive': true,
         });
         stages.add({
-          'title': 'Order Confirmed',
-          'description': 'We have been confirmed your order',
+          'title': 'Booking Confirmed',
+          'description': 'We have been confirmed your Booking',
           'date': confirmedAt,
           'color': Colors.green, // Green for Confirmed (completed stage)
           'isActive': true,
         });
         stages.add({
-          'title': 'Order Processed',
-          'description': 'We are preparing your order',
+          'title': 'Booking Processed',
+          'description': 'Provider is On the Way...',
           'date': ongoingAt,
           'color': Colors.blue[800]!, // Blue for Ongoing
           'isActive': true,
         });
         stages.add({
-          'title': 'Order Completed',
-          'description': 'Your order has been completed',
+          'title': 'Booking Completed',
+          'description': 'Your Booking has been completed',
           'date': 'Not specified',
           'color': Colors.blue[800]!,
           'isActive': false,
@@ -123,29 +123,29 @@ class BookingTrackingPage extends StatelessWidget {
 
       case 'Completed':
         stages.add({
-          'title': 'Order Placed',
-          'description': 'We have received your order',
+          'title': 'Booking Placed',
+          'description': 'We have received your Booking',
           'date': bookingDate,
           'color': Colors.orange, // Orange for Pending (completed stage)
           'isActive': true,
         });
         stages.add({
-          'title': 'Order Confirmed',
-          'description': 'We have been confirmed your order',
+          'title': 'Booking Confirmed',
+          'description': 'We have been confirmed your Booking',
           'date': confirmedAt,
           'color': Colors.green, // Green for Confirmed (completed stage)
           'isActive': true,
         });
         stages.add({
-          'title': 'Order Processed',
-          'description': 'We are preparing your order',
+          'title': 'Booking Processed',
+          'description': 'Provider is On the Way...',
           'date': ongoingAt,
           'color': Colors.blue[800]!, // Blue for Ongoing (completed stage)
           'isActive': true,
         });
         stages.add({
-          'title': 'Order Completed',
-          'description': 'Your order has been completed',
+          'title': 'Booking Completed',
+          'description': 'Your Booking has been completed',
           'date': completedAt,
           'color': Colors.blue[800]!, // Blue for Completed
           'isActive': true,
@@ -154,29 +154,29 @@ class BookingTrackingPage extends StatelessWidget {
 
       case 'Cancelled':
         stages.add({
-          'title': 'Order Placed',
-          'description': 'We have received your order',
+          'title': 'Booking Placed',
+          'description': 'We have received your Booking',
           'date': bookingDate,
           'color': Colors.orange, // Orange for Pending (completed stage)
           'isActive': true,
         });
         stages.add({
-          'title': 'Order Confirmed',
-          'description': 'We have been confirmed your order',
+          'title': 'Booking Confirmed',
+          'description': 'We have been confirmed your Booking',
           'date': confirmedAt,
           'color': Colors.green, // Green for Confirmed (completed stage, if applicable)
           'isActive': confirmedAt != 'Not specified',
         });
         stages.add({
-          'title': 'Order Processed',
-          'description': 'We are preparing your order',
+          'title': 'Booking Processed',
+          'description': 'Provider is On the Way...',
           'date': ongoingAt,
           'color': Colors.blue[800]!, // Blue for Ongoing (completed stage, if applicable)
           'isActive': ongoingAt != 'Not specified',
         });
         stages.add({
-          'title': 'Order Cancelled',
-          'description': 'Your order has been cancelled',
+          'title': 'Booking Cancelled',
+          'description': 'Your Booking has been cancelled',
           'date': cancelledAt,
           'color': Colors.red, // Red for Cancelled
           'isActive': true,
@@ -185,29 +185,29 @@ class BookingTrackingPage extends StatelessWidget {
 
       default:
         stages.add({
-          'title': 'Order Placed',
-          'description': 'We have received your order',
+          'title': 'Booking Placed',
+          'description': 'We have received your Booking',
           'date': bookingDate,
           'color': Colors.orange, // Default to orange for Pending
           'isActive': true,
         });
         stages.add({
-          'title': 'Order Confirmed',
-          'description': 'We have been confirmed your order',
+          'title': 'Booking Confirmed',
+          'description': 'We have been confirmed your Booking',
           'date': 'Not specified',
           'color': Colors.green,
           'isActive': false,
         });
         stages.add({
-          'title': 'Order Processed',
-          'description': 'We are preparing your order',
+          'title': 'Booking Processed',
+          'description': 'Provider is On the Way...',
           'date': 'Not specified',
           'color': Colors.blue[800]!,
           'isActive': false,
         });
         stages.add({
-          'title': 'Order Completed',
-          'description': 'Your order has been completed',
+          'title': 'Booking Completed',
+          'description': 'Your Booking has been completed',
           'date': 'Not specified',
           'color': Colors.blue[800]!,
           'isActive': false,
@@ -220,7 +220,7 @@ class BookingTrackingPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     String status = bookingData['status'] ?? 'Pending';
-    String orderId = bookingData['id'] ?? 'Unknown Order';
+    String orderId = bookingData['id'] ?? 'Unknown Booking';
     String bookingDate = _formatTimestamp(bookingData['bookingDate'] as Timestamp?);
     String serviceDate = _formatTimestamp(bookingData['serviceDate'] as Timestamp?);
     String serviceTime = bookingData['serviceTime'] ?? 'Not specified';
@@ -235,7 +235,7 @@ class BookingTrackingPage extends StatelessWidget {
           icon: Icon(Icons.arrow_back_ios, color: Colors.white),
           onPressed: () => Navigator.pop(context),
         ),
-        title: Text('Track Orders', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        title: Text('Track Bookings', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
         backgroundColor: Color(0xFF060644),
         elevation: 0,
         actions: [
@@ -314,7 +314,7 @@ class BookingTrackingPage extends StatelessWidget {
               ),
               SizedBox(height: 32), // Increased padding above the timeline
               Text(
-                'Track Order',
+                'Track Booking',
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF060644)),
               ),
               SizedBox(height: 16),
