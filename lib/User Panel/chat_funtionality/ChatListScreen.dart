@@ -66,7 +66,6 @@ class _ChatListScreenState extends State<ChatListScreen> {
             return const Center(child: Text('No chats found.'));
           }
 
-          // Use a Set to avoid duplicates
           final Set<String> uniqueProviderEmails = {};
           final List<Map<String, dynamic>> chatContacts = [];
 
@@ -84,7 +83,7 @@ class _ChatListScreenState extends State<ChatListScreen> {
               chatContacts.add({
                 'email': providerEmail,
                 'chatRoomId': doc.id,
-                'lastMessage': doc['lastMessage'] ?? '',
+                'lastMessage': doc['lastMessage'] ?? 'No messages yet',
                 'timestamp': timestamp,
                 'unreadCount': 0, // Placeholder, implement unread logic if needed
               });
@@ -109,9 +108,6 @@ class _ChatListScreenState extends State<ChatListScreen> {
                     final providerDoc = providerSnapshot.data!.docs.first;
                     providerName = providerDoc['name'] ?? 'Unknown Provider';
                     providerId = providerDoc.id;
-
-                    // Fetch service name (assuming provider has a service reference)
-                    // This is a placeholder; adjust based on your data structure
                     serviceName = 'Service'; // Replace with actual service fetch if available
                   }
 
@@ -120,7 +116,7 @@ class _ChatListScreenState extends State<ChatListScreen> {
                     providerId: providerId,
                     providerName: providerName,
                     providerEmail: contact['email'],
-                    service: serviceName,
+                    lastMessage: contact['lastMessage'], // Pass lastMessage
                     time: contact['timestamp'] != null
                         ? _formatTimeAgo(contact['timestamp'].toDate())
                         : 'Unknown',
@@ -140,18 +136,18 @@ class _ChatListScreenState extends State<ChatListScreen> {
     required String providerId,
     required String providerName,
     required String providerEmail,
-    required String service,
+    required String lastMessage, // Added lastMessage parameter
     required String time,
     int unreadCount = 0,
   }) {
     return GestureDetector(
       onTap: () {
         _navigateToChat(
-            context,
-            chatRoomId,
-            providerId,
-            providerEmail,
-            providerName
+          context,
+          chatRoomId,
+          providerId,
+          providerEmail,
+          providerName,
         );
       },
       child: Container(
@@ -188,8 +184,10 @@ class _ChatListScreenState extends State<ChatListScreen> {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    service,
+                    lastMessage, // Display the last message
                     style: TextStyle(color: Colors.grey[600]),
+                    maxLines: 1, // Limit to one line
+                    overflow: TextOverflow.ellipsis, // Add ellipsis if too long
                   ),
                 ],
               ),
@@ -226,14 +224,11 @@ class _ChatListScreenState extends State<ChatListScreen> {
       String chatRoomId,
       String receiverId,
       String receiverEmail,
-      String providerName
+      String providerName,
       ) async {
     if (currentUserId != null && currentUserEmail != null) {
-      // Get the receiver info based on the chatroom
       final parts = chatRoomId.split('-');
       final chatReceiverId = parts[0] == currentUserId ? parts[1] : parts[0];
-
-      // If we don't have the provider ID, use the one from the chatroom
       final finalReceiverId = receiverId.isEmpty ? chatReceiverId : receiverId;
 
       Navigator.push(
@@ -244,7 +239,7 @@ class _ChatListScreenState extends State<ChatListScreen> {
             receiverId: finalReceiverId,
             senderEmail: currentUserEmail!,
             receiverEmail: receiverEmail,
-            providerName: providerName, // Pass the provider name
+            providerName: providerName,
           ),
         ),
       );

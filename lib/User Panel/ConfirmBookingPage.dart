@@ -34,7 +34,7 @@ class _ConfirmBookingPageState extends State<ConfirmBookingPage> {
   double? _longitude;
   bool isLoading = false;
   final _formKey = GlobalKey<FormState>();
-  double get servicePrice => widget.serviceData['price'] ?? 0.0;
+  double get servicePrice => (widget.serviceData['price'] as num?)?.toDouble()??0.0;
   String get providerId => widget.serviceData['createdBy'] ?? '';
   String get serviceId => widget.serviceId;
 

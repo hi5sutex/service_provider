@@ -1,0 +1,482 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+
+class BookingTrackingPage extends StatelessWidget {
+  final String bookingId;
+  final Map<String, dynamic> bookingData;
+  final String serviceName; // Parameter for service name
+
+  const BookingTrackingPage({
+    required this.bookingId,
+    required this.bookingData,
+    required this.serviceName,
+  });
+
+  String _formatTimestamp(Timestamp? timestamp) {
+    if (timestamp == null) return 'Not specified';
+    return DateFormat('dd MMM yyyy, hh:mm a').format(timestamp.toDate());
+  }
+
+  List<Map<String, dynamic>> _getTimelineStages(String status) {
+    List<Map<String, dynamic>> stages = [];
+
+    String bookingDate = _formatTimestamp(bookingData['bookingDate'] as Timestamp?);
+    String confirmedAt = _formatTimestamp(bookingData['confirmedAt'] as Timestamp?);
+    String ongoingAt = _formatTimestamp(bookingData['ongoingAt'] as Timestamp?);
+    String completedAt = _formatTimestamp(bookingData['completedAt'] as Timestamp?);
+    String cancelledAt = _formatTimestamp(bookingData['cancelledAt'] as Timestamp?);
+
+    switch (status) {
+      case 'Pending':
+        stages.add({
+          'title': 'Order Placed',
+          'description': 'We have received your order',
+          'date': bookingDate,
+          'color': Colors.orange, // Orange for Pending
+          'isActive': true,
+        });
+        stages.add({
+          'title': 'Order Confirmed',
+          'description': 'We have been confirmed your order',
+          'date': 'Not specified',
+          'color': Colors.green,
+          'isActive': false,
+        });
+        stages.add({
+          'title': 'Order Processed',
+          'description': 'We are preparing your order',
+          'date': 'Not specified',
+          'color': Colors.blue[800]!,
+          'isActive': false,
+        });
+        stages.add({
+          'title': 'Order Completed',
+          'description': 'Your order has been completed',
+          'date': 'Not specified',
+          'color': Colors.blue[800]!,
+          'isActive': false,
+        });
+        break;
+
+      case 'Confirmed':
+        stages.add({
+          'title': 'Order Placed',
+          'description': 'We have received your order',
+          'date': bookingDate,
+          'color': Colors.orange, // Orange for Pending (completed stage)
+          'isActive': true,
+        });
+        stages.add({
+          'title': 'Order Confirmed',
+          'description': 'We have been confirmed your order',
+          'date': confirmedAt,
+          'color': Colors.green, // Green for Confirmed
+          'isActive': true,
+        });
+        stages.add({
+          'title': 'Order Processed',
+          'description': 'We are preparing your order',
+          'date': 'Not specified',
+          'color': Colors.blue[800]!,
+          'isActive': false,
+        });
+        stages.add({
+          'title': 'Order Completed',
+          'description': 'Your order has been completed',
+          'date': 'Not specified',
+          'color': Colors.blue[800]!,
+          'isActive': false,
+        });
+        break;
+
+      case 'Ongoing':
+        stages.add({
+          'title': 'Order Placed',
+          'description': 'We have received your order',
+          'date': bookingDate,
+          'color': Colors.orange, // Orange for Pending (completed stage)
+          'isActive': true,
+        });
+        stages.add({
+          'title': 'Order Confirmed',
+          'description': 'We have been confirmed your order',
+          'date': confirmedAt,
+          'color': Colors.green, // Green for Confirmed (completed stage)
+          'isActive': true,
+        });
+        stages.add({
+          'title': 'Order Processed',
+          'description': 'We are preparing your order',
+          'date': ongoingAt,
+          'color': Colors.blue[800]!, // Blue for Ongoing
+          'isActive': true,
+        });
+        stages.add({
+          'title': 'Order Completed',
+          'description': 'Your order has been completed',
+          'date': 'Not specified',
+          'color': Colors.blue[800]!,
+          'isActive': false,
+        });
+        break;
+
+      case 'Completed':
+        stages.add({
+          'title': 'Order Placed',
+          'description': 'We have received your order',
+          'date': bookingDate,
+          'color': Colors.orange, // Orange for Pending (completed stage)
+          'isActive': true,
+        });
+        stages.add({
+          'title': 'Order Confirmed',
+          'description': 'We have been confirmed your order',
+          'date': confirmedAt,
+          'color': Colors.green, // Green for Confirmed (completed stage)
+          'isActive': true,
+        });
+        stages.add({
+          'title': 'Order Processed',
+          'description': 'We are preparing your order',
+          'date': ongoingAt,
+          'color': Colors.blue[800]!, // Blue for Ongoing (completed stage)
+          'isActive': true,
+        });
+        stages.add({
+          'title': 'Order Completed',
+          'description': 'Your order has been completed',
+          'date': completedAt,
+          'color': Colors.blue[800]!, // Blue for Completed
+          'isActive': true,
+        });
+        break;
+
+      case 'Cancelled':
+        stages.add({
+          'title': 'Order Placed',
+          'description': 'We have received your order',
+          'date': bookingDate,
+          'color': Colors.orange, // Orange for Pending (completed stage)
+          'isActive': true,
+        });
+        stages.add({
+          'title': 'Order Confirmed',
+          'description': 'We have been confirmed your order',
+          'date': confirmedAt,
+          'color': Colors.green, // Green for Confirmed (completed stage, if applicable)
+          'isActive': confirmedAt != 'Not specified',
+        });
+        stages.add({
+          'title': 'Order Processed',
+          'description': 'We are preparing your order',
+          'date': ongoingAt,
+          'color': Colors.blue[800]!, // Blue for Ongoing (completed stage, if applicable)
+          'isActive': ongoingAt != 'Not specified',
+        });
+        stages.add({
+          'title': 'Order Cancelled',
+          'description': 'Your order has been cancelled',
+          'date': cancelledAt,
+          'color': Colors.red, // Red for Cancelled
+          'isActive': true,
+        });
+        break;
+
+      default:
+        stages.add({
+          'title': 'Order Placed',
+          'description': 'We have received your order',
+          'date': bookingDate,
+          'color': Colors.orange, // Default to orange for Pending
+          'isActive': true,
+        });
+        stages.add({
+          'title': 'Order Confirmed',
+          'description': 'We have been confirmed your order',
+          'date': 'Not specified',
+          'color': Colors.green,
+          'isActive': false,
+        });
+        stages.add({
+          'title': 'Order Processed',
+          'description': 'We are preparing your order',
+          'date': 'Not specified',
+          'color': Colors.blue[800]!,
+          'isActive': false,
+        });
+        stages.add({
+          'title': 'Order Completed',
+          'description': 'Your order has been completed',
+          'date': 'Not specified',
+          'color': Colors.blue[800]!,
+          'isActive': false,
+        });
+    }
+
+    return stages;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    String status = bookingData['status'] ?? 'Pending';
+    String orderId = bookingData['id'] ?? 'Unknown Order';
+    String bookingDate = _formatTimestamp(bookingData['bookingDate'] as Timestamp?);
+    String serviceDate = _formatTimestamp(bookingData['serviceDate'] as Timestamp?);
+    String serviceTime = bookingData['serviceTime'] ?? 'Not specified';
+    String paymentAmount = '\$${bookingData['paymentAmount'] ?? '0'}';
+
+    List<Map<String, dynamic>> timelineStages = _getTimelineStages(status);
+
+    return Scaffold(
+      backgroundColor: Color(0xFF060644), // Primary color as background (same as UserBooking)
+      appBar: AppBar(
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back_ios, color: Colors.white),
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: Text('Track Orders', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        backgroundColor: Color(0xFF060644),
+        elevation: 0,
+        actions: [
+          IconButton(
+            icon: Icon(Icons.search, color: Colors.white),
+            onPressed: () {},
+          ),
+          IconButton(
+            icon: Icon(Icons.shopping_bag_outlined, color: Colors.white),
+            onPressed: () {},
+          ),
+        ],
+      ),
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Card(
+                elevation: 4,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12.0),
+                ),
+                color: Colors.white, // Secondary color for card (same as UserBooking)
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text('Order # $orderId', style: TextStyle(fontSize: 14, color: Colors.grey[600])),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: timelineStages.last['color'].withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Text(
+                              status,
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: timelineStages.last['color'],
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: 12),
+                      Text(
+                        serviceName,
+                        style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFF060644)),
+                      ),
+                      SizedBox(height: 12),
+                      _buildDetailRow(Icons.calendar_today, 'Booking Date', bookingDate),
+                      _buildDetailRow(Icons.calendar_today, 'Service Date', serviceDate),
+                      _buildDetailRow(Icons.access_time, 'Service Time', serviceTime),
+                      _buildDetailRow(Icons.attach_money, 'Total Amount', paymentAmount),
+                      // Add kiwi image or service-specific image if needed
+                      SizedBox(height: 16),
+                      Row(
+                        children: [
+                          Icon(Icons.star, color: Colors.amber, size: 16),
+                          Icon(Icons.star, color: Colors.amber, size: 16),
+                          Icon(Icons.star, color: Colors.amber, size: 16),
+                          Icon(Icons.star, color: Colors.amber, size: 16),
+                          Icon(Icons.star, color: Colors.amber, size: 16),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              SizedBox(height: 32), // Increased padding above the timeline
+              Text(
+                'Track Order',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF060644)),
+              ),
+              SizedBox(height: 16),
+              // Timeline (unchanged from the example design)
+              _buildOrderTimeline(timelineStages),
+              SizedBox(height: 32), // Increased padding below the timeline
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  ElevatedButton(
+                    onPressed: () {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('Contacting support...')),
+                      );
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Color(0xFF060644), // Primary color for buttons
+                      padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    child: Text('Contact Support', style: TextStyle(color: Colors.white, fontSize: 14)),
+                  ),
+                  ElevatedButton(
+                    onPressed: () {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('Viewing invoice...')),
+                      );
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Color(0xFF060644), // Primary color for buttons
+                      padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    child: Text('View Invoice', style: TextStyle(color: Colors.white, fontSize: 14)),
+                  ),
+                ],
+              ),
+              SizedBox(height: 16), // Added to ensure padding at the bottom
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDetailRow(IconData icon, String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4.0),
+      child: Row(
+        children: [
+          Icon(icon, size: 16, color: Color(0xFF060644)), // Primary color for icons
+          SizedBox(width: 8),
+          Text(
+            '$label: ',
+            style: TextStyle(fontSize: 14, color: Colors.grey[600], fontWeight: FontWeight.bold),
+          ),
+          Expanded(
+            child: Text(
+              value,
+              style: TextStyle(fontSize: 14, color: Colors.black87),
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildOrderTimeline(List<Map<String, dynamic>> timelineStages) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white, // Secondary color for container
+        borderRadius: BorderRadius.circular(12.0),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.2),
+            spreadRadius: 2,
+            blurRadius: 5,
+            offset: Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Column(
+        children: timelineStages.map((stage) {
+          final index = timelineStages.indexOf(stage);
+          final isActive = stage['isActive'];
+          final color = isActive ? stage['color'] : Colors.grey[300];
+          final isLast = index == timelineStages.length - 1;
+
+          return Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Vertical line and icon column
+                Column(
+                  children: [
+                    Container(
+                      width: 32,
+                      height: 32,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: color,
+                      ),
+                      child: Icon(
+                        isActive ? Icons.check : Icons.circle,
+                        color: Colors.white,
+                        size: 20,
+                      ),
+                    ),
+                    if (!isLast)
+                      Container(
+                        width: 2,
+                        height: 60,
+                        color: isActive ? color : Colors.grey[300],
+                      ),
+                  ],
+                ),
+                SizedBox(width: 16),
+                // Stage details
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        stage['title'],
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: isActive ? color : Colors.grey[600],
+                        ),
+                      ),
+                      SizedBox(height: 4),
+                      Text(
+                        stage['description'],
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Colors.grey[600],
+                        ),
+                      ),
+                      if (stage['date'] != 'Not specified') ...[
+                        SizedBox(height: 4),
+                        Text(
+                          stage['date'],
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.black87,
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          );
+        }).toList(),
+      ),
+    );
+  }
+}

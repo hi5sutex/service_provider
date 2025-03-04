@@ -29,10 +29,31 @@ class _ChatScreenState extends State<ChatScreen> {
   final ScrollController _scrollController = ScrollController();
 
   @override
+  void initState() {
+    super.initState();
+    // Scroll to the bottom when the screen loads
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _scrollToBottom();
+    });
+  }
+
+  @override
   void dispose() {
     _messageController.dispose();
     _scrollController.dispose();
     super.dispose();
+  }
+
+  // Function to scroll to the bottom of the chat smoothly
+  void _scrollToBottom() {
+    if (_scrollController.hasClients) {
+      // For reverse: true, the bottom is at offset 0.0
+      _scrollController.animateTo(
+        0.0, // Scroll to the bottom (top of reversed list)
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeOut,
+      );
+    }
   }
 
   @override
@@ -55,7 +76,7 @@ class _ChatScreenState extends State<ChatScreen> {
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(widget.providerName, style: const TextStyle(color: Colors.black)), // Use provider name
+                Text(widget.providerName, style: const TextStyle(color: Colors.black)),
                 const Text('Online', style: TextStyle(color: Colors.green, fontSize: 12)),
               ],
             ),
@@ -79,10 +100,9 @@ class _ChatScreenState extends State<ChatScreen> {
                   return const Center(child: Text('No messages yet. Start chatting!'));
                 } else {
                   final messages = snapshot.data!;
+                  // Scroll to bottom after new messages are rendered
                   WidgetsBinding.instance.addPostFrameCallback((_) {
-                    if (_scrollController.hasClients) {
-                      _scrollController.jumpTo(_scrollController.position.maxScrollExtent);
-                    }
+                    _scrollToBottom();
                   });
                   return ListView.builder(
                     controller: _scrollController,
@@ -176,6 +196,7 @@ class _ChatScreenState extends State<ChatScreen> {
             onPressed: () async {
               if (_messageController.text.trim().isNotEmpty) {
                 try {
+                  // Send the message first
                   await _chatService.sendMessage(
                     senderId: widget.userId,
                     receiverId: widget.receiverId,
@@ -183,7 +204,10 @@ class _ChatScreenState extends State<ChatScreen> {
                     receiverEmail: widget.receiverEmail,
                     message: _messageController.text.trim(),
                   );
+                  // Clear the text field only after successful send
                   _messageController.clear();
+                  // Scroll to the latest message
+                  _scrollToBottom();
                 } catch (e) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(content: Text('Failed to send message: $e')),

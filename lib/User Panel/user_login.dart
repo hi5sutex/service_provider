@@ -7,7 +7,7 @@ import 'package:service_provider/Provider%20Panel/screens/main.dart';
 import 'package:service_provider/Provider%20Panel/screens/register_screen.dart';
 import 'package:service_provider/Admin%20Panel/screens/main.dart';
 import 'package:service_provider/welcome_screen.dart';
-import '../Provider Panel/screens/all_user_chat_list.dart';
+import '../Provider Panel/screens/chat/provider_chat_list.dart';
 
 class LoginPage extends StatefulWidget {
   @override

@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-// import 'package:service_provider/Provider Panel/chat_functionality/provider_chat_screen.dart';
-import 'package:service_provider/Provider%20Panel/screens/chat_screen.dart';
+import 'package:service_provider/User Panel/chat_funtionality/chat_screen.dart'; // Adjust import as needed
 
 class ProviderChatListScreen extends StatefulWidget {
   const ProviderChatListScreen({Key? key}) : super(key: key);
@@ -17,35 +16,14 @@ class _ProviderChatListScreenState extends State<ProviderChatListScreen> {
 
   String? currentProviderEmail;
   String? currentProviderId;
-  String? currentProviderName;
 
   @override
   void initState() {
     super.initState();
-    _getCurrentProviderDetails();
-  }
-
-  Future<void> _getCurrentProviderDetails() async {
     final currentUser = _auth.currentUser;
     if (currentUser != null) {
       currentProviderEmail = currentUser.email;
       currentProviderId = currentUser.uid;
-
-      // Fetch provider name from Firestore
-      try {
-        final providerDoc = await _firestore
-            .collection('providers')
-            .doc(currentProviderId)
-            .get();
-
-        if (providerDoc.exists) {
-          setState(() {
-            currentProviderName = providerDoc['name'];
-          });
-        }
-      } catch (e) {
-        print('Error fetching provider details: $e');
-      }
     }
   }
 
@@ -54,20 +32,20 @@ class _ProviderChatListScreenState extends State<ProviderChatListScreen> {
     if (currentProviderEmail == null || currentProviderId == null) {
       return Scaffold(
         appBar: AppBar(
-          title: const Text('Client Messages', style: TextStyle(color: Colors.black)),
+          title: const Text('Messages', style: TextStyle(color: Colors.black)),
           backgroundColor: Colors.white,
           elevation: 1,
           iconTheme: const IconThemeData(color: Colors.black),
         ),
         body: const Center(
-          child: Text('Please log in to view your client chats.'),
+          child: Text('Please log in to view your chats.'),
         ),
       );
     }
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Client Messages', style: TextStyle(color: Colors.black)),
+        title: const Text('Messages', style: TextStyle(color: Colors.black)),
         backgroundColor: Colors.white,
         elevation: 1,
         iconTheme: const IconThemeData(color: Colors.black),
@@ -85,53 +63,28 @@ class _ProviderChatListScreenState extends State<ProviderChatListScreen> {
             return Center(child: Text('Error: ${snapshot.error}'));
           }
           if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-            return const Center(child: Text('No client chats found.'));
+            return const Center(child: Text('No chats found.'));
           }
 
-          // Use a Set to avoid duplicates
           final Set<String> uniqueUserEmails = {};
           final List<Map<String, dynamic>> chatContacts = [];
 
           for (var doc in snapshot.data!.docs) {
-            final Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
-
-            // Safely access participants field
-            if (!data.containsKey('participants')) {
-              continue;
-            }
-
-            final List<dynamic> participants = data['participants'];
-
-            // Find the user email (the one that's not the provider's email)
-            String userEmail;
-            try {
-              userEmail = participants
-                  .map((e) => e.toString())
-                  .firstWhere((email) => email != currentProviderEmail);
-            } catch (e) {
-              // Skip if we can't determine the user email
-              continue;
-            }
+            final List<dynamic> participants = doc['participants'];
+            final String userEmail = participants
+                .map((e) => e.toString())
+                .firstWhere((email) => email != currentProviderEmail);
 
             if (uniqueUserEmails.add(userEmail)) {
-              // Safely handle timestamp
-              Timestamp? timestamp;
-              String timeAgo = 'Unknown';
-
-              try {
-                if (data.containsKey('timestamp') && data['timestamp'] != null) {
-                  timestamp = data['timestamp'] as Timestamp;
-                  timeAgo = _formatTimeAgo(timestamp.toDate());
-                }
-              } catch (e) {
-                print('Error processing timestamp for document ${doc.id}: $e');
-              }
-
+              final timestamp = doc['timestamp'] as Timestamp?;
+              final String timeAgo = timestamp != null
+                  ? _formatTimeAgo(timestamp.toDate())
+                  : 'Unknown';
               chatContacts.add({
                 'email': userEmail,
                 'chatRoomId': doc.id,
-                'lastMessage': data['lastMessage'] ?? '',
-                'timeAgo': timeAgo,
+                'lastMessage': doc['lastMessage'] ?? 'No messages yet',
+                'timestamp': timestamp,
                 'unreadCount': 0, // Placeholder, implement unread logic if needed
               });
             }
@@ -146,28 +99,25 @@ class _ProviderChatListScreenState extends State<ProviderChatListScreen> {
                     .where('email', isEqualTo: contact['email'])
                     .snapshots(),
                 builder: (context, userSnapshot) {
-                  // Default to user's email instead of "Unknown User"
-                  String userName = contact['email'];
+                  String userName = 'Unknown User';
                   String userId = '';
 
                   if (userSnapshot.hasData &&
                       userSnapshot.data!.docs.isNotEmpty) {
                     final userDoc = userSnapshot.data!.docs.first;
-                    final userData = userDoc.data() as Map<String, dynamic>;
-                    // Only override email with name if name exists
-                    if (userData['name'] != null) {
-                      userName = userData['name'];
-                    }
+                    userName = userDoc['name'] ?? 'Unknown User';
                     userId = userDoc.id;
                   }
 
                   return buildChatListItem(
                     chatRoomId: contact['chatRoomId'],
                     userId: userId,
-                    userName: userName,  // This will now be either the name or email
+                    userName: userName,
                     userEmail: contact['email'],
-                    time: contact['timeAgo'],
-                    lastMessage: contact['lastMessage'] ?? '',
+                    lastMessage: contact['lastMessage'], // Pass lastMessage
+                    time: contact['timestamp'] != null
+                        ? _formatTimeAgo(contact['timestamp'].toDate())
+                        : 'Unknown',
                     unreadCount: contact['unreadCount'],
                   );
                 },
@@ -184,8 +134,8 @@ class _ProviderChatListScreenState extends State<ProviderChatListScreen> {
     required String userId,
     required String userName,
     required String userEmail,
+    required String lastMessage, // Added lastMessage parameter
     required String time,
-    required String lastMessage,
     int unreadCount = 0,
   }) {
     return GestureDetector(
@@ -216,8 +166,7 @@ class _ProviderChatListScreenState extends State<ProviderChatListScreen> {
           children: [
             const CircleAvatar(
               radius: 30,
-              backgroundColor: Color(0xFF060644),
-              child: Icon(Icons.person, color: Colors.white, size: 32),
+              backgroundImage: NetworkImage('https://avatar.iran.liara.run/public'),
             ),
             const SizedBox(width: 16),
             Expanded(
@@ -230,21 +179,18 @@ class _ProviderChatListScreenState extends State<ProviderChatListScreen> {
                       fontWeight: FontWeight.bold,
                       fontSize: 16,
                     ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    lastMessage,
+                    lastMessage, // Display the last message
                     style: TextStyle(color: Colors.grey[600]),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1, // Limit to one line
+                    overflow: TextOverflow.ellipsis, // Add ellipsis if too long
                   ),
                 ],
               ),
             ),
             Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 Text(
                   time,
@@ -274,21 +220,24 @@ class _ProviderChatListScreenState extends State<ProviderChatListScreen> {
   void _navigateToChat(
       BuildContext context,
       String chatRoomId,
-      String userId,
-      String userEmail,
+      String receiverId,
+      String receiverEmail,
       String userName,
       ) async {
     if (currentProviderId != null && currentProviderEmail != null) {
+      final parts = chatRoomId.split('-');
+      final chatReceiverId = parts[0] == currentProviderId ? parts[1] : parts[0];
+      final finalReceiverId = receiverId.isEmpty ? chatReceiverId : receiverId;
+
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) => ProviderChatScreen(
-            providerId: currentProviderId!,
-            userId: userId,
-            providerEmail: currentProviderEmail!,
-            userEmail: userEmail,
-            userName: userName,
-            providerName: currentProviderName ?? 'Provider',
+          builder: (context) => ChatScreen(
+            userId: currentProviderId!,
+            receiverId: finalReceiverId,
+            senderEmail: currentProviderEmail!,
+            receiverEmail: receiverEmail,
+            providerName: userName,
           ),
         ),
       );

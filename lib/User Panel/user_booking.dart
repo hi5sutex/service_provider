@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:shimmer/shimmer.dart';
+import 'package:service_provider/User Panel/BookingTrackingPage.dart';
 
 class UserBooking extends StatefulWidget {
   @override
@@ -13,8 +14,19 @@ class _UserBookingState extends State<UserBooking> {
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
   bool _isLoading = true;
+  String _selectedStatus = 'All'; // Default sorting option
 
-  // Store all necessary data locally to avoid multiple Firebase calls
+  // Filter options with icons (similar to NotificationPage, added "Completed")
+  final List<Map<String, dynamic>> _filterOptions = [
+    {'label': 'All', 'icon': Icons.all_inclusive},
+    {'label': 'Pending', 'icon': Icons.pending},
+    {'label': 'Confirmed', 'icon': Icons.check_circle_outline},
+    {'label': 'Ongoing', 'icon': Icons.hourglass_top},
+    {'label': 'Completed', 'icon': Icons.check_circle}, // New "Completed" option
+    {'label': 'Cancelled', 'icon': Icons.cancel},
+  ];
+
+  // Store all necessary data locally
   Map<String, String> _serviceNames = {};
   Map<String, Map<String, dynamic>> _providerDetails = {};
   List<Map<String, dynamic>> _bookings = [];
@@ -34,7 +46,6 @@ class _UserBookingState extends State<UserBooking> {
     super.dispose();
   }
 
-  // Load all necessary data once at the beginning
   Future<void> _loadInitialData() async {
     setState(() {
       _isLoading = true;
@@ -43,7 +54,7 @@ class _UserBookingState extends State<UserBooking> {
     try {
       final currentUser = FirebaseAuth.instance.currentUser;
 
-      // Get all services first
+      // Get all services
       final servicesSnapshot = await FirebaseFirestore.instance
           .collection('services')
           .get();
@@ -61,9 +72,8 @@ class _UserBookingState extends State<UserBooking> {
           .where('userId', isEqualTo: currentUser?.uid)
           .get();
 
-      // Extract provider IDs from bookings to fetch them in a single batch
+      // Extract provider IDs
       Set<String> providerIds = {};
-
       for (var doc in bookingsSnapshot.docs) {
         var data = doc.data();
         String? providerId = data['providerId'] as String?;
@@ -90,13 +100,13 @@ class _UserBookingState extends State<UserBooking> {
         }
       }
 
-      // Process all bookings and prepare the complete data
+      // Process all bookings and sort by bookingDate (descending)
       for (var doc in bookingsSnapshot.docs) {
         var data = doc.data();
         String serviceId = data['serviceId'] ?? '';
         String providerId = data['providerId'] ?? '';
 
-        // Format dates
+        // Format dates and times
         String formattedServiceDate = data['serviceDate'] != null
             ? formatDate(data['serviceDate'] as Timestamp)
             : 'Not specified';
@@ -120,12 +130,8 @@ class _UserBookingState extends State<UserBooking> {
         }
 
         // Get provider details
-        String providerName = 'Unknown Provider';
-        String providerImage = 'https://via.placeholder.com/50';
-        if (_providerDetails.containsKey(providerId)) {
-          providerName = _providerDetails[providerId]!['name'] ?? providerName;
-          providerImage = _providerDetails[providerId]!['profileImage'] ?? providerImage;
-        }
+        String providerName = _providerDetails[providerId]?['name'] ?? 'Unknown Provider';
+        String providerImage = _providerDetails[providerId]?['profileImage'] ?? 'https://via.placeholder.com/50';
 
         // Create complete booking record
         _bookings.add({
@@ -136,6 +142,7 @@ class _UserBookingState extends State<UserBooking> {
           'serviceDate': formattedServiceDate,
           'serviceTime': serviceTime,
           'bookingDate': formattedBookingDate,
+          'bookingTimestamp': data['bookingDate'] as Timestamp?, // For sorting
           'providerId': providerId,
           'providerName': providerName,
           'providerImage': providerImage,
@@ -143,11 +150,17 @@ class _UserBookingState extends State<UserBooking> {
               ? data['location']['local'] ?? 'Unknown Location'
               : 'Unknown Location',
           'price': '\$${data['paymentAmount'] ?? '0'}',
-          'rawData': data, // Keep original data for reference if needed
+          'status': data['status'] ?? 'Pending', // Store status for filtering
+          'rawData': data, // Keep original data
         });
       }
 
-      // Initialize filtered bookings with all bookings
+      // Sort bookings by bookingTimestamp (descending)
+      _bookings.sort((a, b) {
+        if (a['bookingTimestamp'] == null || b['bookingTimestamp'] == null) return 0;
+        return b['bookingTimestamp'].compareTo(a['bookingTimestamp']);
+      });
+
       _filteredBookings = List.from(_bookings);
 
     } catch (e) {
@@ -163,22 +176,42 @@ class _UserBookingState extends State<UserBooking> {
     final query = _searchController.text.trim().toLowerCase();
     setState(() {
       _searchQuery = query;
-      _performLocalSearch();
+      _performLocalSearchAndSort();
     });
   }
 
-  void _performLocalSearch() {
-    if (_searchQuery.isEmpty) {
-      setState(() {
-        _filteredBookings = List.from(_bookings);
-      });
-      return;
-    }
+  void _performLocalSearchAndSort() {
+    List<Map<String, dynamic>> tempBookings = List.from(_bookings);
 
-    setState(() {
-      _filteredBookings = _bookings.where((booking) {
+    // Apply search filter
+    if (_searchQuery.isNotEmpty) {
+      tempBookings = tempBookings.where((booking) {
         return booking['serviceNameLower'].contains(_searchQuery);
       }).toList();
+    }
+
+    // Apply status filter
+    if (_selectedStatus != 'All') {
+      tempBookings = tempBookings.where((booking) {
+        return booking['status'] == _selectedStatus;
+      }).toList();
+    }
+
+    // Sort by bookingTimestamp (descending)
+    tempBookings.sort((a, b) {
+      if (a['bookingTimestamp'] == null || b['bookingTimestamp'] == null) return 0;
+      return b['bookingTimestamp'].compareTo(a['bookingTimestamp']);
+    });
+
+    setState(() {
+      _filteredBookings = tempBookings;
+    });
+  }
+
+  void _onStatusChanged(String? newValue) {
+    setState(() {
+      _selectedStatus = newValue ?? 'All';
+      _performLocalSearchAndSort(); // Trigger sorting and filtering immediately
     });
   }
 
@@ -193,49 +226,128 @@ class _UserBookingState extends State<UserBooking> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Color(0xFF060644), // Primary color as background
       appBar: AppBar(
-        title: Text('Confirmed Bookings', style: TextStyle(color: Colors.black)),
-        backgroundColor: Colors.white,
-        elevation: 1,
-        iconTheme: IconThemeData(color: Colors.black),
+        backgroundColor: Color(0xFF060644),
+        elevation: 0,
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back_ios, color: Colors.white),
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: Text(
+          'My Bookings',
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 24,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            TextField(
+      body: Column(
+        children: [
+          // Search bar
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: TextField(
               controller: _searchController,
               decoration: InputDecoration(
                 hintText: 'Search by service name...',
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8.0),
+                  borderSide: BorderSide(color: Colors.white),
                 ),
-                prefixIcon: Icon(Icons.search),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8.0),
+                  borderSide: BorderSide(color: Colors.white),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8.0),
+                  borderSide: BorderSide(color: Colors.white),
+                ),
+                prefixIcon: Icon(Icons.search, color: Colors.white),
                 suffixIcon: _searchQuery.isNotEmpty
                     ? IconButton(
-                  icon: Icon(Icons.clear),
+                  icon: Icon(Icons.clear, color: Colors.white),
                   onPressed: () {
                     _searchController.clear();
                   },
                 )
                     : null,
+                hintStyle: TextStyle(color: Colors.white70),
+                filled: true,
+                fillColor: Colors.white.withOpacity(0.1),
               ),
-              style: TextStyle(fontSize: 14),
+              style: TextStyle(fontSize: 14, color: Colors.white),
             ),
-            SizedBox(height: 12),
-
-            Expanded(
+          ),
+          // Sorting filter (similar to NotificationPage, with "Completed" added)
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: Row(
+              children: _filterOptions.map((filter) {
+                bool isSelected = _selectedStatus == filter['label'];
+                return Padding(
+                  padding: EdgeInsets.only(right: 8),
+                  child: ElevatedButton(
+                    onPressed: () {
+                      _onStatusChanged(filter['label']); // Trigger sorting on click
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: isSelected ? Colors.white : Color(0xFF060644),
+                      foregroundColor: isSelected ? Color(0xFF060644) : Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                      elevation: 2,
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          filter['icon'],
+                          size: 18,
+                          color: isSelected ? Color(0xFF060644) : Colors.white,
+                        ),
+                        SizedBox(width: 8),
+                        Text(
+                          filter['label'],
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              }).toList(),
+            ),
+          ),
+          // Booking list
+          Expanded(
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.white, // Secondary color for the content area
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(20),
+                  topRight: Radius.circular(20),
+                ),
+              ),
               child: _isLoading
                   ? ListView.builder(
-                itemCount: 3, // Show 3 shimmer cards while loading
+                itemCount: 3,
+                padding: EdgeInsets.symmetric(vertical: 8, horizontal: 3),
                 itemBuilder: (context, index) => ShimmerBookingCard(),
               )
                   : _bookings.isEmpty
                   ? _buildEmptyState('No Bookings Yet')
                   : _filteredBookings.isEmpty
                   ? _buildEmptyState('No matching bookings found',
-                  subtitle: 'Try a different search term')
+                  subtitle: 'Try a different search term or status')
                   : ListView.builder(
+                padding: EdgeInsets.symmetric(vertical: 8, horizontal: 3),
                 itemCount: _filteredBookings.length,
                 itemBuilder: (context, index) {
                   final booking = _filteredBookings[index];
@@ -248,22 +360,26 @@ class _UserBookingState extends State<UserBooking> {
                     providerImage: booking['providerImage'],
                     location: booking['location'],
                     price: booking['price'],
+                    status: booking['status'],
+                    onViewDetails: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => BookingTrackingPage(
+                            bookingId: booking['id'],
+                            bookingData: booking['rawData'],
+                            serviceName: booking['serviceName'],
+                          ),
+                        ),
+                      );
+                    },
                   );
                 },
               ),
             ),
-
-            SizedBox(height: 12),
-            ElevatedButton(
-              onPressed: () {},
-              style: ElevatedButton.styleFrom(
-                minimumSize: Size(double.infinity, 45),
-                backgroundColor: Color(0xFF060644),
-              ),
-              child: Text('Book New Service', style: TextStyle(fontSize: 14, color: Colors.white)),
-            ),
-          ],
-        ),
+          ),
+          SizedBox(height: 16), // Ensure padding at the bottom
+        ],
       ),
     );
   }
@@ -273,10 +389,11 @@ class _UserBookingState extends State<UserBooking> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-
+          Icon(Icons.bookmark_border, size: 64, color: Colors.grey),
+          SizedBox(height: 16),
           Text(
             message,
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500, color: Colors.black87),
           ),
           if (subtitle != null) ...[
             SizedBox(height: 8),
@@ -291,13 +408,14 @@ class _UserBookingState extends State<UserBooking> {
   }
 }
 
-// Keep the ShimmerBookingCard and BookingCard classes as they were
 class ShimmerBookingCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
+      margin: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+      elevation: 2,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12.0),
+        borderRadius: BorderRadius.circular(12),
       ),
       child: Shimmer.fromColors(
         baseColor: Colors.grey[300]!,
@@ -308,7 +426,7 @@ class ShimmerBookingCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Container(
-                width: 200,
+                width: double.infinity,
                 height: 20,
                 color: Colors.white,
               ),
@@ -446,6 +564,8 @@ class BookingCard extends StatelessWidget {
   final String providerImage;
   final String location;
   final String price;
+  final String status;
+  final VoidCallback onViewDetails;
 
   BookingCard({
     required this.serviceName,
@@ -456,28 +576,36 @@ class BookingCard extends StatelessWidget {
     required this.providerImage,
     required this.location,
     required this.price,
+    required this.status,
+    required this.onViewDetails,
   });
 
   @override
   Widget build(BuildContext context) {
     return Card(
+      margin: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+      elevation: 2,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12.0),
+        borderRadius: BorderRadius.circular(12),
       ),
+      color: Colors.white, // Secondary color for cards
       child: Padding(
         padding: const EdgeInsets.all(12.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(serviceName, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-            SizedBox(height: 6),
+            Text(
+              serviceName,
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF060644)),
+            ),
+            SizedBox(height: 8),
             Row(
               children: [
                 Icon(Icons.calendar_today, size: 14, color: Colors.grey),
                 SizedBox(width: 4),
                 Text(
                   'Service Date: $serviceDate',
-                  style: TextStyle(fontSize: 12, color: Colors.grey[700]),
+                  style: TextStyle(fontSize: 12, color: Colors.black54),
                 ),
               ],
             ),
@@ -487,7 +615,7 @@ class BookingCard extends StatelessWidget {
                 SizedBox(width: 4),
                 Text(
                   'Time: $serviceTime',
-                  style: TextStyle(fontSize: 12, color: Colors.grey[700]),
+                  style: TextStyle(fontSize: 12, color: Colors.black54),
                 ),
               ],
             ),
@@ -497,7 +625,7 @@ class BookingCard extends StatelessWidget {
                 SizedBox(width: 4),
                 Text(
                   'Booking Date: $bookingDate',
-                  style: TextStyle(fontSize: 12, color: Colors.grey[700]),
+                  style: TextStyle(fontSize: 12, color: Colors.black54),
                 ),
               ],
             ),
@@ -507,16 +635,19 @@ class BookingCard extends StatelessWidget {
                 CircleAvatar(
                   backgroundImage: NetworkImage(providerImage),
                   radius: 20,
+                  backgroundColor: Colors.grey[300],
                 ),
                 SizedBox(width: 8),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(providerName,
-                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500)
+                    Text(
+                      providerName,
+                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: Colors.black87),
                     ),
-                    Text('Service Provider',
-                        style: TextStyle(fontSize: 12, color: Colors.grey)
+                    Text(
+                      'Service Provider',
+                      style: TextStyle(fontSize: 12, color: Colors.grey),
                     ),
                   ],
                 ),
@@ -530,13 +661,13 @@ class BookingCard extends StatelessWidget {
                 Expanded(
                   child: Text(
                     location,
-                    style: TextStyle(fontSize: 12, color: Colors.grey[700]),
+                    style: TextStyle(fontSize: 12, color: Colors.black54),
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
               ],
             ),
-            SizedBox(height: 6),
+            SizedBox(height: 8),
             Text(
               'Price: $price',
               style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Color(0xFF060644)),
@@ -546,16 +677,25 @@ class BookingCard extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 TextButton(
-                  onPressed: () {},
+                  onPressed: onViewDetails,
+                  style: TextButton.styleFrom(
+                    foregroundColor: Color(0xFF060644), // Primary color for text
+                  ),
                   child: Text('View Details', style: TextStyle(fontSize: 12)),
                 ),
                 TextButton(
                   onPressed: () {},
-                  child: Text('Reschedule', style: TextStyle(color: Color(0xFF060644), fontSize: 12)),
+                  style: TextButton.styleFrom(
+                    foregroundColor: Color(0xFF060644), // Primary color for text
+                  ),
+                  child: Text('Reschedule', style: TextStyle(fontSize: 12)),
                 ),
                 TextButton(
                   onPressed: () {},
-                  child: Text('Cancel', style: TextStyle(color: Colors.red, fontSize: 12)),
+                  style: TextButton.styleFrom(
+                    foregroundColor: Colors.red, // Keep red for cancel
+                  ),
+                  child: Text('Cancel', style: TextStyle(fontSize: 12)),
                 ),
               ],
             ),
