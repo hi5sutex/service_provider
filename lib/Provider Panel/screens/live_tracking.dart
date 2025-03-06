@@ -8,6 +8,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:service_provider/Provider%20Panel/screens/work_proof.dart'; // Import the new page
 
 class LiveTrackingPage extends StatefulWidget {
   final String bookingId;
@@ -37,7 +38,7 @@ class _LiveTrackingPageState extends State<LiveTrackingPage> {
   String estimatedDistance = "Calculating...";
 
   DateTime? lastRouteUpdate;
-  bool isTrackingStarted = false; // Flag to control live tracking
+  bool isTrackingStarted = false;
 
   @override
   void initState() {
@@ -45,7 +46,7 @@ class _LiveTrackingPageState extends State<LiveTrackingPage> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       print('Booking Data: ${widget.bookingData}');
       extractDestinationLocation();
-      getInitialLocation(); // Fetch initial location without starting live tracking
+      getInitialLocation();
     });
   }
 
@@ -100,7 +101,7 @@ class _LiveTrackingPageState extends State<LiveTrackingPage> {
         print('Initial Current Location: $currentLocation');
       });
 
-      getOSRMRoute(); // Show initial route without live tracking
+      getOSRMRoute();
     } catch (e) {
       print('Error getting initial location: $e');
       showErrorAndNavigateBack('Failed to get location: $e');
@@ -108,7 +109,7 @@ class _LiveTrackingPageState extends State<LiveTrackingPage> {
   }
 
   void startLiveTracking() async {
-    if (isTrackingStarted) return; // Prevent multiple subscriptions
+    if (isTrackingStarted) return;
 
     try {
       locationSubscription = location.onLocationChanged.listen((LocationData locationData) {
@@ -250,22 +251,108 @@ class _LiveTrackingPageState extends State<LiveTrackingPage> {
     });
   }
 
-  void markAsArrived() async {
-    try {
-      await FirebaseFirestore.instance.collection('bookings').doc(widget.bookingId).update({
-        'providerArrived': true,
-        'status': 'Completed',
-        'completedAt': Timestamp.now(),
-      });
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Service completed and marked as arrived')),
-      );
-      Navigator.pop(context);
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to complete service: $e'), backgroundColor: Colors.red),
-      );
-    }
+  void _showCompletionOptions(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (BuildContext context) {
+        return Padding(
+          padding: const EdgeInsets.all(20.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.pop(context); // Close bottom sheet
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => WorkProofPage(
+                        bookingId: widget.bookingId,
+                        bookingData: widget.bookingData, // Pass bookingData
+                      ),
+                    ),
+                  );
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF060644),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                ),
+                child: const SizedBox(
+                  width: double.infinity,
+                  child: Center(
+                    child: Text(
+                      'Complete Service',
+                      style: TextStyle(color: Colors.white),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              OutlinedButton(
+                onPressed: () {
+                  Navigator.pop(context); // Close bottom sheet
+                  TextEditingController reasonController = TextEditingController();
+                  showDialog(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return AlertDialog(
+                        title: const Text('Cancel Booking'),
+                        content: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Text('Are you sure you want to cancel this booking?'),
+                            const SizedBox(height: 16),
+                            TextField(
+                              controller: reasonController,
+                              decoration: const InputDecoration(
+                                labelText: 'Reason for cancellation',
+                                border: OutlineInputBorder(),
+                              ),
+                              maxLines: 3,
+                            ),
+                          ],
+                        ),
+                        actions: [
+                          TextButton(onPressed: () => Navigator.pop(context), child: const Text('No')),
+                          TextButton(
+                            onPressed: () async {
+                              Navigator.pop(context);
+                              await FirebaseFirestore.instance.collection('bookings').doc(widget.bookingId).update({
+                                'status': 'Cancelled',
+                                'cancelReason': reasonController.text.isEmpty ? 'Cancelled by provider' : reasonController.text,
+                                'cancelledAt': Timestamp.now(),
+                              });
+                              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Booking cancelled successfully')));
+                              Navigator.pop(context); // Back to booking list
+                            },
+                            child: const Text('Yes, Cancel', style: TextStyle(color: Colors.red)),
+                          ),
+                        ],
+                      );
+                    },
+                  );
+                },
+                style: OutlinedButton.styleFrom(
+                  side: const BorderSide(color: Colors.red),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                ),
+                child: const SizedBox(
+                  width: double.infinity,
+                  child: Center(
+                    child: Text('Cancel Order', style: TextStyle(color: Colors.red)),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
   }
 
   @override
@@ -392,7 +479,7 @@ class _LiveTrackingPageState extends State<LiveTrackingPage> {
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
-                      onPressed: isTrackingStarted ? markAsArrived : startLiveTracking, // Toggle between starting tracking and marking arrival
+                      onPressed: isTrackingStarted ? () => _showCompletionOptions(context) : startLiveTracking,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF060644),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),

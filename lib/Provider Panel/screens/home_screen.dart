@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:service_provider/Admin%20Panel/screens/notifications_screen.dart';
+import 'package:service_provider/Provider%20Panel/EarningsPage.dart';
 import 'package:service_provider/Provider%20Panel/screens/notification.dart';
 // import 'pa /User Panel/chat_funtionality/ChatListScreen.dart';
 import 'add_service_screen.dart';
@@ -67,11 +68,19 @@ class ProviderHome extends StatelessWidget {
                   primaryColor: primaryColor,
                   secondaryColor: secondaryColor,
                 ),
-                _buildDashboardCard(
-                  title: 'Earnings',
-                  value: '\$3,450',
-                  primaryColor: primaryColor,
-                  secondaryColor: secondaryColor,
+                InkWell(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => EarningsPage()),
+                    );
+                  },
+                  child: _buildDashboardCard(
+                    title: 'Earnings',
+                    value: '\$3,450',
+                    primaryColor: primaryColor,
+                    secondaryColor: secondaryColor,
+                  ),
                 ),
                 _buildDashboardCard(
                   title: 'Ratings',

@@ -217,8 +217,7 @@ class _ConfirmBookingPageState extends State<ConfirmBookingPage> {
     try {
       User? user = FirebaseAuth.instance.currentUser;
       if (user != null) {
-        CollectionReference bookings =
-        FirebaseFirestore.instance.collection('bookings');
+        CollectionReference bookings = FirebaseFirestore.instance.collection('bookings');
 
         DateTime serviceDateTime = DateTime(
           widget.date.year,
@@ -228,6 +227,7 @@ class _ConfirmBookingPageState extends State<ConfirmBookingPage> {
           widget.time.minute,
         );
 
+        // Prepare booking data
         Map<String, dynamic> bookingData = {
           'userId': user.uid,
           'providerId': providerId,
@@ -239,14 +239,31 @@ class _ConfirmBookingPageState extends State<ConfirmBookingPage> {
             'longitude': _longitude,
             'local': addressController.text,
           },
-          'paymentAmount': calculateTotalAmount(),
+          'paymentAmount': calculateTotalAmount(), // Total amount user pays
           'paymentMode': selectedPaymentMethod,
           'paymentStatus': paymentId != null ? 'Completed' : 'Pending',
-          'paymentId': paymentId, // Store Razorpay payment ID
-          'status': 'Pending',
-          'isNotificationCleared': false, // Add this for notification tracking
-          'clearedAt': null, // Initial value for when notification is cleared
+          'paymentId': paymentId,
+          'status': 'Pending', // Booking status starts as Pending
+          'isNotificationCleared': false,
+          'clearedAt': null,
         };
+
+        // Save booking and get bookingId
+        DocumentReference bookingRef = await bookings.add(bookingData);
+        String bookingId = bookingRef.id;
+
+        // Save earnings data under earnings/providerId/records/bookingId
+        CollectionReference earnings = FirebaseFirestore.instance.collection('earnings');
+        CollectionReference earningsRecords = earnings.doc(providerId).collection('records');
+        await earningsRecords.doc(bookingId).set({
+          'paymentId': paymentId ?? 'COD',
+          'serviceAmount': servicePrice, // Set to servicePrice
+          'taxAmount': calculateTaxAmount(), // 11% of servicePrice
+          'platformFee': calculatePlatformFee(), // 1% of servicePrice
+          'paymentAmount': calculateTotalAmount(), // Set to total amount user pays
+          'earningStatus': 'pending', // Always pending initially
+          'paymentAt': FieldValue.serverTimestamp(),
+        });
 
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -259,7 +276,6 @@ class _ConfirmBookingPageState extends State<ConfirmBookingPage> {
             duration: Duration(seconds: 5),
           ),
         );
-        await bookings.add(bookingData);
 
         _showSnackBar("Booking created successfully!");
         Navigator.pop(context);
