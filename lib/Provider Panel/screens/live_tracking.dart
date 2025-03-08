@@ -8,7 +8,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'package:service_provider/Provider%20Panel/screens/work_proof.dart'; // Import the new page
+import 'package:service_provider/Provider%20Panel/screens/OtpBookingPage.dart'; // Import OtpBookingPage
+import 'package:service_provider/Provider%20Panel/screens/work_proof.dart'; // Import WorkProofPage
 
 class LiveTrackingPage extends StatefulWidget {
   final String bookingId;
@@ -266,12 +267,13 @@ class _LiveTrackingPageState extends State<LiveTrackingPage> {
               ElevatedButton(
                 onPressed: () {
                   Navigator.pop(context); // Close bottom sheet
+                  // Navigate to OtpBookingPage to generate and send OTP
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => WorkProofPage(
+                      builder: (context) => OtpBookingPage(
                         bookingId: widget.bookingId,
-                        bookingData: widget.bookingData, // Pass bookingData
+                        bookingData: widget.bookingData,
                       ),
                     ),
                   );

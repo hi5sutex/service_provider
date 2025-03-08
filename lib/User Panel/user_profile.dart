@@ -3,8 +3,10 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:dio/dio.dart';
+import 'package:service_provider/User%20Panel/UserOtpPage.dart';
 import 'package:service_provider/User%20Panel/edit_profile.dart';
 import 'package:service_provider/User%20Panel/user_login.dart';
+import 'package:service_provider/User%20Panel/UserOtpPage.dart'; // Import UserOtpPage
 
 class UserProfile extends StatefulWidget {
   @override
@@ -147,12 +149,11 @@ class _UserProfileState extends State<UserProfile> {
                       ),
                       onPressed: () async {
                         await _auth.signOut();
-                        Navigator.pop(context);  // Close the dialog
+                        Navigator.pop(context); // Close the dialog
                         Navigator.pushReplacement(
                           context,
                           MaterialPageRoute(builder: (context) => LoginPage()),
                         );
-
                       },
                       child: Text(
                         'Logout',
@@ -171,13 +172,6 @@ class _UserProfileState extends State<UserProfile> {
       },
     );
   }
-
-  Future<void> _logout(BuildContext context) async {
-    await _auth.signOut();
-    Navigator.pushReplacementNamed(context, '/login');
-  }
-
-
 
   @override
   Widget build(BuildContext context) {
@@ -288,7 +282,6 @@ class _UserProfileState extends State<UserProfile> {
               ),
               // Bottom White Section
               Expanded(
-
                 child: Container(
                   padding: EdgeInsets.all(20),
                   decoration: BoxDecoration(
@@ -297,64 +290,76 @@ class _UserProfileState extends State<UserProfile> {
                       top: Radius.circular(30),
                     ),
                   ),
-                  child: SingleChildScrollView(child:  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      ListTile(
-                        leading:
-                        Icon(Icons.person_outline, color: Color(0xFF060644)),
-                        title: Text('Edit Profile'),
-                        trailing: Icon(Icons.arrow_forward_ios,
-                            color: Color(0xFF060644)),
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (context) => EditUserProfile()),
-                          );
-                        },
-
-                      ),
-                      Divider(),
-                      ListTile(
-                        leading:
-                        Icon(Icons.lock_outline, color: Color(0xFF060644)),
-                        title: Text('Change Password'),
-                        trailing: Icon(Icons.arrow_forward_ios,
-                            color: Color(0xFF060644)),
-                        onTap: () {},
-                      ),
-                      Divider(),
-                      ListTile(
-                        leading:
-                        Icon(Icons.dark_mode_outlined, color: Color(0xFF060644)),
-                        title: Text('Dark Mode'),
-                        trailing: Switch(
-                          value: true,
-                          onChanged: (value) {},
-                          activeColor: Color(0xFF060644),
+                  child: SingleChildScrollView(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        ListTile(
+                          leading: Icon(Icons.person_outline,
+                              color: Color(0xFF060644)),
+                          title: Text('Edit Profile'),
+                          trailing: Icon(Icons.arrow_forward_ios,
+                              color: Color(0xFF060644)),
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => EditUserProfile()),
+                            );
+                          },
                         ),
-                      ),
-                      Divider(),
-                      ListTile(
-                        leading: Icon(Icons.payment, color: Color(0xFF060644)),
-                        title: Text('Add Payment Method'),
-                        trailing: Icon(Icons.arrow_forward_ios,
-                            color: Color(0xFF060644)),
-                        onTap: () {},
-                      ),
-
-                      Divider(),
-                      ListTile(
-                        leading: Icon(Icons.logout, color: Color(0xFF060644)),
-                        title: Text('Logout'),
-                        onTap: () => _showLogoutConfirmation(context),
-                      ),
-                      
-
-                    ],
-                  ),)
+                        Divider(),
+                        ListTile(
+                          leading:
+                          Icon(Icons.lock_outline, color: Color(0xFF060644)),
+                          title: Text('Change Password'),
+                          trailing: Icon(Icons.arrow_forward_ios,
+                              color: Color(0xFF060644)),
+                          onTap: () {},
+                        ),
+                        Divider(),
+                        ListTile(
+                          leading: Icon(Icons.dark_mode_outlined,
+                              color: Color(0xFF060644)),
+                          title: Text('Dark Mode'),
+                          trailing: Switch(
+                            value: true,
+                            onChanged: (value) {},
+                            activeColor: Color(0xFF060644),
+                          ),
+                        ),
+                        Divider(),
+                        ListTile(
+                          leading: Icon(Icons.payment, color: Color(0xFF060644)),
+                          title: Text('Add Payment Method'),
+                          trailing: Icon(Icons.arrow_forward_ios,
+                              color: Color(0xFF060644)),
+                          onTap: () {},
+                        ),
+                        Divider(),
+                        ListTile(
+                          leading: Icon(Icons.vpn_key, color: Color(0xFF060644)), // New icon for OTP
+                          title: Text('View OTP'),
+                          trailing: Icon(Icons.arrow_forward_ios,
+                              color: Color(0xFF060644)),
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => UserOtpPage()),
+                            );
+                          },
+                        ),
+                        Divider(),
+                        ListTile(
+                          leading: Icon(Icons.logout, color: Color(0xFF060644)),
+                          title: Text('Logout'),
+                          onTap: () => _showLogoutConfirmation(context),
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
-
               ),
             ],
           );
