@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:service_provider/Provider%20Panel/EarningsPage.dart';
 import 'package:service_provider/User%20Panel/user_login.dart'; // Replace with the correct path
 import 'package:service_provider/Provider Panel/screens/edit_profile.dart'; // Replace with the correct path to EditProfile()
 import 'package:service_provider/Provider Panel/screens/manage_services.dart'; // Replace with the correct path to ManageServices()
@@ -117,7 +118,7 @@ class ProviderProfile extends StatelessWidget {
         _buildListTile(
           icon: Icons.account_balance_wallet,
           title: 'Earnings',
-          onTap: () => _navigateTo(context, Earnings()),
+          onTap: () => _navigateTo(context, EarningsPage()),
         ),
         _buildListTile(
           icon: Icons.perm_media,

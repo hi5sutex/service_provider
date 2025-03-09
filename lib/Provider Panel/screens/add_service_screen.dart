@@ -3,20 +3,23 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:uuid/uuid.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 class AddServiceScreen extends StatefulWidget {
+  const AddServiceScreen({super.key});
+
   @override
   _AddServiceScreenState createState() => _AddServiceScreenState();
 }
 
 class _AddServiceScreenState extends State<AddServiceScreen> {
   final _formKey = GlobalKey<FormState>();
-  final TextEditingController _nameController = TextEditingController();
-  final TextEditingController _descriptionController = TextEditingController();
-  final TextEditingController _priceController = TextEditingController();
+  late final TextEditingController _nameController;
+  late final TextEditingController _descriptionController;
+  late final TextEditingController _priceController;
+  late final TextEditingController _whatsIncludedController;
+  late final TextEditingController _responsibilitiesController;
 
   String? selectedCategory;
   String? selectedSubcategory;
@@ -24,28 +27,50 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
   List<File> selectedImages = [];
   final ImagePicker _picker = ImagePicker();
   bool isLoading = false;
-
   List<String> whatsIncludedList = [];
   List<String> responsibilitiesList = [];
-  final TextEditingController _dynamicFieldController = TextEditingController();
+  List<String> categories = [];
+
+  // Define colors
+  static const Color primaryColor = Color(0xFF060644);
+  static const Color secondaryColor = Colors.white;
 
   @override
   void initState() {
     super.initState();
+    _nameController = TextEditingController();
+    _descriptionController = TextEditingController();
+    _priceController = TextEditingController();
+    _whatsIncludedController = TextEditingController();
+    _responsibilitiesController = TextEditingController();
     fetchCategories();
   }
 
-  List<String> categories = [];
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _descriptionController.dispose();
+    _priceController.dispose();
+    _whatsIncludedController.dispose();
+    _responsibilitiesController.dispose();
+    super.dispose();
+  }
 
   Future<void> fetchCategories() async {
     try {
-      QuerySnapshot snapshot =
-          await FirebaseFirestore.instance.collection('categories').get();
-      setState(() {
-        categories = snapshot.docs.map((doc) => doc['name'] as String).toList();
-      });
+      QuerySnapshot snapshot = await FirebaseFirestore.instance.collection('categories').get();
+      if (mounted) {
+        setState(() {
+          categories = snapshot.docs.map((doc) => doc['name'] as String).toList();
+        });
+      }
     } catch (e) {
-      print('Error fetching categories: $e');
+      debugPrint('Error fetching categories: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Failed to load categories')),
+        );
+      }
     }
   }
 
@@ -56,342 +81,496 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
           .where('name', isEqualTo: categoryName)
           .get();
 
-      if (snapshot.docs.isNotEmpty) {
+      if (mounted) {
         setState(() {
-          // Map subcategories to extract their names
-          subcategories = (snapshot.docs.first['subcategories'] as List)
-              .map<String>((subcategory) => subcategory['name'] as String)
-              .toList();
-          selectedSubcategory = null; // Reset selected subcategory
+          if (snapshot.docs.isNotEmpty) {
+            subcategories = (snapshot.docs.first['subcategories'] as List)
+                .map<String>((subcategory) => subcategory['name'] as String)
+                .toList();
+          } else {
+            subcategories = [];
+          }
+          selectedSubcategory = null;
         });
-      } else {
+      }
+    } catch (e) {
+      debugPrint('Error fetching subcategories: $e');
+      if (mounted) {
         setState(() {
           subcategories = [];
           selectedSubcategory = null;
         });
       }
-    } catch (e) {
-      print('Error fetching subcategories: $e');
-      setState(() {
-        subcategories = [];
-        selectedSubcategory = null;
-      });
     }
   }
 
-
   Future<void> selectImages() async {
-    final pickedFiles = await _picker.pickMultiImage();
-    if (pickedFiles != null &&
-        pickedFiles.length + selectedImages.length <= 5) {
-      setState(() {
-        selectedImages.addAll(pickedFiles.map((e) => File(e.path)));
-      });
-    } else {
+    try {
+      final pickedFiles = await _picker.pickMultiImage(imageQuality: 80, maxWidth: 1000);
+      if (pickedFiles != null) {
+        final newImages = pickedFiles.map((e) => File(e.path)).toList();
+        if (selectedImages.length + newImages.length <= 5) {
+          setState(() {
+            selectedImages.addAll(newImages);
+          });
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Maximum 5 images allowed')),
+          );
+        }
+      }
+    } catch (e) {
+      debugPrint('Error picking images: $e');
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('You can only select up to 5 images.')),
+        const SnackBar(content: Text('Failed to pick images')),
       );
     }
   }
 
   Future<List<String>> uploadImagesToCloudinary() async {
     List<String> imageUrls = [];
-    const String cloudinaryUrl =
-        'https://api.cloudinary.com/v1_1/dpcjw0g5c/image/upload';
+    const String cloudinaryUrl = 'https://api.cloudinary.com/v1_1/dpcjw0g5c/image/upload';
     const String uploadPreset = 'flutter_unsigned_upload';
 
     for (var image in selectedImages) {
       try {
-        String fileName = const Uuid().v4();
-        var request = http.MultipartRequest('POST', Uri.parse(cloudinaryUrl));
-        request.fields['upload_preset'] = uploadPreset;
-        request.files
-            .add(await http.MultipartFile.fromPath('file', image.path));
+        final request = http.MultipartRequest('POST', Uri.parse(cloudinaryUrl))
+          ..fields['upload_preset'] = uploadPreset
+          ..files.add(await http.MultipartFile.fromPath('file', image.path));
 
-        var response = await request.send();
+        final response = await request.send();
         if (response.statusCode == 200) {
-          var responseBody = await response.stream.bytesToString();
-          var jsonResponse = jsonDecode(responseBody);
-          if (jsonResponse['secure_url'] != null) {
-            imageUrls.add(jsonResponse['secure_url']);
-            print('Uploaded image URL: ${jsonResponse['secure_url']}');
-          } else {
-            print('Error: secure_url not found in response.');
+          final responseBody = await response.stream.bytesToString();
+          final jsonResponse = jsonDecode(responseBody);
+          final secureUrl = jsonResponse['secure_url'] as String?;
+          if (secureUrl != null) {
+            imageUrls.add(secureUrl);
           }
         } else {
-          print('Failed to upload image: ${response.statusCode}');
+          throw Exception('Upload failed with status: ${response.statusCode}');
         }
       } catch (e) {
-        print('Exception during image upload: $e');
+        debugPrint('Image upload error: $e');
       }
     }
     return imageUrls;
   }
 
   Future<void> submitService() async {
-    if (_formKey.currentState!.validate() &&
-        selectedCategory != null &&
-        selectedSubcategory != null) {
-      setState(() {
-        isLoading = true;
+    if (!_formKey.currentState!.validate() || selectedCategory == null || selectedSubcategory == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please fill all required fields')),
+      );
+      return;
+    }
+
+    setState(() => isLoading = true);
+    try {
+      final providerId = FirebaseAuth.instance.currentUser?.uid;
+      if (providerId == null) {
+        throw Exception('User not authenticated');
+      }
+
+      final imageUrls = await uploadImagesToCloudinary();
+      if (imageUrls.isEmpty && selectedImages.isNotEmpty) {
+        throw Exception('Image upload failed');
+      }
+
+      await FirebaseFirestore.instance.collection('pending_services').add({
+        'name': _nameController.text.trim(),
+        'description': _descriptionController.text.trim(),
+        'category': selectedCategory,
+        'subcategory': selectedSubcategory,
+        'price': double.tryParse(_priceController.text) ?? 0.0,
+        'whatsIncluded': whatsIncludedList,
+        'responsibilities': responsibilitiesList,
+        'images': imageUrls,
+        'createdBy': providerId,
+        'createdAt': FieldValue.serverTimestamp(),
+        'status': 'pending',
       });
-      try {
-        // Get the current provider ID
-        String? providerId = FirebaseAuth.instance.currentUser?.uid;
 
-        if (providerId == null) {
-          throw Exception('No provider logged in');
-        }
-
-        // Upload images
-        List<String> imageUrls = await uploadImagesToCloudinary();
-
-        // Add service to Pending Services Collection
-        DocumentReference pendingServiceRef =
-        await FirebaseFirestore.instance.collection('pending_services').add({
-          'name': _nameController.text,
-          'description': _descriptionController.text,
-          'category': selectedCategory,
-          'subcategory': selectedSubcategory,
-          'price': double.parse(_priceController.text),
-          'whatsIncluded': whatsIncludedList,
-          'responsibilities': responsibilitiesList,
-          'images': imageUrls,
-          'createdBy': providerId, // Dynamically set provider ID
-          'createdAt': FieldValue.serverTimestamp(),
-          'status': 'pending', // Mark as pending for admin approval
-        });
-
-        // Notify user
+      if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Service submitted for approval!')),
+          const SnackBar(content: Text('Service submitted for approval')),
         );
         Navigator.pop(context);
-      } catch (e) {
-        print('Error adding service: $e');
+      }
+    } catch (e) {
+      debugPrint('Error submitting service: $e');
+      if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to submit service.')),
+          const SnackBar(content: Text('Failed to submit service')),
         );
-      } finally {
-        setState(() {
-          isLoading = false;
-        });
+      }
+    } finally {
+      if (mounted) {
+        setState(() => isLoading = false);
       }
     }
   }
 
-  Widget _buildDynamicList(String label, String hint, List<String> itemsList) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-        ),
-        SizedBox(height: 8),
-        Wrap(
-          spacing: 8,
-          runSpacing: 8,
-          children: itemsList.map((item) {
-            return Chip(
-              label: Text(item),
-              deleteIcon: Icon(Icons.close),
-              onDeleted: () {
-                setState(() {
-                  itemsList.remove(item);
-                });
-              },
-              backgroundColor: Colors.grey[200],
-            );
-          }).toList(),
-        ),
-        SizedBox(height: 8),
-        TextFormField(
-          controller: _dynamicFieldController,
-          decoration: InputDecoration(
-            hintText: '$hint',
-            suffixIcon: IconButton(
-              icon: Icon(Icons.add),
-              onPressed: () {
-                if (_dynamicFieldController.text.isNotEmpty) {
-                  setState(() {
-                    itemsList.add(_dynamicFieldController.text.trim());
-                    _dynamicFieldController.clear();
-                  });
-                }
-              },
+  // Helper method for section headers
+  Widget _buildSectionHeader(String title, IconData icon) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Row(
+        children: [
+          Icon(icon, color: primaryColor),
+          const SizedBox(width: 8),
+          Text(
+            title,
+            style: const TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: primaryColor,
             ),
           ),
+        ],
+      ),
+    );
+  }
+
+  // Enhanced dynamic list widget
+  Widget _buildDynamicList(
+      String label, String hint, List<String> itemsList, TextEditingController controller) {
+    return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              label,
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: primaryColor,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: itemsList
+                  .map(
+                    (item) => Chip(
+                  label: Text(item, style: const TextStyle(color: secondaryColor)),
+                  backgroundColor: primaryColor,
+                  deleteIcon: const Icon(Icons.close, color: secondaryColor),
+                  onDeleted: () => setState(() => itemsList.remove(item)),
+                ),
+              )
+                  .toList(),
+            ),
+            const SizedBox(height: 8),
+            TextFormField(
+              controller: controller,
+              decoration: InputDecoration(
+                hintText: hint,
+                hintStyle: const TextStyle(color: Colors.grey),
+                filled: true,
+                fillColor: Colors.grey[100],
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: BorderSide.none,
+                ),
+                suffixIcon: IconButton(
+                  icon: const Icon(Icons.add, color: primaryColor),
+                  onPressed: () {
+                    final text = controller.text.trim();
+                    if (text.isNotEmpty && !itemsList.contains(text)) {
+                      setState(() {
+                        itemsList.add(text);
+                        controller.clear(); // Clear input after adding
+                      });
+                    }
+                  },
+                ),
+              ),
+            ),
+          ],
         ),
-      ],
+      ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.grey[100],
       appBar: AppBar(
-        title: Text('Add Service'),
+        backgroundColor: primaryColor,
+        title: const Text('Add New Service', style: TextStyle(color: secondaryColor)),
+        elevation: 0,
+        iconTheme: const IconThemeData(color: secondaryColor),
       ),
-      body: isLoading
-          ? Center(child: CircularProgressIndicator())
-          : SingleChildScrollView(
-              padding: EdgeInsets.all(16),
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Service Name
-                    TextFormField(
-                      controller: _nameController,
-                      decoration: InputDecoration(
-                        labelText: 'Service Name',
-                        hintText: 'E.g., Home Cleaning, AC Repair',
-                      ),
-                      validator: (value) =>
-                          value!.isEmpty ? 'Please enter a service name' : null,
-                    ),
-                    SizedBox(height: 16),
-                    // Description
-                    TextFormField(
-                      controller: _descriptionController,
-                      decoration: InputDecoration(
-                        labelText: 'Description',
-                        hintText: 'E.g., Includes dusting, mopping, sanitization',
-                      ),
-                      maxLines: 3,
-                      validator: (value) =>
-                          value!.isEmpty ? 'Please enter a description' : null,
-                    ),
-                    SizedBox(height: 16),
-
-                    // Price
-                    TextFormField(
-                      controller: _priceController,
-                      keyboardType: TextInputType.number,
-                      decoration: InputDecoration(
-                        labelText: 'Price',
-                        hintText: 'Enter service price',
-                      ),
-                      validator: (value) =>
-                          value!.isEmpty ? 'Please enter a price' : null,
-                    ),
-                    SizedBox(height: 16),
-
-                    // Categories
-                    DropdownButtonFormField<String>(
-                      value: selectedCategory,
-                      decoration: InputDecoration(labelText: 'Category'),
-                      items: categories
-                          .map((category) => DropdownMenuItem(
-                              value: category, child: Text(category)))
-                          .toList(),
-                      onChanged: (value) {
-                        setState(() {
-                          selectedCategory = value;
-                          fetchSubcategories(value!);
-                        });
-                      },
-                      validator: (value) =>
-                          value == null ? 'Please select a category' : null,
-                    ),
-                    SizedBox(height: 16),
-
-                    // Subcategories
-                    DropdownButtonFormField<String>(
-                      value: selectedSubcategory,
-                      decoration: InputDecoration(labelText: 'Subcategory'),
-                      items: subcategories
-                          .map((subcategory) => DropdownMenuItem(
-                        value: subcategory,
-                        child: Text(subcategory),
-                      ))
-                          .toList(),
-                      onChanged: (value) {
-                        setState(() {
-                          selectedSubcategory = value;
-                        });
-                      },
-                      validator: (value) =>
-                      value == null ? 'Please select a subcategory' : null,
-                    ),
-
-                    SizedBox(height: 16),
-
-                    // What's Included
-                    _buildDynamicList('What\'s Included', 'E.g., Free consultation, Cleaning tools, Basic setup', whatsIncludedList),
-                    SizedBox(height: 16),
-
-                    // Responsibilities
-                    _buildDynamicList('Responsibilities', 'E.g., Arrive on time, Complete tasks, Ensure satisfaction', responsibilitiesList),
-                    SizedBox(height: 16),
-
-                    // Images
-                    Text(
-                      'Images',
-                      style:
-                          TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                    ),
-                    SizedBox(height: 8),
-                    Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
-                      children: selectedImages.map((image) {
-                        return Stack(
-                          children: [
-                            Image.file(image,
-                                height: 100, width: 100, fit: BoxFit.cover),
-                            Positioned(
-                              top: 4,
-                              right: 4,
-                              child: GestureDetector(
-                                onTap: () {
-                                  setState(() {
-                                    selectedImages.remove(image);
-                                  });
-                                },
-                                child: Container(
-                                  padding: EdgeInsets.all(4),
-                                  decoration: BoxDecoration(
-                                    color: Colors.red,
-                                    shape: BoxShape.circle,
-                                  ),
-                                  child: Icon(Icons.close,
-                                      color: Colors.white, size: 16),
-                                ),
+      body: Stack(
+        children: [
+          SingleChildScrollView(
+            padding: const EdgeInsets.all(20),
+            child: Form(
+              key: _formKey,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Service Details Section
+                  Card(
+                    elevation: 2,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _buildSectionHeader('Service Details', Icons.build),
+                          TextFormField(
+                            controller: _nameController,
+                            decoration: InputDecoration(
+                              labelText: 'Service Name',
+                              hintText: 'e.g., Home Cleaning, AC Repair',
+                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                              focusedBorder: OutlineInputBorder(
+                                borderSide: const BorderSide(color: primaryColor),
+                                borderRadius: BorderRadius.circular(8),
                               ),
                             ),
-                          ],
-                        );
-                      }).toList(),
-                    ),
-                    SizedBox(height: 16),
-                    ElevatedButton.icon(
-                      onPressed: selectImages,
-                      icon: Icon(Icons.add_photo_alternate),
-                      label: Text('Add Images'),
-                    ),
-                    SizedBox(height: 24),
-
-                    // Add Service Button
-                    Align(
-                      alignment: Alignment.center,
-                      child: ElevatedButton(
-                        onPressed: submitService,
-                        style: ElevatedButton.styleFrom(
-                          padding: EdgeInsets.symmetric(
-                              horizontal: 40, vertical: 12),
-                          textStyle: TextStyle(fontSize: 16),
-                        ),
-                        child: Text('Add Service'),
+                            validator: (value) =>
+                            value?.trim().isEmpty ?? true ? 'Please enter a service name' : null,
+                          ),
+                          const SizedBox(height: 16),
+                          TextFormField(
+                            controller: _descriptionController,
+                            decoration: InputDecoration(
+                              labelText: 'Description',
+                              hintText: 'e.g., Includes dusting, mopping, sanitization',
+                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                              focusedBorder: OutlineInputBorder(
+                                borderSide: const BorderSide(color: primaryColor),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                            ),
+                            maxLines: 3,
+                            validator: (value) =>
+                            value?.trim().isEmpty ?? true ? 'Please enter a description' : null,
+                          ),
+                          const SizedBox(height: 16),
+                          TextFormField(
+                            controller: _priceController,
+                            keyboardType: TextInputType.number,
+                            decoration: InputDecoration(
+                              labelText: 'Price',
+                              hintText: 'Enter service price',
+                              prefixText: '\$ ', // Currency prefix for professionalism
+                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                              focusedBorder: OutlineInputBorder(
+                                borderSide: const BorderSide(color: primaryColor),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                            ),
+                            validator: (value) {
+                              if (value?.trim().isEmpty ?? true) return 'Please enter a price';
+                              if (double.tryParse(value!) == null) return 'Please enter a valid number';
+                              return null;
+                            },
+                          ),
+                        ],
                       ),
                     ),
-                    SizedBox(height: 32), // Extra bottom padding for scrolling
-                  ],
-                ),
+                  ),
+                  const SizedBox(height: 20),
+
+                  // Category & Subcategory Section
+                  Card(
+                    elevation: 2,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _buildSectionHeader('Category & Subcategory', Icons.category),
+                          DropdownButtonFormField<String>(
+                            value: selectedCategory,
+                            decoration: InputDecoration(
+                              labelText: 'Category',
+                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                              focusedBorder: OutlineInputBorder(
+                                borderSide: const BorderSide(color: primaryColor),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                            ),
+                            items: categories
+                                .map((category) => DropdownMenuItem(
+                              value: category,
+                              child: Text(category),
+                            ))
+                                .toList(),
+                            onChanged: (value) {
+                              setState(() {
+                                selectedCategory = value;
+                                selectedSubcategory = null;
+                                fetchSubcategories(value!);
+                              });
+                            },
+                            validator: (value) => value == null ? 'Please select a category' : null,
+                          ),
+                          const SizedBox(height: 16),
+                          DropdownButtonFormField<String>(
+                            value: selectedSubcategory,
+                            decoration: InputDecoration(
+                              labelText: 'Subcategory',
+                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                              focusedBorder: OutlineInputBorder(
+                                borderSide: const BorderSide(color: primaryColor),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                            ),
+                            items: subcategories
+                                .map((subcategory) => DropdownMenuItem(
+                              value: subcategory,
+                              child: Text(subcategory),
+                            ))
+                                .toList(),
+                            onChanged: (value) => setState(() => selectedSubcategory = value),
+                            validator: (value) => value == null ? 'Please select a subcategory' : null,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+
+                  // What's Included Section
+                  _buildDynamicList(
+                    'What\'s Included',
+                    'e.g., Free consultation, Cleaning tools',
+                    whatsIncludedList,
+                    _whatsIncludedController,
+                  ),
+                  const SizedBox(height: 20),
+
+                  // Responsibilities Section
+                  _buildDynamicList(
+                    'Responsibilities',
+                    'e.g., Arrive on time, Complete tasks',
+                    responsibilitiesList,
+                    _responsibilitiesController,
+                  ),
+                  const SizedBox(height: 20),
+
+                  // Images Section
+                  Card(
+                    elevation: 2,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _buildSectionHeader('Images', Icons.image),
+                          Text(
+                            '${selectedImages.length}/5 images selected',
+                            style: const TextStyle(color: primaryColor),
+                          ),
+                          const SizedBox(height: 12),
+                          Wrap(
+                            spacing: 10,
+                            runSpacing: 10,
+                            children: selectedImages
+                                .map(
+                                  (image) => Stack(
+                                children: [
+                                  ClipRRect(
+                                    borderRadius: BorderRadius.circular(8),
+                                    child: Image.file(
+                                      image,
+                                      height: 100,
+                                      width: 100,
+                                      fit: BoxFit.cover,
+                                    ),
+                                  ),
+                                  Positioned(
+                                    top: 4,
+                                    right: 4,
+                                    child: GestureDetector(
+                                      onTap: () => setState(() => selectedImages.remove(image)),
+                                      child: Container(
+                                        padding: const EdgeInsets.all(4),
+                                        decoration: const BoxDecoration(
+                                          color: Colors.red,
+                                          shape: BoxShape.circle,
+                                        ),
+                                        child: const Icon(
+                                          Icons.close,
+                                          color: secondaryColor,
+                                          size: 16,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            )
+                                .toList(),
+                          ),
+                          const SizedBox(height: 12),
+                          ElevatedButton.icon(
+                            onPressed: selectImages,
+                            icon: const Icon(Icons.add_photo_alternate, size: 20),
+                            label: const Text('Add Images'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: primaryColor,
+                              foregroundColor: secondaryColor,
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+
+                  // Submission Note
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 20),
+                    child: Text(
+                      'Your service will be reviewed by our team before being published.',
+                      style: TextStyle(color: Colors.grey[600], fontStyle: FontStyle.italic),
+                    ),
+                  ),
+
+                  // Submit Button
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: isLoading ? null : submitService,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: primaryColor,
+                        foregroundColor: secondaryColor,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      ),
+                      child: isLoading
+                          ? const CircularProgressIndicator(color: secondaryColor)
+                          : const Text('Submit Service', style: TextStyle(fontSize: 16)),
+                    ),
+                  ),
+                  const SizedBox(height: 20), // Extra space at the bottom
+                ],
               ),
             ),
+          ),
+          if (isLoading)
+            Container(
+              color: Colors.black26,
+              child: const Center(child: CircularProgressIndicator(color: primaryColor)),
+            ),
+        ],
+      ),
     );
   }
 }

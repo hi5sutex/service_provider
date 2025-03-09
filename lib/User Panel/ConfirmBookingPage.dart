@@ -261,7 +261,7 @@ class _ConfirmBookingPageState extends State<ConfirmBookingPage> {
           'taxAmount': calculateTaxAmount(), // 11% of servicePrice
           'platformFee': calculatePlatformFee(), // 1% of servicePrice
           'paymentAmount': calculateTotalAmount(), // Set to total amount user pays
-          'earningStatus': 'pending', // Always pending initially
+          'earningStatus': 'Pending', // Always pending initially
           'paymentAt': FieldValue.serverTimestamp(),
         });
 

@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'dart:io';
-import 'package:carousel_slider/carousel_slider.dart';
-import 'package:image_picker/image_picker.dart';
+import 'package:service_provider/Provider%20Panel/screens/ServiceDetailScreen.dart';
+import 'package:shimmer/shimmer.dart';
 
 class ManageServices extends StatefulWidget {
   const ManageServices({Key? key}) : super(key: key);
@@ -40,13 +39,11 @@ class _ManageServicesState extends State<ManageServices> {
             .get();
 
         if (serviceDoc.exists) {
-          Map<String, dynamic> serviceData =
-          serviceDoc.data() as Map<String, dynamic>;
-          serviceData['id'] = serviceDoc.id; // Add the ID to the data
+          Map<String, dynamic> serviceData = serviceDoc.data() as Map<String, dynamic>;
+          serviceData['id'] = serviceDoc.id;
           services.add(serviceData);
         }
       }
-
       return services;
     } catch (e) {
       debugPrint('Error fetching services: $e');
@@ -58,28 +55,32 @@ class _ManageServicesState extends State<ManageServices> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Manage Services'),
+        backgroundColor: const Color(0xFF060644),
+        title: const Text('Manage Services', style: TextStyle(color: Colors.white)),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () => Navigator.pop(context),
         ),
+        elevation: 4,
       ),
       body: FutureBuilder<List<Map<String, dynamic>>>(
         future: fetchServices(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
+            return const ServiceListShimmer();
           }
-
           if (snapshot.hasError) {
             return Center(child: Text('Error: ${snapshot.error}'));
           }
-
           final services = snapshot.data ?? [];
           if (services.isEmpty) {
-            return const Center(child: Text('No services found.'));
+            return const Center(
+              child: Text(
+                'No services found.',
+                style: TextStyle(fontSize: 16, color: Colors.grey),
+              ),
+            );
           }
-
           return ListView.builder(
             itemCount: services.length,
             itemBuilder: (context, index) {
@@ -108,8 +109,7 @@ class ServiceItem extends StatelessWidget {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) =>
-                ServiceDetailScreen(serviceId: service['id']),
+            builder: (context) => ServiceDetailScreen(serviceId: service['id']),
           ),
         );
       },
@@ -151,18 +151,14 @@ class ServiceItem extends StatelessWidget {
                     right: 8,
                     top: 8,
                     child: Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 4),
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
                         color: Colors.black54,
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Text(
                         '+${images.length - 1}',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 12,
-                        ),
+                        style: const TextStyle(color: Colors.white, fontSize: 12),
                       ),
                     ),
                   ),
@@ -178,6 +174,7 @@ class ServiceItem extends StatelessWidget {
                     style: const TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
+                      color: Color(0xFF060644),
                     ),
                   ),
                   const SizedBox(height: 8),
@@ -201,13 +198,10 @@ class ServiceItem extends StatelessWidget {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 4),
                   Text(
                     service['subcategory'] ?? 'Subcategory',
-                    style: const TextStyle(
-                      fontSize: 14,
-                      color: Colors.grey,
-                    ),
+                    style: const TextStyle(fontSize: 14, color: Colors.grey),
                   ),
                 ],
               ),
@@ -219,236 +213,27 @@ class ServiceItem extends StatelessWidget {
   }
 }
 
-class ServiceDetailScreen extends StatefulWidget {
-  final String serviceId;
-
-  ServiceDetailScreen({required this.serviceId});
-
-  @override
-  _ServiceDetailScreenState createState() => _ServiceDetailScreenState();
-}
-
-class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
-  final _formKey = GlobalKey<FormState>();
-  final ImagePicker _picker = ImagePicker();
-  List<File> newImages = [];
-  List<String> existingImageUrls = [];
-  bool isLoading = true;
-
-  // Controllers for service details
-  final TextEditingController _nameController = TextEditingController();
-  final TextEditingController _descriptionController = TextEditingController();
-  final TextEditingController _priceController = TextEditingController();
-  final TextEditingController _newWhatsIncludedController =
-  TextEditingController();
-  final TextEditingController _newResponsibilitiesController =
-  TextEditingController();
-
-  String? category;
-  String? subcategory;
-  List<String> whatsIncluded = [];
-  List<String> responsibilities = [];
-  Timestamp? createdAt;
-
-  @override
-  void initState() {
-    super.initState();
-    fetchServiceDetails();
-  }
-
-  Future<void> fetchServiceDetails() async {
-    try {
-      DocumentSnapshot serviceSnapshot = await FirebaseFirestore.instance
-          .collection('services')
-          .doc(widget.serviceId)
-          .get();
-
-      if (serviceSnapshot.exists) {
-        Map<String, dynamic> data =
-        serviceSnapshot.data() as Map<String, dynamic>;
-        setState(() {
-          _nameController.text = data['name'];
-          _descriptionController.text = data['description'];
-          _priceController.text = data['price'].toString();
-          category = data['category'];
-          subcategory = data['subcategory'];
-          whatsIncluded = List<String>.from(data['whatsIncluded']);
-          responsibilities = List<String>.from(data['responsibilities']);
-          existingImageUrls = List<String>.from(data['images']);
-          createdAt = data['createdAt'];
-          isLoading = false;
-        });
-      }
-    } catch (e) {
-      print('Error fetching service details: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to load service details')),
-      );
-    }
-  }
-
-  Future<void> updateService() async {
-    if (!_formKey.currentState!.validate()) return;
-
-    setState(() {
-      isLoading = true;
-    });
-
-    try {
-      await FirebaseFirestore.instance
-          .collection('services')
-          .doc(widget.serviceId)
-          .update({
-        'name': _nameController.text,
-        'description': _descriptionController.text,
-        'price': double.parse(_priceController.text),
-        'category': category,
-        'subcategory': subcategory,
-        'whatsIncluded': whatsIncluded,
-        'responsibilities': responsibilities,
-        'images': existingImageUrls,
-      });
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Service updated successfully!')),
-      );
-      Navigator.pop(context);
-    } catch (e) {
-      print('Error updating service: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to update service')),
-      );
-    } finally {
-      setState(() {
-        isLoading = false;
-      });
-    }
-  }
-
-  Widget _buildDynamicList(
-      String label, List<String> itemsList, TextEditingController controller) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            label,
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-          ),
-          SizedBox(height: 8),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: itemsList.map((item) {
-              return Chip(
-                label: Text(item),
-                deleteIcon: Icon(Icons.close),
-                onDeleted: () {
-                  setState(() {
-                    itemsList.remove(item);
-                  });
-                },
-              );
-            }).toList(),
-          ),
-          SizedBox(height: 8),
-          TextFormField(
-            controller: controller,
-            decoration: InputDecoration(
-              hintText: 'Add new item',
-              suffixIcon: IconButton(
-                icon: Icon(Icons.add),
-                onPressed: () {
-                  if (controller.text.trim().isNotEmpty) {
-                    setState(() {
-                      itemsList.add(controller.text.trim());
-                      controller.clear();
-                    });
-                  }
-                },
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
+class ServiceListShimmer extends StatelessWidget {
+  const ServiceListShimmer({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Service Details'),
-      ),
-      body: isLoading
-          ? Center(child: CircularProgressIndicator())
-          : SingleChildScrollView(
-        padding: EdgeInsets.all(16),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Image Slider
-              if (existingImageUrls.isNotEmpty)
-                CarouselSlider(
-                  items: existingImageUrls.map((url) {
-                    return Image.network(url, fit: BoxFit.cover);
-                  }).toList(),
-                  options: CarouselOptions(
-                    height: 200,
-                    enlargeCenterPage: true,
-                  ),
-                ),
-              SizedBox(height: 16),
-              // Name
-              TextFormField(
-                controller: _nameController,
-                decoration: InputDecoration(labelText: 'Service Name'),
-                validator: (value) =>
-                value!.isEmpty ? 'Enter service name' : null,
-              ),
-              SizedBox(height: 16),
-              // Description
-              TextFormField(
-                controller: _descriptionController,
-                maxLines: 3,
-                decoration: InputDecoration(labelText: 'Description'),
-                validator: (value) =>
-                value!.isEmpty ? 'Enter description' : null,
-              ),
-              SizedBox(height: 16),
-              // Price
-              TextFormField(
-                controller: _priceController,
-                keyboardType: TextInputType.number,
-                decoration: InputDecoration(labelText: 'Price'),
-                validator: (value) =>
-                value!.isEmpty ? 'Enter price' : null,
-              ),
-              SizedBox(height: 16),
-              // Dynamic Lists
-              _buildDynamicList(
-                  "What's Included", whatsIncluded, _newWhatsIncludedController),
-              SizedBox(height: 16),
-              _buildDynamicList('Responsibilities', responsibilities,
-                  _newResponsibilitiesController),
-              SizedBox(height: 16),
-              // Save Button
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: updateService,
-                  child: Text('Update Service'),
-                ),
-              ),
-            ],
+    return ListView.builder(
+      itemCount: 5,
+      itemBuilder: (context, index) {
+        return Shimmer.fromColors(
+          baseColor: Colors.grey[300]!,
+          highlightColor: Colors.grey[100]!,
+          child: Card(
+            margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            child: Container(
+              height: 200,
+              color: Colors.white,
+            ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 }
-
