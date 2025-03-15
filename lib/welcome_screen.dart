@@ -1,39 +1,43 @@
 import 'package:flutter/material.dart';
 import 'package:service_provider/User%20Panel/user_login.dart';
 import 'package:service_provider/User%20Panel/user_registration.dart';
+import 'theme.dart';
 
 class WelcomeScreen extends StatelessWidget {
   const WelcomeScreen({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+    final screenHeight = MediaQuery.of(context).size.height;
+    final screenWidth = MediaQuery.of(context).size.width;
+    final theme = Theme.of(context);
+
     return Scaffold(
-      backgroundColor: const Color(0xFF060644),
+      backgroundColor: AppTheme.primaryColorCustom,
       body: Stack(
         children: [
-          // Blue background section
           Align(
             alignment: Alignment.topCenter,
             child: Container(
-              color: const Color(0xFF060644),
-              height: MediaQuery.of(context).size.height * 0.65,
+              color: AppTheme.primaryColorCustom,
+              height: screenHeight * 0.65,
+              width: double.infinity,
               child: Center(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Image.asset(
                       "android/assets/logo.png",
-                      width: 150.0, // Adjust width as needed
-                      height: 150.0, // Adjust height as needed
+                      width: screenWidth * 0.35,
+                      height: screenHeight * 0.2,
                       fit: BoxFit.contain,
                     ),
-                    const SizedBox(height: 5.0), // Add some space between logo and text
-                    const Text(
+                    SizedBox(height: screenHeight * 0.01),
+                    Text(
                       'Quick Expert',
-                      style: TextStyle(
-                        fontSize: 30.0,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
+                      style: theme.textTheme.displayLarge?.copyWith(
+                        fontSize: screenWidth * 0.08,
+                        color: AppTheme.secondaryColorCustom,
                       ),
                     ),
                   ],
@@ -41,42 +45,48 @@ class WelcomeScreen extends StatelessWidget {
               ),
             ),
           ),
-          // White background for bottom section
           Align(
             alignment: Alignment.bottomCenter,
             child: Container(
-              height: MediaQuery.of(context).size.height * 0.35,
-              decoration: const BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.only(
+              height: screenHeight * 0.35,
+              width: double.infinity,
+              decoration: BoxDecoration(
+                color: AppTheme.secondaryColorCustom,
+                borderRadius: const BorderRadius.only(
                   topLeft: Radius.circular(30.0),
                   topRight: Radius.circular(30.0),
                 ),
               ),
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 10.0),
+                padding: EdgeInsets.symmetric(
+                  horizontal: screenWidth * 0.06,
+                  vertical: screenHeight * 0.015,
+                ),
                 child: Column(
-                  mainAxisAlignment: MainAxisAlignment.start, // Align content to the top
+                  mainAxisAlignment: MainAxisAlignment.start,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
+                    SizedBox(height: screenHeight * 0.01),
+                    Text(
                       'Welcome',
-                      style: TextStyle(
-                        fontSize: 32.0,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black,
+                      style: theme.textTheme.displayLarge?.copyWith(
+                        fontSize: screenWidth * 0.09,
+                        color: AppTheme.primaryColorCustom,
                       ),
                     ),
-                    const SizedBox(height: 16.0),
-                    const Text(
+                    SizedBox(height: screenHeight * 0.02),
+                    Text(
                       'Welcome to Quick Expert! Log in to start offering your services and make an impact!',
-                      style: TextStyle(
-                        fontSize: 16.0,
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        fontSize: screenWidth * 0.045,
                         color: Colors.grey,
                       ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                    const SizedBox(height: 30.0),
+                    SizedBox(height: screenHeight * 0.04),
                     Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
                         Expanded(
                           child: ElevatedButton(
@@ -86,21 +96,18 @@ class WelcomeScreen extends StatelessWidget {
                                 MaterialPageRoute(builder: (context) => LoginPage()),
                               );
                             },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.black,
-                              foregroundColor: Colors.white,
-                              padding: const EdgeInsets.symmetric(vertical: 16.0),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(25.0),
+                            style: theme.elevatedButtonTheme.style?.copyWith(
+                              padding: MaterialStateProperty.all(
+                                EdgeInsets.symmetric(vertical: screenHeight * 0.02),
                               ),
                             ),
-                            child: const Text(
-                              'sign in',
-                              style: TextStyle(fontSize: 16.0),
+                            child: Text(
+                              'Sign In',
+                              style: TextStyle(fontSize: screenWidth * 0.045),
                             ),
                           ),
                         ),
-                        const SizedBox(width: 16.0),
+                        SizedBox(width: screenWidth * 0.04),
                         Expanded(
                           child: OutlinedButton(
                             onPressed: () {
@@ -109,18 +116,14 @@ class WelcomeScreen extends StatelessWidget {
                                 MaterialPageRoute(builder: (context) => RegistrationPage()),
                               );
                             },
-                            style: OutlinedButton.styleFrom(
-                              foregroundColor: Colors.black,
-                              backgroundColor: Colors.white,
-                              side: const BorderSide(color: Colors.black),
-                              padding: const EdgeInsets.symmetric(vertical: 16.0),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(25.0),
+                            style: theme.outlinedButtonTheme.style?.copyWith(
+                              padding: MaterialStateProperty.all(
+                                EdgeInsets.symmetric(vertical: screenHeight * 0.02),
                               ),
                             ),
-                            child: const Text(
-                              'sign up',
-                              style: TextStyle(fontSize: 16.0),
+                            child: Text(
+                              'Sign Up',
+                              style: TextStyle(fontSize: screenWidth * 0.045),
                             ),
                           ),
                         ),

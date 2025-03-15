@@ -5,6 +5,74 @@ import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:razorpay_flutter/razorpay_flutter.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+
+class NotificationService {
+  static final FlutterLocalNotificationsPlugin _flutterLocalNotificationsPlugin =
+  FlutterLocalNotificationsPlugin();
+
+  static Future<void> initialize() async {
+    const AndroidInitializationSettings androidSettings =
+    AndroidInitializationSettings('@mipmap/ic_launcher');
+    const DarwinInitializationSettings iosSettings = DarwinInitializationSettings(
+      requestAlertPermission: true,
+      requestBadgePermission: true,
+      requestSoundPermission: true,
+    );
+    const InitializationSettings initializationSettings = InitializationSettings(
+      android: androidSettings,
+      iOS: iosSettings,
+    );
+
+    await _flutterLocalNotificationsPlugin.initialize(
+      initializationSettings,
+      onDidReceiveNotificationResponse: (NotificationResponse response) {
+        // Handle tap on notification (payload will be processed in main.dart)
+        if (response.payload != null) {
+          // Payload format: "bookingId:<bookingId>"
+          final bookingId = response.payload!.split(':')[1];
+          _navigateToNotificationPage(bookingId);
+        }
+      },
+    );
+  }
+
+  static Future<NotificationDetails> _notificationDetails() async {
+    const AndroidNotificationDetails androidDetails = AndroidNotificationDetails(
+      'booking_channel_id',
+      'Booking Notifications',
+      channelDescription: 'Notifications for new bookings',
+      importance: Importance.max,
+      priority: Priority.high,
+    );
+    const DarwinNotificationDetails iosDetails = DarwinNotificationDetails(
+      presentAlert: true,
+      presentBadge: true,
+      presentSound: true,
+    );
+    return const NotificationDetails(android: androidDetails, iOS: iosDetails);
+  }
+
+  static Future<void> showBookingNotification({
+    required int id,
+    required String title,
+    required String body,
+    required String bookingId,
+  }) async {
+    final details = await _notificationDetails();
+    await _flutterLocalNotificationsPlugin.show(
+      id,
+      title,
+      body,
+      details,
+      payload: 'bookingId:$bookingId', // Pass booking ID as payload
+    );
+  }
+
+  static void _navigateToNotificationPage(String bookingId) {
+    // This will be handled in main.dart with NavigatorKey
+  }
+}
 
 class ConfirmBookingPage extends StatefulWidget {
   final DateTime date;
@@ -54,13 +122,15 @@ class _ConfirmBookingPageState extends State<ConfirmBookingPage> {
     addressController.addListener(() {
       setState(() {}); // Rebuild UI when address changes
     });
+
+    NotificationService.initialize();
   }
 
   @override
   void dispose() {
-    super.dispose();
     _razorpay.clear(); // Clear Razorpay listeners
     addressController.dispose();
+    super.dispose();
   }
 
   Widget _buildTextField({
@@ -227,7 +297,6 @@ class _ConfirmBookingPageState extends State<ConfirmBookingPage> {
           widget.time.minute,
         );
 
-        // Prepare booking data
         Map<String, dynamic> bookingData = {
           'userId': user.uid,
           'providerId': providerId,
@@ -239,31 +308,36 @@ class _ConfirmBookingPageState extends State<ConfirmBookingPage> {
             'longitude': _longitude,
             'local': addressController.text,
           },
-          'paymentAmount': calculateTotalAmount(), // Total amount user pays
+          'paymentAmount': calculateTotalAmount(),
           'paymentMode': selectedPaymentMethod,
           'paymentStatus': paymentId != null ? 'Completed' : 'Pending',
           'paymentId': paymentId,
-          'status': 'Pending', // Booking status starts as Pending
+          'status': 'Pending',
           'isNotificationCleared': false,
           'clearedAt': null,
         };
 
-        // Save booking and get bookingId
         DocumentReference bookingRef = await bookings.add(bookingData);
         String bookingId = bookingRef.id;
 
-        // Save earnings data under earnings/providerId/records/bookingId
         CollectionReference earnings = FirebaseFirestore.instance.collection('earnings');
         CollectionReference earningsRecords = earnings.doc(providerId).collection('records');
         await earningsRecords.doc(bookingId).set({
           'paymentId': paymentId ?? 'COD',
-          'serviceAmount': servicePrice, // Set to servicePrice
-          'taxAmount': calculateTaxAmount(), // 11% of servicePrice
-          'platformFee': calculatePlatformFee(), // 1% of servicePrice
-          'paymentAmount': calculateTotalAmount(), // Set to total amount user pays
-          'earningStatus': 'Pending', // Always pending initially
+          'serviceAmount': servicePrice,
+          'taxAmount': calculateTaxAmount(),
+          'platformFee': calculatePlatformFee(),
+          'paymentAmount': calculateTotalAmount(),
+          'earningStatus': 'Pending',
           'paymentAt': FieldValue.serverTimestamp(),
         });
+
+        // Send FCM notification to provider
+        await _sendFCMNotificationToProvider(
+          providerId: providerId,
+          bookingId: bookingId,
+          serviceName: widget.serviceData['name'],
+        );
 
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -284,6 +358,48 @@ class _ConfirmBookingPageState extends State<ConfirmBookingPage> {
       _showSnackBar("Error creating booking: $e");
     }
     setState(() => isLoading = false);
+  }
+
+  Future<void> _sendFCMNotificationToProvider({
+    required String providerId,
+    required String bookingId,
+    required String serviceName,
+  }) async {
+    try {
+      // Fetch provider's FCM token from Firestore
+      DocumentSnapshot providerDoc = await FirebaseFirestore.instance
+          .collection('providers')
+          .doc(providerId)
+          .get();
+      String? fcmToken = providerDoc['fcmToken'];
+
+      if (fcmToken != null) {
+        // Send notification via FCM (requires a server or Firebase Function)
+        // For simplicity, assume a cloud function exists at this URL
+        final response = await http.post(
+          Uri.parse('https://your-firebase-function-url/sendNotification'),
+          headers: {'Content-Type': 'application/json'},
+          body: jsonEncode({
+            'to': fcmToken,
+            'notification': {
+              'title': 'New Booking Request',
+              'body': 'A new booking for $serviceName has been requested!',
+            },
+            'data': {
+              'bookingId': bookingId,
+            },
+          }),
+        );
+
+        if (response.statusCode == 200) {
+          print('FCM notification sent successfully');
+        } else {
+          print('Failed to send FCM notification: ${response.body}');
+        }
+      }
+    } catch (e) {
+      print('Error sending FCM notification: $e');
+    }
   }
 
   void _showSnackBar(String message) {

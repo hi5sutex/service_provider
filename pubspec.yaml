@@ -74,8 +74,10 @@ dependencies:
   flutter_map: ^7.0.1
   latlong2: ^0.9.1
   url_launcher: ^6.3.1
-
-
+  flutter_local_notifications: ^18.0.1
+#  flutter_local_notifications: ^17.0.0
+  flutter_background_service: ^5.1.0
+  flutter_background_service_android: ^6.3.0
 
 
 
