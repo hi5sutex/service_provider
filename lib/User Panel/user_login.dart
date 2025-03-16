@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:service_provider/User%20Panel/user_registration.dart';
 import 'package:service_provider/User%20Panel/main_home.dart';
 import 'package:service_provider/Provider%20Panel/screens/main.dart';
@@ -27,11 +28,16 @@ class _LoginPageState extends State<LoginPage> {
   @override
   void initState() {
     super.initState();
+    // Optional: Configure FCM for background messages (for providers)
+    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+      print('Foreground message received: ${message.notification?.title}');
+      // You can show a local notification here if desired
+    });
   }
 
   Future<void> loginWithEmailAndPassword() async {
     setState(() {
-      _autoValidate = true;  // Enable validation only after first submit attempt
+      _autoValidate = true;
     });
 
     if (!_formKey.currentState!.validate()) {
@@ -73,12 +79,72 @@ class _LoginPageState extends State<LoginPage> {
     DocumentSnapshot providerDoc =
     await FirebaseFirestore.instance.collection('providers').doc(uid).get();
     if (providerDoc.exists) {
-      _navigateToPage(context, Main(), "Provider");
+      // Register FCM token for providers and wait for completion
+      bool tokenRegistered = await _registerFCMToken(uid);
+      if (tokenRegistered) {
+        _navigateToPage(context, Main(), "Provider");
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Login successful, but notifications may not work")),
+        );
+        _navigateToPage(context, Main(), "Provider");
+      }
       return;
     }
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text("Error: User role not recognized")),
     );
+  }
+
+  Future<bool> _registerFCMToken(String providerId) async {
+    try {
+      FirebaseMessaging messaging = FirebaseMessaging.instance;
+
+      // Request permission for notifications
+      NotificationSettings settings = await messaging.requestPermission(
+        alert: true,
+        badge: true,
+        sound: true,
+      );
+
+      if (settings.authorizationStatus == AuthorizationStatus.authorized) {
+        // Get the FCM token
+        String? token = await messaging.getToken();
+        if (token != null) {
+          // Store the token in Firestore
+          await FirebaseFirestore.instance
+              .collection('providers')
+              .doc(providerId)
+              .set({'fcmToken': token}, SetOptions(merge: true));
+          print('FCM Token registered for provider: $providerId');
+
+          // Handle token refresh
+          FirebaseMessaging.instance.onTokenRefresh.listen((newToken) async {
+            await FirebaseFirestore.instance
+                .collection('providers')
+                .doc(providerId)
+                .set({'fcmToken': newToken}, SetOptions(merge: true));
+            print('FCM Token refreshed for provider: $providerId');
+          });
+          return true;
+        } else {
+          print('FCM token is null');
+          return false;
+        }
+      } else {
+        print('Notification permission denied');
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Notification permission denied")),
+        );
+        return false;
+      }
+    } catch (e) {
+      print('Error registering FCM token: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Error registering notification token: $e")),
+      );
+      return false;
+    }
   }
 
   void _navigateToPage(BuildContext context, Widget page, String role) {
@@ -100,7 +166,7 @@ class _LoginPageState extends State<LoginPage> {
         elevation: 0,
         leading: IconButton(
           padding: const EdgeInsets.all(20.0),
-          icon: Icon(Icons.arrow_back, color: Colors.black,size: 25,),
+          icon: Icon(Icons.arrow_back, color: Colors.black, size: 25),
           onPressed: () {
             Navigator.pushReplacement(
               context,
@@ -110,7 +176,7 @@ class _LoginPageState extends State<LoginPage> {
         ),
         actions: [
           Padding(
-            padding: const EdgeInsets.only(right: 12.0), // Adjust the right padding
+            padding: const EdgeInsets.only(right: 12.0),
             child: TextButton(
               onPressed: () {
                 Navigator.push(
@@ -143,7 +209,7 @@ class _LoginPageState extends State<LoginPage> {
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                const SizedBox(height: 10), // Space between the main title and subtitle
+                const SizedBox(height: 10),
                 const Text(
                   "Log in to access your account and explore the services!",
                   style: TextStyle(color: Colors.black, fontSize: 16),
@@ -211,12 +277,13 @@ class _LoginPageState extends State<LoginPage> {
                             backgroundColor: Colors.white,
                             foregroundColor: Colors.black,
                           ),
-                          child: const Text("Login",
-                            style: TextStyle(fontSize: 19),),
+                          child: const Text(
+                            "Login",
+                            style: TextStyle(fontSize: 19),
+                          ),
                         ),
                       ),
                       const SizedBox(height: 60),
-                      // Green "Become a Provider" button
                       SizedBox(
                         width: double.infinity,
                         height: 50,
@@ -224,11 +291,12 @@ class _LoginPageState extends State<LoginPage> {
                           onPressed: () {
                             Navigator.push(
                               context,
-                              MaterialPageRoute(builder: (context) => RegisterScreen()),
+                              MaterialPageRoute(
+                                  builder: (context) => RegisterScreen()),
                             );
                           },
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.green, // Green color
+                            backgroundColor: Colors.green,
                             foregroundColor: Colors.white,
                           ),
                           child: const Text("Become a Provider",
@@ -236,8 +304,6 @@ class _LoginPageState extends State<LoginPage> {
                         ),
                       ),
                       const SizedBox(height: 20),
-                      // Updated text link for provider registration
-
                     ],
                   ),
                 ),
@@ -313,8 +379,7 @@ class _LoginPageState extends State<LoginPage> {
         },
         child: Text(
           text,
-          style: const TextStyle(color: Colors.white,
-              fontSize: 15),
+          style: const TextStyle(color: Colors.white, fontSize: 15),
         ),
       ),
     );

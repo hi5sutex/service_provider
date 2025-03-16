@@ -5,74 +5,8 @@ import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:razorpay_flutter/razorpay_flutter.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-
-class NotificationService {
-  static final FlutterLocalNotificationsPlugin _flutterLocalNotificationsPlugin =
-  FlutterLocalNotificationsPlugin();
-
-  static Future<void> initialize() async {
-    const AndroidInitializationSettings androidSettings =
-    AndroidInitializationSettings('@mipmap/ic_launcher');
-    const DarwinInitializationSettings iosSettings = DarwinInitializationSettings(
-      requestAlertPermission: true,
-      requestBadgePermission: true,
-      requestSoundPermission: true,
-    );
-    const InitializationSettings initializationSettings = InitializationSettings(
-      android: androidSettings,
-      iOS: iosSettings,
-    );
-
-    await _flutterLocalNotificationsPlugin.initialize(
-      initializationSettings,
-      onDidReceiveNotificationResponse: (NotificationResponse response) {
-        // Handle tap on notification (payload will be processed in main.dart)
-        if (response.payload != null) {
-          // Payload format: "bookingId:<bookingId>"
-          final bookingId = response.payload!.split(':')[1];
-          _navigateToNotificationPage(bookingId);
-        }
-      },
-    );
-  }
-
-  static Future<NotificationDetails> _notificationDetails() async {
-    const AndroidNotificationDetails androidDetails = AndroidNotificationDetails(
-      'booking_channel_id',
-      'Booking Notifications',
-      channelDescription: 'Notifications for new bookings',
-      importance: Importance.max,
-      priority: Priority.high,
-    );
-    const DarwinNotificationDetails iosDetails = DarwinNotificationDetails(
-      presentAlert: true,
-      presentBadge: true,
-      presentSound: true,
-    );
-    return const NotificationDetails(android: androidDetails, iOS: iosDetails);
-  }
-
-  static Future<void> showBookingNotification({
-    required int id,
-    required String title,
-    required String body,
-    required String bookingId,
-  }) async {
-    final details = await _notificationDetails();
-    await _flutterLocalNotificationsPlugin.show(
-      id,
-      title,
-      body,
-      details,
-      payload: 'bookingId:$bookingId', // Pass booking ID as payload
-    );
-  }
-
-  static void _navigateToNotificationPage(String bookingId) {
-    // This will be handled in main.dart with NavigatorKey
-  }
-}
+import 'package:googleapis_auth/auth_io.dart';
+import 'package:service_provider/secrets.dart';
 
 class ConfirmBookingPage extends StatefulWidget {
   final DateTime date;
@@ -87,8 +21,6 @@ class ConfirmBookingPage extends StatefulWidget {
     required this.serviceId,
   });
 
-
-
   @override
   _ConfirmBookingPageState createState() => _ConfirmBookingPageState();
 }
@@ -102,7 +34,7 @@ class _ConfirmBookingPageState extends State<ConfirmBookingPage> {
   double? _longitude;
   bool isLoading = false;
   final _formKey = GlobalKey<FormState>();
-  double get servicePrice => (widget.serviceData['price'] as num?)?.toDouble()??0.0;
+  double get servicePrice => (widget.serviceData['price'] as num?)?.toDouble() ?? 0.0;
   String get providerId => widget.serviceData['createdBy'] ?? '';
   String get serviceId => widget.serviceId;
 
@@ -122,8 +54,6 @@ class _ConfirmBookingPageState extends State<ConfirmBookingPage> {
     addressController.addListener(() {
       setState(() {}); // Rebuild UI when address changes
     });
-
-    NotificationService.initialize();
   }
 
   @override
@@ -266,7 +196,7 @@ class _ConfirmBookingPageState extends State<ConfirmBookingPage> {
 
   void _handlePaymentSuccess(PaymentSuccessResponse response) {
     _showSnackBar("Payment Successful! Payment ID: ${response.paymentId}");
-    _saveBooking(response.paymentId); // Save booking after successful payment
+    _saveBooking(response.paymentId);
   }
 
   void _handlePaymentError(PaymentFailureResponse response) {
@@ -276,6 +206,17 @@ class _ConfirmBookingPageState extends State<ConfirmBookingPage> {
 
   void _handleExternalWallet(ExternalWalletResponse response) {
     _showSnackBar("External Wallet Selected: ${response.walletName}");
+  }
+
+  Future<String> _getAccessToken() async {
+    final serviceAccount = ServiceAccountCredentials.fromJson(serviceAccountJson);
+    final client = await clientViaServiceAccount(
+      serviceAccount,
+      ['https://www.googleapis.com/auth/cloud-platform'],
+    );
+    final accessToken = client.credentials.accessToken.data;
+    client.close();
+    return accessToken;
   }
 
   Future<void> _saveBooking(String? paymentId) async {
@@ -301,6 +242,7 @@ class _ConfirmBookingPageState extends State<ConfirmBookingPage> {
           'userId': user.uid,
           'providerId': providerId,
           'serviceId': serviceId,
+          'serviceName': widget.serviceData['name'], // For notification
           'serviceDate': Timestamp.fromDate(serviceDateTime),
           'bookingDate': FieldValue.serverTimestamp(),
           'location': {
@@ -332,7 +274,7 @@ class _ConfirmBookingPageState extends State<ConfirmBookingPage> {
           'paymentAt': FieldValue.serverTimestamp(),
         });
 
-        // Send FCM notification to provider
+        // Send FCM notification to provider using V1 API
         await _sendFCMNotificationToProvider(
           providerId: providerId,
           bookingId: bookingId,
@@ -374,31 +316,45 @@ class _ConfirmBookingPageState extends State<ConfirmBookingPage> {
       String? fcmToken = providerDoc['fcmToken'];
 
       if (fcmToken != null) {
-        // Send notification via FCM (requires a server or Firebase Function)
-        // For simplicity, assume a cloud function exists at this URL
+        // Get OAuth 2.0 access token
+        final accessToken = await _getAccessToken();
+
+        // V1 API endpoint (replace with your project ID)
+        final Uri url = Uri.parse(
+            'https://fcm.googleapis.com/v1/projects/service-provider-7bf81/messages:send');
         final response = await http.post(
-          Uri.parse('https://your-firebase-function-url/sendNotification'),
-          headers: {'Content-Type': 'application/json'},
+          url,
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer $accessToken',
+          },
           body: jsonEncode({
-            'to': fcmToken,
-            'notification': {
-              'title': 'New Booking Request',
-              'body': 'A new booking for $serviceName has been requested!',
-            },
-            'data': {
-              'bookingId': bookingId,
+            'message': {
+              'token': fcmToken,
+              'notification': {
+                'title': 'New Booking Request',
+                'body': 'A new booking for $serviceName has been requested!',
+              },
+              'data': {
+                'bookingId': bookingId,
+              },
             },
           }),
         );
 
         if (response.statusCode == 200) {
-          print('FCM notification sent successfully');
+          print('FCM notification sent successfully to provider: $providerId');
         } else {
           print('Failed to send FCM notification: ${response.body}');
+          _showSnackBar('Failed to send notification: ${response.statusCode}');
         }
+      } else {
+        print('No FCM token found for provider: $providerId');
+        _showSnackBar('Provider not set up for notifications');
       }
     } catch (e) {
       print('Error sending FCM notification: $e');
+      _showSnackBar('Error sending notification: $e');
     }
   }
 
@@ -498,8 +454,7 @@ class _ConfirmBookingPageState extends State<ConfirmBookingPage> {
             ),
             SizedBox(height: 20),
             ListTile(
-              leading:
-              Image.asset('android/assets/debit card.png', width: 30, height: 30),
+              leading: Image.asset('android/assets/debit card.png', width: 30, height: 30),
               title: Text('Debit Card'),
               trailing: selectedPaymentMethod == 'Debit Card'
                   ? Icon(Icons.check_circle, color: Color(0xFF060644))
@@ -607,7 +562,6 @@ class _ConfirmBookingPageState extends State<ConfirmBookingPage> {
     );
   }
 
-  // Check if address is filled to enable/disable button
   bool get _isAddressFilled => addressController.text.trim().isNotEmpty;
 
   @override
@@ -695,16 +649,16 @@ class _ConfirmBookingPageState extends State<ConfirmBookingPage> {
                             ? () {
                           setState(() => isLoading = true);
                           if (selectedPaymentMethod == 'Cash on Delivery') {
-                            _saveBooking(null); // No payment ID for COD
+                            _saveBooking(null);
                           } else {
-                            _openRazorpayCheckout(); // Open Razorpay for other methods
+                            _openRazorpayCheckout();
                           }
                         }
-                            : null, // Button disabled if address is empty or loading
+                            : null,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: _isAddressFilled && !isLoading
-                              ? Color(0xFF060644) // Enabled color
-                              : Colors.grey, // Disabled color
+                              ? Color(0xFF060644)
+                              : Colors.grey,
                           padding: EdgeInsets.symmetric(vertical: 16),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(8),
