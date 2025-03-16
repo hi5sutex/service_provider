@@ -344,6 +344,8 @@ class _ConfirmBookingPageState extends State<ConfirmBookingPage> {
 
         if (response.statusCode == 200) {
           print('FCM notification sent successfully to provider: $providerId');
+          _showSnackBar('Notification sent : ${response.statusCode}');
+
         } else {
           print('Failed to send FCM notification: ${response.body}');
           _showSnackBar('Failed to send notification: ${response.statusCode}');
