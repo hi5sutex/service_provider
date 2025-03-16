@@ -110,6 +110,7 @@ class _LoginPageState extends State<LoginPage> {
       if (settings.authorizationStatus == AuthorizationStatus.authorized) {
         // Get the FCM token
         String? token = await messaging.getToken();
+        print('FCM Token: $token');
         if (token != null) {
           // Store the token in Firestore
           await FirebaseFirestore.instance

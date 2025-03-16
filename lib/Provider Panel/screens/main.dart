@@ -1,13 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:service_provider/Provider Panel/screens/home_screen.dart';
-// import 'package:service_provider/Provider Panel/screens/booking_screen.dart';
-import 'package:service_provider/Provider%20Panel/screens/chat/chat_screen.dart';
-import 'package:service_provider/Provider Panel/screens/profile_screen.dart';
-import 'package:service_provider/Provider Panel/screens/add_dummy_bookings.dart';
-import 'package:service_provider/Provider%20Panel/screens/chat/provider_chat_list.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:service_provider/Provider%20Panel/screens/home_screen.dart';
 import 'package:service_provider/Provider%20Panel/screens/bookings/provider_booking.dart';
-
-import '../../User Panel/chat_funtionality/ChatListScreen.dart';
+import 'package:service_provider/Provider%20Panel/screens/chat/provider_chat_list.dart';
+import 'package:service_provider/Provider%20Panel/screens/profile_screen.dart';
+import 'package:service_provider/main.dart';
 
 class Main extends StatefulWidget {
   @override
@@ -17,14 +15,89 @@ class Main extends StatefulWidget {
 class _MainState extends State<Main> with SingleTickerProviderStateMixin {
   int _selectedIndex = 0;
 
-  // List of pages for navigation
   final List<Widget> _pages = [
     ProviderHome(),
     ProviderBooking(),
     ProviderChatListScreen(),
     ProviderProfile(),
-    // AddDummyBookings(),
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    _setupNotifications();
+  }
+
+  void _setupNotifications() {
+    // Foreground notifications
+    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+      print('Foreground notification: ${message.notification?.title}');
+      print('Body: ${message.notification?.body}');
+      print('Data: ${message.data}');
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('${message.notification?.title}: ${message.notification?.body}'),
+          action: SnackBarAction(
+            label: 'View',
+            onPressed: () {
+              String? bookingId = message.data['bookingId'];
+              if (bookingId != null) {
+                _navigateToBookingDetails(bookingId);
+              }
+            },
+          ),
+        ),
+      );
+    });
+
+    // Background/terminated notifications when app is opened
+    FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+      print('Notification opened: ${message.notification?.title}');
+      String? bookingId = message.data['bookingId'];
+      if (bookingId != null) {
+        _navigateToBookingDetails(bookingId);
+      }
+    });
+
+    // Check if app was opened from a terminated state
+    _checkInitialMessage();
+
+    // Handle local notification tap
+    flutterLocalNotificationsPlugin.initialize(
+      const InitializationSettings(
+        android: AndroidInitializationSettings('@mipmap/ic_launcher'),
+      ),
+      onDidReceiveNotificationResponse: (NotificationResponse response) {
+        if (response.payload != null) {
+          _navigateToBookingDetails(response.payload!);
+        }
+      },
+    );
+  }
+
+  Future<void> _checkInitialMessage() async {
+    RemoteMessage? initialMessage = await FirebaseMessaging.instance.getInitialMessage();
+    if (initialMessage != null) {
+      print('App opened from terminated state: ${initialMessage.notification?.title}');
+      String? bookingId = initialMessage.data['bookingId'];
+      if (bookingId != null) {
+        _navigateToBookingDetails(bookingId);
+      }
+    }
+  }
+
+  void _navigateToBookingDetails(String bookingId) {
+    setState(() {
+      _selectedIndex = 1; // Switch to ProviderBooking page
+    });
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ProviderBooking(), // Pass bookingId if supported
+      ),
+    );
+  }
 
   void _onItemTapped(int index) {
     setState(() {
@@ -72,7 +145,7 @@ class _MainState extends State<Main> with SingleTickerProviderStateMixin {
           ),
         ],
         currentIndex: _selectedIndex,
-        selectedItemColor: Color(0xFF060644),
+        selectedItemColor: const Color(0xFF060644),
         unselectedItemColor: Colors.grey,
         onTap: _onItemTapped,
       ),
@@ -90,11 +163,11 @@ class _MainState extends State<Main> with SingleTickerProviderStateMixin {
         duration: const Duration(milliseconds: 200),
         child: Icon(
           _selectedIndex == index ? selectedIcon : icon,
-          key: ValueKey(_selectedIndex == index), // Ensure smooth animation when switching icons
-          size: _selectedIndex == index ? 22 : 24, // Larger size for the selected icon
+          key: ValueKey(_selectedIndex == index),
+          size: _selectedIndex == index ? 22 : 24,
         ),
       ),
-      label: _selectedIndex == index ? label : '', // Show label only for the selected item
+      label: _selectedIndex == index ? label : '',
     );
   }
 }
