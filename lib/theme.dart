@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 
 class AppTheme {
   // Original palette
-  static const Color lightLavender = Color(0xFFFFFFFF);
-  // static const Color lightLavender = Color(0xFFF2D7EE);
+  // static const Color lightLavender = Color(0xFFFFFFFF);
+  static const Color lightLavender = Color(0xFFF2D7EE);
   static const Color softMauve = Color(0xFFFFFFFF);
   // static const Color softMauve = Color(0xFFD3BCC0);
   // static const Color mutedPlum = Color(0xFFA5668B);
