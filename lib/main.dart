@@ -4,10 +4,16 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:service_provider/Admin%20Panel/screens/PendingServicesScreen.dart';
 import 'package:service_provider/Admin%20Panel/screens/main.dart';
+import 'package:service_provider/Provider%20Panel/screens/booking_screen.dart';
+import 'package:service_provider/Provider%20Panel/screens/chat/provider_chat_list.dart';
 import 'package:service_provider/User%20Panel/main_home.dart'; // User home
 import 'package:service_provider/Provider%20Panel/screens/main.dart'; // Provider home
 import 'package:service_provider/welcome_screen.dart';
+import 'package:service_provider/notification_service.dart';
+// import 'package:service_provider/Provider%20Panel/screens/bookings/provider_booking.dart'; // For navigation
+// import 'package:service_provider/Provider%20Panel/screens/chat/provider_chat_list.dart'; // For navigation
 import 'firebase_options.dart';
 import 'theme.dart'; // Import the theme file
 
@@ -19,43 +25,14 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   print('Background notification: ${message.notification?.title}');
   print('Body: ${message.notification?.body}');
   print('Data: ${message.data}');
-  await _showLocalNotification(message);
-}
-
-// Show local notification for background/terminated states
-Future<void> _showLocalNotification(RemoteMessage message) async {
-  const AndroidNotificationDetails androidPlatformChannelSpecifics =
-  AndroidNotificationDetails(
-    'high_importance_channel',
-    'High Importance Notifications',
-    channelDescription: 'For important notifications',
-    importance: Importance.max,
-    priority: Priority.high,
-  );
-  const NotificationDetails platformChannelSpecifics =
-  NotificationDetails(android: androidPlatformChannelSpecifics);
-
-  await flutterLocalNotificationsPlugin.show(
-    0,
-    message.notification?.title ?? 'New Booking',
-    message.notification?.body ?? 'A new booking has been requested',
-    platformChannelSpecifics,
-    payload: message.data['bookingId'],
-  );
+  await NotificationService.showBackgroundNotification(message);  // Use NotificationService
 }
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Initialize Firebase for Android
+  // Initialize Firebase
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-
-  // Initialize local notifications (Android only)
-  const AndroidInitializationSettings initializationSettingsAndroid =
-  AndroidInitializationSettings('@mipmap/ic_launcher');
-  final InitializationSettings initializationSettings =
-  InitializationSettings(android: initializationSettingsAndroid);
-  await flutterLocalNotificationsPlugin.initialize(initializationSettings);
 
   // Set up background message handler
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
@@ -66,6 +43,9 @@ void main() async {
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
+  // Global navigator key for navigation from NotificationService
+  static final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -73,6 +53,16 @@ class MyApp extends StatelessWidget {
       title: 'Service Provider App',
       theme: AppTheme.lightTheme,
       home: const SplashScreen(),
+      navigatorKey: navigatorKey, // Assign the navigator key
+      routes: {
+        '/providerBooking': (context) => ProviderBooking(),
+        //     ProviderBooking(
+        //   bookingId: ModalRoute.of(context)?.settings.arguments as String?,
+        // ),
+
+        '/chat': (context) => ProviderChatListScreen(),
+        '/serviceRequests': (context) => PendingServicesScreen(), // Placeholder; replace with actual screen
+      },
     );
   }
 }
@@ -88,6 +78,8 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
+    // Initialize NotificationService
+    NotificationService().initialize(context);
     Future.delayed(const Duration(seconds: 2), () {
       Navigator.pushReplacement(
         context,

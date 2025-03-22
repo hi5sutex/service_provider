@@ -7,6 +7,7 @@ import 'package:service_provider/User%20Panel/main_home.dart';
 import 'package:service_provider/Provider%20Panel/screens/main.dart';
 import 'package:service_provider/Provider%20Panel/screens/register_screen.dart';
 import 'package:service_provider/Admin%20Panel/screens/main.dart';
+import 'package:service_provider/notification_service.dart';
 import 'package:service_provider/welcome_screen.dart';
 import '../Provider Panel/screens/chat/provider_chat_list.dart';
 
@@ -64,31 +65,22 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   Future<void> _checkUserRole(String uid) async {
-    DocumentSnapshot adminDoc =
-    await FirebaseFirestore.instance.collection('admins').doc(uid).get();
+    DocumentSnapshot adminDoc = await FirebaseFirestore.instance.collection('admins').doc(uid).get();
     if (adminDoc.exists) {
+      await NotificationService().registerFCMToken(uid, 'admin');
       _navigateToPage(context, MainAdminPanel(), "Admin");
       return;
     }
-    DocumentSnapshot userDoc =
-    await FirebaseFirestore.instance.collection('users').doc(uid).get();
+    DocumentSnapshot userDoc = await FirebaseFirestore.instance.collection('users').doc(uid).get();
     if (userDoc.exists) {
+      await NotificationService().registerFCMToken(uid, 'user');
       _navigateToPage(context, MainHome(), "User");
       return;
     }
-    DocumentSnapshot providerDoc =
-    await FirebaseFirestore.instance.collection('providers').doc(uid).get();
+    DocumentSnapshot providerDoc = await FirebaseFirestore.instance.collection('providers').doc(uid).get();
     if (providerDoc.exists) {
-      // Register FCM token for providers and wait for completion
-      bool tokenRegistered = await _registerFCMToken(uid);
-      if (tokenRegistered) {
-        _navigateToPage(context, Main(), "Provider");
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Login successful, but notifications may not work")),
-        );
-        _navigateToPage(context, Main(), "Provider");
-      }
+      await NotificationService().registerFCMToken(uid, 'provider');
+      _navigateToPage(context, Main(), "Provider");
       return;
     }
     ScaffoldMessenger.of(context).showSnackBar(
