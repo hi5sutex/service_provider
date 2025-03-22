@@ -6,6 +6,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:razorpay_flutter/razorpay_flutter.dart';
 import 'package:googleapis_auth/auth_io.dart';
+import 'package:service_provider/notification_service.dart';
 import 'package:service_provider/secrets.dart';
 
 class ConfirmBookingPage extends StatefulWidget {
@@ -307,57 +308,14 @@ class _ConfirmBookingPageState extends State<ConfirmBookingPage> {
     required String bookingId,
     required String serviceName,
   }) async {
-    try {
-      // Fetch provider's FCM token from Firestore
-      DocumentSnapshot providerDoc = await FirebaseFirestore.instance
-          .collection('providers')
-          .doc(providerId)
-          .get();
-      String? fcmToken = providerDoc['fcmToken'];
-
-      if (fcmToken != null) {
-        // Get OAuth 2.0 access token
-        final accessToken = await _getAccessToken();
-
-        // V1 API endpoint (replace with your project ID)
-        final Uri url = Uri.parse(
-            'https://fcm.googleapis.com/v1/projects/service-provider-7bf81/messages:send');
-        final response = await http.post(
-          url,
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': 'Bearer $accessToken',
-          },
-          body: jsonEncode({
-            'message': {
-              'token': fcmToken,
-              'notification': {
-                'title': 'New Booking Request',
-                'body': 'A new booking for $serviceName has been requested!',
-              },
-              'data': {
-                'bookingId': bookingId,
-              },
-            },
-          }),
-        );
-
-        if (response.statusCode == 200) {
-          print('FCM notification sent successfully to provider: $providerId');
-          _showSnackBar('Notification sent : ${response.statusCode}');
-
-        } else {
-          print('Failed to send FCM notification: ${response.body}');
-          _showSnackBar('Failed to send notification: ${response.statusCode}');
-        }
-      } else {
-        print('No FCM token found for provider: $providerId');
-        _showSnackBar('Provider not set up for notifications');
-      }
-    } catch (e) {
-      print('Error sending FCM notification: $e');
-      _showSnackBar('Error sending notification: $e');
-    }
+    await NotificationService().sendNotification(
+      toUserId: providerId,
+      toRole: 'provider',
+      title: 'New Booking Request',
+      body: 'A new booking for $serviceName has been requested!',
+      type: 'booking',
+      data: {'bookingId': bookingId},
+    );
   }
 
   void _showSnackBar(String message) {

@@ -6,6 +6,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
+import 'package:service_provider/notification_service.dart';
+
 class AddServiceScreen extends StatefulWidget {
   const AddServiceScreen({super.key});
 
@@ -156,6 +158,23 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
     return imageUrls;
   }
 
+  Future<String?> _getAdminUid() async {
+    try {
+      QuerySnapshot adminSnapshot = await FirebaseFirestore.instance
+          .collection('admins')
+          .limit(1) // Assuming one admin for simplicity
+          .get();
+
+      if (adminSnapshot.docs.isNotEmpty) {
+        return adminSnapshot.docs.first.id;
+      }
+      return null;
+    } catch (e) {
+      debugPrint('Error fetching admin UID: $e');
+      return null;
+    }
+  }
+
   Future<void> submitService() async {
     if (!_formKey.currentState!.validate() || selectedCategory == null || selectedSubcategory == null) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -176,7 +195,7 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
         throw Exception('Image upload failed');
       }
 
-      await FirebaseFirestore.instance.collection('pending_services').add({
+      DocumentReference serviceRef = await FirebaseFirestore.instance.collection('pending_services').add({
         'name': _nameController.text.trim(),
         'description': _descriptionController.text.trim(),
         'category': selectedCategory,
@@ -189,6 +208,23 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
         'createdAt': FieldValue.serverTimestamp(),
         'status': 'pending',
       });
+
+      String? adminUid = await _getAdminUid();
+      if (adminUid != null) {
+        // Send notification to admin
+        await NotificationService().sendNotification(
+          toUserId: adminUid,
+          toRole: 'admin',
+          title: 'New Service Request',
+          body: 'A new service "${_nameController.text.trim()}" has been submitted by provider $providerId for approval.',
+          type: 'service_request',
+          data: {
+            'serviceId': serviceRef.id,
+          },
+        );
+      } else {
+        debugPrint('No admin found to notify');
+      }
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
