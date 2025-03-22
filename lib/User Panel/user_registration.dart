@@ -3,11 +3,14 @@ import 'package:email_otp/email_otp.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/services.dart';
-import 'package:service_provider/User Panel/user_verification.dart';
+import 'package:service_provider/User%20Panel/user_verification.dart';
 import 'package:service_provider/User%20Panel/user_login.dart';
+import 'package:service_provider/theme.dart';
 import 'package:service_provider/welcome_screen.dart';
 
 class RegistrationPage extends StatefulWidget {
+  const RegistrationPage({super.key});
+
   @override
   State<RegistrationPage> createState() => _RegistrationPageState();
 }
@@ -19,7 +22,6 @@ class _RegistrationPageState extends State<RegistrationPage> {
   final TextEditingController passwordController = TextEditingController();
   final TextEditingController confirmPasswordController = TextEditingController();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-
   final EmailOTP _emailOTP = EmailOTP();
   bool isLoading = false;
   bool _isObscure = true;
@@ -27,7 +29,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
 
   void sendOTPAndNavigate() async {
     setState(() {
-      _autoValidate = true; // Enable validation after first submit attempt
+      _autoValidate = true;
     });
 
     if (!_formKey.currentState!.validate()) {
@@ -44,7 +46,6 @@ class _RegistrationPageState extends State<RegistrationPage> {
     setState(() => isLoading = true);
 
     try {
-      // Initialize OTP configuration
       _emailOTP.setConfig(
         appEmail: "youremail@example.com",
         appName: "Your App Name",
@@ -52,14 +53,12 @@ class _RegistrationPageState extends State<RegistrationPage> {
         otpType: OTPType.numeric,
       );
 
-      // Send OTP
       bool result = await EmailOTP.sendOTP(email: emailController.text);
       if (result) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text("OTP sent to your email")),
         );
 
-        // Create a user chatroom document
         await FirebaseFirestore.instance
             .collection('user_chatroom')
             .doc(emailController.text)
@@ -68,10 +67,9 @@ class _RegistrationPageState extends State<RegistrationPage> {
           'phone': phoneController.text,
           'email': emailController.text,
           'createdAt': FieldValue.serverTimestamp(),
-          'role': 'user', // Add a role to distinguish users
+          'role': 'user',
         });
 
-        // Save user data temporarily and navigate to OTP Verification
         Navigator.push(
           context,
           MaterialPageRoute(
@@ -95,27 +93,32 @@ class _RegistrationPageState extends State<RegistrationPage> {
 
   @override
   Widget build(BuildContext context) {
+    final screenHeight = MediaQuery.of(context).size.height;
+    final screenWidth = MediaQuery.of(context).size.width;
+    final theme = Theme.of(context);
+
     return Scaffold(
-      backgroundColor: Colors.white,
+      resizeToAvoidBottomInset: true, // Allow resizing when keyboard appears
+      backgroundColor: AppTheme.secondaryColorCustom, // White
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         systemOverlayStyle: SystemUiOverlayStyle(
-          statusBarColor: Colors.white, // Ensures status bar remains white
-          statusBarIconBrightness: Brightness.dark, // Keeps icons dark for visibility
+          statusBarColor: AppTheme.secondaryColorCustom, // White status bar
+          statusBarIconBrightness: Brightness.dark,
         ),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
+          icon: Icon(Icons.arrow_back, color: AppTheme.primaryColorCustom),
           onPressed: () {
             Navigator.pushReplacement(
               context,
-              MaterialPageRoute(builder: (context) => WelcomeScreen()),
+              MaterialPageRoute(builder: (context) => const WelcomeScreen()),
             );
           },
         ),
         actions: [
           Padding(
-            padding: const EdgeInsets.only(right: 12.0),
+            padding: EdgeInsets.only(right: screenWidth * 0.03),
             child: TextButton(
               onPressed: () {
                 Navigator.push(
@@ -123,158 +126,173 @@ class _RegistrationPageState extends State<RegistrationPage> {
                   MaterialPageRoute(builder: (context) => LoginPage()),
                 );
               },
-              child: const Text(
+              child: Text(
                 "Login",
-                style: TextStyle(color: Colors.black, fontSize: 18),
+                style: TextStyle(
+                  color: AppTheme.primaryColorCustom,
+                  fontSize: screenWidth * 0.045,
+                ),
               ),
             ),
           ),
         ],
         flexibleSpace: Container(
-          decoration: BoxDecoration(
-            color: Colors.white, // Keeps background fixed even when scrolling
-          ),
+          color: AppTheme.secondaryColorCustom,
         ),
       ),
-      body: Column(
-        children: [
-          Container(
-            height: MediaQuery.of(context).size.height * 0.15,
-            padding: const EdgeInsets.only(top: 20, left: 24),
-            alignment: Alignment.centerLeft,
-            child: const Text(
-              'Sign Up',
-              style: TextStyle(
-                color: Colors.black,
-                fontSize: 40,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ),
-          Expanded(
-            child: Container(
-              decoration: const BoxDecoration(
-                color: Color(0xFF060644),
-                borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(30.0),
-                  topRight: Radius.circular(30.0),
-                ),
-              ),
-              padding: const EdgeInsets.all(30),
-              child: SingleChildScrollView(
-                child: Form(
-                  key: _formKey,
-                  autovalidateMode: _autoValidate
-                      ? AutovalidateMode.onUserInteraction
-                      : AutovalidateMode.disabled,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const SizedBox(height: 20),
-                      _buildTextField(
-                        controller: nameController,
-                        hintText: "Full Name",
-                        isPassword: false,
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Please enter your full name';
-                          }
-                          return null;
-                        },
-                      ),
-                      const SizedBox(height: 10),
-                      _buildTextField(
-                        controller: phoneController,
-                        hintText: "Phone Number",
-                        isPassword: false,
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Please enter your phone number';
-                          }
-                          if (value.length < 10) {
-                            return 'Please enter a valid phone number';
-                          }
-                          return null;
-                        },
-                      ),
-                      const SizedBox(height: 10),
-                      _buildTextField(
-                        controller: emailController,
-                        hintText: "Email",
-                        isPassword: false,
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Please enter your email';
-                          }
-                          if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$')
-                              .hasMatch(value)) {
-                            return 'Please enter a valid email';
-                          }
-                          return null;
-                        },
-                      ),
-                      const SizedBox(height: 10),
-                      _buildTextField(
-                        controller: passwordController,
-                        hintText: "Password",
-                        isPassword: true,
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Please enter your password';
-                          }
-                          if (value.length < 6) {
-                            return 'Password must be at least 6 characters';
-                          }
-                          return null;
-                        },
-                      ),
-                      const SizedBox(height: 10),
-                      _buildTextField(
-                        controller: confirmPasswordController,
-                        hintText: "Confirm Password",
-                        isPassword: true,
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Please confirm your password';
-                          }
-                          if (value != passwordController.text) {
-                            return 'Passwords do not match';
-                          }
-                          return null;
-                        },
-                      ),
-                      const SizedBox(height: 30),
-                      SizedBox(
-                        width: double.infinity,
-                        height: 50,
-                        child: isLoading
-                            ? const Center(
-                          child: CircularProgressIndicator(
-                            color: Colors.white,
-                          ),
-                        )
-                            : ElevatedButton(
-                          onPressed: sendOTPAndNavigate,
-                          style: ElevatedButton.styleFrom(
-                            minimumSize: const Size(double.infinity, 50),
-                            backgroundColor: Colors.white,
-                            foregroundColor: Colors.black,
-                          ),
-                          child: const Text("Send OTP"),
-                        ),
-                      ),
-                      const SizedBox(height: 40),
-                      _buildRedirectLink(
-                        "Already have an account? Login here",
-                        LoginPage(),
-                      ),
-                    ],
+      body: SingleChildScrollView( // Wrap entire body in SingleChildScrollView
+        child: Column(
+          children: [
+            SizedBox(
+              height: screenHeight * 0.15,
+              child: Padding(
+                padding: EdgeInsets.only(top: screenHeight * 0.02, left: screenWidth * 0.06),
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    'Sign Up',
+                    style: TextStyle(
+                      color: AppTheme.primaryColorCustom,
+                      fontSize: screenWidth * 0.1,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
               ),
             ),
-          ),
-        ],
+            Container(
+              constraints: BoxConstraints(
+                minHeight: screenHeight * 0.85, // Ensure enough height for content
+              ),
+              decoration: BoxDecoration(
+                color: AppTheme.primaryColorCustom,
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(30.0),
+                  topRight: Radius.circular(30.0),
+                ),
+              ),
+              padding: EdgeInsets.all(screenWidth * 0.075),
+              child: Form(
+                key: _formKey,
+                autovalidateMode: _autoValidate
+                    ? AutovalidateMode.onUserInteraction
+                    : AutovalidateMode.disabled,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    SizedBox(height: screenHeight * 0.025),
+                    _buildTextField(
+                      controller: nameController,
+                      hintText: "Full Name",
+                      isPassword: false,
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter your full name';
+                        }
+                        return null;
+                      },
+                    ),
+                    SizedBox(height: screenHeight * 0.015),
+                    _buildTextField(
+                      controller: phoneController,
+                      hintText: "Phone Number",
+                      isPassword: false,
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter your phone number';
+                        }
+                        if (value.length < 10) {
+                          return 'Please enter a valid phone number';
+                        }
+                        return null;
+                      },
+                    ),
+                    SizedBox(height: screenHeight * 0.015),
+                    _buildTextField(
+                      controller: emailController,
+                      hintText: "Email",
+                      isPassword: false,
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter your email';
+                        }
+                        if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$')
+                            .hasMatch(value)) {
+                          return 'Please enter a valid email';
+                        }
+                        return null;
+                      },
+                    ),
+                    SizedBox(height: screenHeight * 0.015),
+                    _buildTextField(
+                      controller: passwordController,
+                      hintText: "Password",
+                      isPassword: true,
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter your password';
+                        }
+                        if (value.length < 6) {
+                          return 'Password must be at least 6 characters';
+                        }
+                        return null;
+                      },
+                    ),
+                    SizedBox(height: screenHeight * 0.015),
+                    _buildTextField(
+                      controller: confirmPasswordController,
+                      hintText: "Confirm Password",
+                      isPassword: true,
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please confirm your password';
+                        }
+                        if (value != passwordController.text) {
+                          return 'Passwords do not match';
+                        }
+                        return null;
+                      },
+                    ),
+                    SizedBox(height: screenHeight * 0.04),
+                    SizedBox(
+                      width: double.infinity,
+                      height: screenHeight * 0.07,
+                      child: isLoading
+                          ? Center(
+                        child: CircularProgressIndicator(
+                          color: AppTheme.secondaryColorCustom,
+                        ),
+                      )
+                          : ElevatedButton(
+                        onPressed: sendOTPAndNavigate,
+                        style: theme.elevatedButtonTheme.style?.copyWith(
+                          minimumSize: MaterialStateProperty.all(
+                            Size(double.infinity, screenHeight * 0.07),
+                          ),
+                          backgroundColor: MaterialStateProperty.all(
+                            AppTheme.secondaryColorCustom,
+                          ),
+                          foregroundColor: MaterialStateProperty.all(
+                            AppTheme.primaryColorCustom,
+                          ),
+                        ),
+                        child: Text(
+                          "Send OTP",
+                          style: TextStyle(fontSize: screenWidth * 0.045),
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: screenHeight * 0.05),
+                    _buildRedirectLink(
+                      "Already have an account? Login here",
+                      LoginPage(),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -288,18 +306,23 @@ class _RegistrationPageState extends State<RegistrationPage> {
     return TextFormField(
       controller: controller,
       obscureText: isPassword && _isObscure,
-      style: const TextStyle(color: Colors.black, fontSize: 16),
+      style: TextStyle(
+        color: AppTheme.primaryColorCustom,
+        fontSize: MediaQuery.of(context).size.width * 0.04,
+      ),
       validator: validator,
       decoration: InputDecoration(
         hintText: hintText,
-        hintStyle: const TextStyle(color: Colors.black),
+        hintStyle: TextStyle(color: AppTheme.primaryColorCustom),
         filled: true,
         fillColor: Colors.grey[300],
         errorStyle: const TextStyle(color: Colors.red),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(23),
           borderSide: BorderSide(
-            color: controller.text.isNotEmpty ? Colors.green : Colors.black,
+            color: controller.text.isNotEmpty
+                ? Colors.green
+                : AppTheme.primaryColorCustom,
             width: 1.5,
           ),
         ),
@@ -319,7 +342,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
             ? IconButton(
           icon: Icon(
             _isObscure ? Icons.visibility : Icons.visibility_off,
-            color: Colors.black,
+            color: AppTheme.primaryColorCustom,
           ),
           onPressed: () {
             setState(() {
@@ -343,7 +366,10 @@ class _RegistrationPageState extends State<RegistrationPage> {
         },
         child: Text(
           text,
-          style: const TextStyle(color: Colors.white),
+          style: TextStyle(
+            color: AppTheme.secondaryColorCustom,
+            fontSize: MediaQuery.of(context).size.width * 0.04,
+          ),
         ),
       ),
     );
@@ -351,5 +377,10 @@ class _RegistrationPageState extends State<RegistrationPage> {
 }
 
 extension on EmailOTP {
-  void setConfig({required String appEmail, required String appName, required int otpLength, required OTPType otpType}) {}
+  void setConfig({
+    required String appEmail,
+    required String appName,
+    required int otpLength,
+    required OTPType otpType,
+  }) {}
 }

@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'subcategory_wise_services.dart';
+import 'package:service_provider/theme.dart';
 
 class SubcategoriesPage extends StatefulWidget {
-  final String categoryName; // Pass the Firestore document ID of the category
+  final String categoryName;
 
   const SubcategoriesPage({required this.categoryName});
 
@@ -22,10 +23,9 @@ class _SubcategoriesPageState extends State<SubcategoriesPage> {
 
   Future<List<Map<String, dynamic>>> _fetchSubcategories() async {
     try {
-      // Attempt to fetch the document based on the category name as ID
       final docSnapshot = await FirebaseFirestore.instance
           .collection('categories')
-          .doc(widget.categoryName) // Assuming categoryName is the document ID
+          .doc(widget.categoryName)
           .get();
 
       if (docSnapshot.exists) {
@@ -34,7 +34,6 @@ class _SubcategoriesPageState extends State<SubcategoriesPage> {
           return List<Map<String, dynamic>>.from(data['subcategories']);
         }
       } else {
-        // If categoryName is not the document ID, query based on the name field
         final querySnapshot = await FirebaseFirestore.instance
             .collection('categories')
             .where('name', isEqualTo: widget.categoryName)
@@ -55,34 +54,39 @@ class _SubcategoriesPageState extends State<SubcategoriesPage> {
     }
   }
 
-
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
+
     return Scaffold(
+      backgroundColor: AppTheme.secondaryColorCustom, // White background
       appBar: AppBar(
         title: const Text('Subcategories'),
+        backgroundColor: AppTheme.primaryColorCustom, // Assuming dark blue for AppBar
+        foregroundColor: AppTheme.secondaryColorCustom, // White text/icons
       ),
       body: FutureBuilder<List<Map<String, dynamic>>>(
         future: _subcategoriesFuture,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
+            return Center(child: CircularProgressIndicator(color: AppTheme.primaryColorCustom));
           }
           if (snapshot.hasError) {
-            return Center(child: Text('Error: ${snapshot.error}'));
+            return Center(child: Text('Error: ${snapshot.error}', style: TextStyle(color: Colors.black)));
           }
 
           final subcategories = snapshot.data ?? [];
           if (subcategories.isEmpty) {
-            return const Center(child: Text('No subcategories found.'));
+            return Center(child: Text('No subcategories found.', style: TextStyle(color: Colors.black)));
           }
 
           return GridView.builder(
-            padding: const EdgeInsets.all(16.0),
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            padding: EdgeInsets.all(screenWidth * 0.04),
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 2,
-              crossAxisSpacing: 16.0,
-              mainAxisSpacing: 16.0,
+              crossAxisSpacing: screenWidth * 0.04,
+              mainAxisSpacing: screenHeight * 0.02,
               childAspectRatio: 0.8,
             ),
             itemCount: subcategories.length,
@@ -96,24 +100,24 @@ class _SubcategoriesPageState extends State<SubcategoriesPage> {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) =>
-                          SubcategoryWiseServices(subcategoryName: name),
+                      builder: (context) => SubcategoryWiseServices(subcategoryName: name),
                     ),
                   );
                 },
                 child: Card(
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12.0),
+                    borderRadius: BorderRadius.circular(screenWidth * 0.03),
                   ),
                   elevation: 4.0,
+                  color: AppTheme.secondaryColorCustom, // White card background
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       Expanded(
                         flex: 3,
                         child: ClipRRect(
-                          borderRadius: const BorderRadius.vertical(
-                            top: Radius.circular(12.0),
+                          borderRadius: BorderRadius.vertical(
+                            top: Radius.circular(screenWidth * 0.03),
                           ),
                           child: Image.network(
                             imageUrl,
@@ -126,8 +130,8 @@ class _SubcategoriesPageState extends State<SubcategoriesPage> {
                             },
                             loadingBuilder: (context, child, progress) {
                               if (progress == null) return child;
-                              return const Center(
-                                  child: CircularProgressIndicator());
+                              return Center(
+                                  child: CircularProgressIndicator(color: AppTheme.primaryColorCustom));
                             },
                           ),
                         ),
@@ -135,13 +139,14 @@ class _SubcategoriesPageState extends State<SubcategoriesPage> {
                       Expanded(
                         flex: 1,
                         child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                          padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.02),
                           child: Center(
                             child: Text(
                               name,
                               style: const TextStyle(
                                 fontWeight: FontWeight.bold,
                                 fontSize: 14.0,
+                                color: Colors.black,
                               ),
                               textAlign: TextAlign.center,
                               maxLines: 2,

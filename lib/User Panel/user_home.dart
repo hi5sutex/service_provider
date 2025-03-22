@@ -7,22 +7,22 @@ import 'package:geocoding/geocoding.dart';
 import 'package:service_provider/User%20Panel/subcategories_list.dart';
 import 'package:service_provider/User%20Panel/user_profile.dart';
 import 'package:service_provider/User%20Panel/user_setting.dart';
+import 'package:service_provider/theme.dart';
 
 class UserHome extends StatefulWidget {
   @override
   _UserHomeState createState() => _UserHomeState();
 }
 
-class _UserHomeState extends State<UserHome> {
+class _UserHomeState extends State<UserHome> with AutomaticKeepAliveClientMixin {
   String selectedCategory = 'All';
   String userCity = 'Loading...';
-  final Color primaryColor = Color(0xFF060644);
   final FirebaseAuth _auth = FirebaseAuth.instance;
-  String? _profileImageUrl; // Variable to store profile image URL
+  String? _profileImageUrl;
 
   Future<String> getUserName() async {
     try {
-      User? user = FirebaseAuth.instance.currentUser;
+      User? user = _auth.currentUser;
       if (user != null) {
         DocumentSnapshot userDoc = await FirebaseFirestore.instance
             .collection('users')
@@ -38,16 +38,6 @@ class _UserHomeState extends State<UserHome> {
     }
   }
 
-  // Future<String> getUserProfilePic() async {
-  //   String userId = FirebaseAuth.instance.currentUser?.uid ?? '';
-  //   if (userId.isEmpty) return '';
-  //
-  //   DocumentSnapshot userDoc = await FirebaseFirestore.instance.collection('users').doc(userId).get();
-  //   return userDoc['profilePic'] ?? ''; // Make sure Firestore has a field 'profilePic' with the image URL
-  // }
-
-
-
   Future<void> _fetchProfilePic() async {
     try {
       User? user = _auth.currentUser;
@@ -56,7 +46,6 @@ class _UserHomeState extends State<UserHome> {
             .collection('users')
             .doc(user.uid)
             .get();
-
         setState(() {
           _profileImageUrl = userDoc['profileImage'] as String?;
         });
@@ -66,12 +55,10 @@ class _UserHomeState extends State<UserHome> {
     }
   }
 
-
-
   void _changeStatusBarColor() {
     SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
-      statusBarColor: Color(0xFF060644), // Change to any color
-      statusBarIconBrightness: Brightness.light, // Use dark for white icons
+      statusBarColor: AppTheme.primaryColorCustom,
+      statusBarIconBrightness: Brightness.light,
     ));
   }
 
@@ -90,6 +77,7 @@ class _UserHomeState extends State<UserHome> {
     super.initState();
     _getCurrentCity();
     _changeStatusBarColor();
+    _fetchProfilePic();
   }
 
   Future<void> _getCurrentCity() async {
@@ -118,35 +106,37 @@ class _UserHomeState extends State<UserHome> {
   }
 
   @override
+  bool get wantKeepAlive => true; // Keep the state alive
+
+  @override
   Widget build(BuildContext context) {
+    super.build(context); // Required for AutomaticKeepAliveClientMixin
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
+
     return Scaffold(
-      backgroundColor: Colors.grey[50],
-      // appBar: AppBar(
-      //   backgroundColor: Color(0xFF060644),
-      //   systemOverlayStyle: SystemUiOverlayStyle(
-      //     statusBarColor: Color(0xFF060644),
-      //   ),
-      // ),
+      backgroundColor: AppTheme.greyLight.withOpacity(0.1),
       body: SafeArea(
         child: Column(
           children: [
             // Enhanced Header Section
             Container(
               decoration: BoxDecoration(
-                color: primaryColor,
+                color: AppTheme.primaryColorCustom,
                 borderRadius: BorderRadius.only(
-                  bottomLeft: Radius.circular(20),
-                  bottomRight: Radius.circular(20),
+                  bottomLeft: Radius.circular(screenWidth * 0.05),
+                  bottomRight: Radius.circular(screenWidth * 0.05),
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: primaryColor.withOpacity(0.3),
+                    color: AppTheme.primaryColorCustom.withOpacity(0.3),
                     blurRadius: 8,
                     offset: Offset(0, 4),
                   ),
                 ],
               ),
-              padding: EdgeInsets.fromLTRB(16, 12, 16, 10), // Reduced padding
+              padding: EdgeInsets.fromLTRB(
+                  screenWidth * 0.04, screenHeight * 0.015, screenWidth * 0.04, screenHeight * 0.012),
               child: Row(
                 children: [
                   Expanded(
@@ -159,29 +149,31 @@ class _UserHomeState extends State<UserHome> {
                             Text(
                               'Hello, ${snapshot.data ?? 'User'} 👋',
                               style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 20, // Reduced from 24
-                                fontWeight: FontWeight.w600, // Slightly lighter
+                                color: AppTheme.secondaryColorCustom,
+                                fontSize: screenWidth * 0.05,
+                                fontWeight: FontWeight.w600,
                                 letterSpacing: 0.4,
                               ),
                             ),
-                            SizedBox(height: 5), // Reduced spacing
+                            SizedBox(height: screenHeight * 0.006),
                             Container(
-                              padding: EdgeInsets.symmetric(horizontal: 10, vertical: 4), // Reduced padding
+                              padding: EdgeInsets.symmetric(
+                                  horizontal: screenWidth * 0.025, vertical: screenHeight * 0.005),
                               decoration: BoxDecoration(
-                                color: Colors.white.withOpacity(0.2),
-                                borderRadius: BorderRadius.circular(16), // Reduced border radius
+                                color: AppTheme.secondaryColorCustom.withOpacity(0.2),
+                                borderRadius: BorderRadius.circular(screenWidth * 0.04),
                               ),
                               child: Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  Icon(Icons.location_on, color: Colors.white, size: 14), // Reduced icon size
-                                  SizedBox(width: 3),
+                                  Icon(Icons.location_on,
+                                      color: AppTheme.secondaryColorCustom, size: screenWidth * 0.035),
+                                  SizedBox(width: screenWidth * 0.008),
                                   Text(
                                     userCity,
                                     style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 13, // Reduced font size
+                                      color: AppTheme.secondaryColorCustom,
+                                      fontSize: screenWidth * 0.032,
                                       fontWeight: FontWeight.w500,
                                     ),
                                   ),
@@ -194,22 +186,23 @@ class _UserHomeState extends State<UserHome> {
                     ),
                   ),
                   Container(
-                    width: 36, // Set a fixed width
-                    height: 36, // Set a fixed height
+                    width: screenWidth * 0.09,
+                    height: screenWidth * 0.09,
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.2),
-                      borderRadius: BorderRadius.circular(5), // Slightly smaller radius
+                      color: AppTheme.secondaryColorCustom.withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(screenWidth * 0.012),
                     ),
                     child: IconButton(
-                      padding: EdgeInsets.zero, // Remove extra padding
-                      constraints: BoxConstraints(), // Prevent unnecessary expansion
+                      padding: EdgeInsets.zero,
+                      constraints: BoxConstraints(),
                       icon: _profileImageUrl != null
                           ? CircleAvatar(
-                        radius: 14, // Adjusted to be visible but smaller
+                        radius: screenWidth * 0.035,
                         backgroundImage: NetworkImage(_profileImageUrl!),
-                        backgroundColor: Colors.grey.shade300, // Fallback color
+                        backgroundColor: Colors.grey.shade300,
                       )
-                          : const Icon(Icons.account_circle, color: Colors.white, size: 25), // Reduced size
+                          : Icon(Icons.account_circle,
+                          color: AppTheme.secondaryColorCustom, size: screenWidth * 0.06),
                       onPressed: () {
                         Navigator.push(
                           context,
@@ -218,16 +211,17 @@ class _UserHomeState extends State<UserHome> {
                       },
                     ),
                   ),
-
                 ],
               ),
             ),
 
+            // Search Bar
             Container(
-              margin: EdgeInsets.fromLTRB(20, 15, 20, 15),
+              margin: EdgeInsets.fromLTRB(
+                  screenWidth * 0.05, screenHeight * 0.018, screenWidth * 0.05, screenHeight * 0.018),
               decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(15),
+                color: AppTheme.secondaryColorCustom,
+                borderRadius: BorderRadius.circular(screenWidth * 0.037),
                 boxShadow: [
                   BoxShadow(
                     color: Colors.black.withOpacity(0.1),
@@ -240,40 +234,37 @@ class _UserHomeState extends State<UserHome> {
                 decoration: InputDecoration(
                   hintText: 'Search services...',
                   hintStyle: TextStyle(color: Colors.grey[400]),
-                  prefixIcon: Icon(Icons.search, color: primaryColor),
+                  prefixIcon: Icon(Icons.search, color: AppTheme.primaryColorCustom),
                   border: InputBorder.none,
                   contentPadding:
-                  EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+                  EdgeInsets.symmetric(horizontal: screenWidth * 0.05, vertical: screenHeight * 0.018),
                 ),
               ),
             ),
-            // Enhanced Categories Section
-            // Enhanced Categories Section
+
+            // Categories Section
             Container(
               margin: EdgeInsets.only(top: 0),
-              height: 40,
+              height: screenHeight * 0.05,
               child: StreamBuilder<QuerySnapshot>(
-                stream: FirebaseFirestore.instance
-                    .collection('categories')
-                    .snapshots(),
+                stream: FirebaseFirestore.instance.collection('categories').snapshots(),
                 builder: (context, snapshot) {
                   if (!snapshot.hasData) {
                     return Center(
-                        child: CircularProgressIndicator(color: primaryColor));
+                        child: CircularProgressIndicator(color: AppTheme.primaryColorCustom));
                   }
 
                   List<String> categories = ['All'];
-                  categories.addAll(snapshot.data!.docs
-                      .map((doc) => doc['name'] as String)
-                      .toList());
+                  categories.addAll(
+                      snapshot.data!.docs.map((doc) => doc['name'] as String).toList());
 
                   return ListView.builder(
-                    padding: EdgeInsets.symmetric(horizontal: 20),
+                    padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.05),
                     scrollDirection: Axis.horizontal,
                     itemCount: categories.length,
                     itemBuilder: (context, index) {
                       return Padding(
-                        padding: EdgeInsets.only(right: 12),
+                        padding: EdgeInsets.only(right: screenWidth * 0.03),
                         child: GestureDetector(
                           onTap: () {
                             setState(() => selectedCategory = categories[index]);
@@ -281,22 +272,23 @@ class _UserHomeState extends State<UserHome> {
                           child: Container(
                             decoration: BoxDecoration(
                               color: categories[index] == selectedCategory
-                                  ? primaryColor
+                                  ? AppTheme.primaryColorCustom
                                   : Colors.transparent,
-                              borderRadius: BorderRadius.circular(20),
+                              borderRadius: BorderRadius.circular(screenWidth * 0.05),
                               border: Border.all(
-                                color: primaryColor,
+                                color: AppTheme.primaryColorCustom,
                                 width: 1,
                               ),
                             ),
-                            padding: EdgeInsets.symmetric(vertical: 10, horizontal: 20),
+                            padding: EdgeInsets.symmetric(
+                                vertical: screenHeight * 0.012, horizontal: screenWidth * 0.05),
                             child: Center(
                               child: Text(
                                 categories[index],
                                 style: TextStyle(
                                   color: categories[index] == selectedCategory
-                                      ? Colors.white
-                                      : primaryColor,
+                                      ? AppTheme.secondaryColorCustom
+                                      : AppTheme.primaryColorCustom,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
@@ -310,26 +302,20 @@ class _UserHomeState extends State<UserHome> {
               ),
             ),
 
-
             // Content Sections
             Expanded(
               child: SingleChildScrollView(
                 child: Padding(
-                  padding: EdgeInsets.only(
-                    bottom: MediaQuery.of(context).padding.bottom + 35, // extra space at bottom
-                  ),
+                  padding: EdgeInsets.only(bottom: MediaQuery.of(context).padding.bottom + screenHeight * 0.04),
                   child: Column(
                     children: [
                       _buildSectionHeader('Popular Services'),
                       _buildPopularServices(),
-
                       _buildSectionHeader('Top Rated Providers'),
                       _buildProviders(),
-
                       _buildSectionHeader('All Categories'),
                       _buildCategories(),
-
-                      SizedBox(height: 20),
+                      SizedBox(height: screenHeight * 0.025),
                     ],
                   ),
                 ),
@@ -342,24 +328,27 @@ class _UserHomeState extends State<UserHome> {
   }
 
   Widget _buildSectionHeader(String title) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
     return Padding(
-      padding: EdgeInsets.fromLTRB(20, 25, 20, 15),
+      padding: EdgeInsets.fromLTRB(
+          screenWidth * 0.05, screenHeight * 0.03, screenWidth * 0.05, screenHeight * 0.018),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(
             title,
             style: TextStyle(
-              fontSize: 20,
+              fontSize: screenWidth * 0.05,
               fontWeight: FontWeight.bold,
-              color: primaryColor,
+              color: AppTheme.primaryColorCustom,
             ),
           ),
           TextButton(
             onPressed: () {},
             child: Text(
               'See All',
-              style: TextStyle(color: primaryColor),
+              style: TextStyle(color: AppTheme.primaryColorCustom, fontSize: screenWidth * 0.035),
             ),
           ),
         ],
@@ -368,16 +357,18 @@ class _UserHomeState extends State<UserHome> {
   }
 
   Widget _buildPopularServices() {
+    final screenHeight = MediaQuery.of(context).size.height;
+    final screenWidth = MediaQuery.of(context).size.width;
     return Container(
-      height: 220,
+      height: screenHeight * 0.28,
       child: StreamBuilder<List<Service>>(
         stream: getServices(selectedCategory),
         builder: (context, snapshot) {
           if (!snapshot.hasData) {
-            return Center(child: CircularProgressIndicator(color: primaryColor));
+            return Center(child: CircularProgressIndicator(color: AppTheme.primaryColorCustom));
           }
           return ListView.builder(
-            padding: EdgeInsets.symmetric(horizontal: 20),
+            padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.05),
             scrollDirection: Axis.horizontal,
             itemCount: snapshot.data!.length,
             itemBuilder: (context, index) {
@@ -396,14 +387,15 @@ class _UserHomeState extends State<UserHome> {
   }
 
   Widget _buildProviders() {
+    final screenWidth = MediaQuery.of(context).size.width;
     return StreamBuilder<QuerySnapshot>(
       stream: FirebaseFirestore.instance.collection('providers').snapshots(),
       builder: (context, snapshot) {
         if (!snapshot.hasData) {
-          return Center(child: CircularProgressIndicator(color: primaryColor));
+          return Center(child: CircularProgressIndicator(color: AppTheme.primaryColorCustom));
         }
         return ListView.builder(
-          padding: EdgeInsets.symmetric(horizontal: 20),
+          padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.05),
           shrinkWrap: true,
           physics: NeverScrollableScrollPhysics(),
           itemCount: snapshot.data!.docs.length,
@@ -421,11 +413,13 @@ class _UserHomeState extends State<UserHome> {
   }
 
   Widget _buildCategories() {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
     return StreamBuilder<QuerySnapshot>(
       stream: FirebaseFirestore.instance.collection('categories').snapshots(),
       builder: (context, snapshot) {
         if (!snapshot.hasData) {
-          return Center(child: CircularProgressIndicator(color: primaryColor));
+          return Center(child: CircularProgressIndicator(color: AppTheme.primaryColorCustom));
         }
 
         final categories = snapshot.data!.docs
@@ -436,20 +430,20 @@ class _UserHomeState extends State<UserHome> {
             .toList();
 
         return GridView.builder(
-          padding: EdgeInsets.symmetric(horizontal: 20),
+          padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.05),
           shrinkWrap: true,
           physics: NeverScrollableScrollPhysics(),
           gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: 2,
-            crossAxisSpacing: 16,
-            mainAxisSpacing: 16,
+            crossAxisSpacing: screenWidth * 0.04,
+            mainAxisSpacing: screenHeight * 0.02,
             childAspectRatio: 3 / 4,
           ),
           itemCount: categories.length,
           itemBuilder: (context, index) {
             final category = categories[index];
-            final categoryName = category['name'] ?? 'Unknown Category'; // Fallback value
-            final imageUrl = category['imageUrl'] ?? ''; // Fallback to empty string
+            final categoryName = category['name'] ?? 'Unknown Category';
+            final imageUrl = category['imageUrl'] ?? '';
 
             return GestureDetector(
               onTap: () {
@@ -462,7 +456,7 @@ class _UserHomeState extends State<UserHome> {
               },
               child: GridCategoryCard(
                 title: categoryName,
-                imagePath: imageUrl,  // Use image URL from database, fallback to empty string if null
+                imagePath: imageUrl,
               ),
             );
           },
@@ -470,8 +464,6 @@ class _UserHomeState extends State<UserHome> {
       },
     );
   }
-
-
 }
 
 // Enhanced CategoryChip Widget
@@ -488,22 +480,24 @@ class CategoryChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
     return GestureDetector(
       onTap: onSelected,
       child: AnimatedContainer(
         duration: Duration(milliseconds: 200),
-        padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+        padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.05, vertical: screenHeight * 0.012),
         decoration: BoxDecoration(
-          color: selected ? Color(0xFF060644) : Colors.white,
-          borderRadius: BorderRadius.circular(25),
+          color: selected ? AppTheme.primaryColorCustom : AppTheme.secondaryColorCustom,
+          borderRadius: BorderRadius.circular(screenWidth * 0.06),
           border: Border.all(
-            color: selected ? Color(0xFF060644) : Colors.grey[300]!,
+            color: selected ? AppTheme.primaryColorCustom : Colors.grey[300]!,
             width: 1,
           ),
           boxShadow: selected
               ? [
             BoxShadow(
-              color: Color(0xFF060644).withOpacity(0.3),
+              color: AppTheme.primaryColorCustom.withOpacity(0.3),
               blurRadius: 8,
               offset: Offset(0, 4),
             )
@@ -513,9 +507,9 @@ class CategoryChip extends StatelessWidget {
         child: Text(
           label,
           style: TextStyle(
-            color: selected ? Colors.white : Colors.grey[600],
+            color: selected ? AppTheme.secondaryColorCustom : Colors.grey[600],
             fontWeight: selected ? FontWeight.bold : FontWeight.normal,
-            fontSize: 14,
+            fontSize: screenWidth * 0.035,
           ),
         ),
       ),
@@ -539,14 +533,15 @@ class ServiceCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
     return GestureDetector(
       onTap: () {},
       child: Container(
-        width: 180,
-        margin: EdgeInsets.only(right: 16),
+        width: screenWidth * 0.45,
+        margin: EdgeInsets.only(right: screenWidth * 0.04),
         decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(15),
+          color: AppTheme.secondaryColorCustom,
+          borderRadius: BorderRadius.circular(screenWidth * 0.037),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withOpacity(0.08),
@@ -560,7 +555,7 @@ class ServiceCard extends StatelessWidget {
           children: [
             Expanded(
               child: ClipRRect(
-                borderRadius: BorderRadius.vertical(top: Radius.circular(15)),
+                borderRadius: BorderRadius.vertical(top: Radius.circular(screenWidth * 0.037)),
                 child: imageUrl.isNotEmpty
                     ? Image.network(
                   imageUrl,
@@ -580,7 +575,7 @@ class ServiceCard extends StatelessWidget {
               ),
             ),
             Padding(
-              padding: EdgeInsets.all(15),
+              padding: EdgeInsets.all(screenWidth * 0.037),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -588,32 +583,33 @@ class ServiceCard extends StatelessWidget {
                     title,
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
-                      fontSize: 16,
+                      fontSize: screenWidth * 0.04,
                     ),
                   ),
-                  SizedBox(height: 6),
+                  SizedBox(height: screenWidth * 0.015),
                   Text(
                     price,
                     style: TextStyle(
-                      color: Color(0xFF060644),
+                      color: AppTheme.primaryColorCustom,
                       fontWeight: FontWeight.w600,
-                      fontSize: 15,
+                      fontSize: screenWidth * 0.037,
                     ),
                   ),
-                  SizedBox(height: 8),
+                  SizedBox(height: screenWidth * 0.02),
                   Row(
                     children: [
                       Icon(
                         Icons.star,
                         color: Colors.amber,
-                        size: 16,
+                        size: screenWidth * 0.04,
                       ),
-                      SizedBox(width: 4),
+                      SizedBox(width: screenWidth * 0.01),
                       Text(
                         "4.5",
                         style: TextStyle(
                           fontWeight: FontWeight.w500,
                           color: Colors.grey[600],
+                          fontSize: screenWidth * 0.035,
                         ),
                       ),
                     ],
@@ -642,11 +638,12 @@ class ProviderCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
     return Container(
-      margin: EdgeInsets.only(bottom: 16),
+      margin: EdgeInsets.only(bottom: screenWidth * 0.04),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(15),
+        color: AppTheme.secondaryColorCustom,
+        borderRadius: BorderRadius.circular(screenWidth * 0.037),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.06),
@@ -656,31 +653,31 @@ class ProviderCard extends StatelessWidget {
         ],
       ),
       child: Padding(
-        padding: EdgeInsets.all(12),
+        padding: EdgeInsets.all(screenWidth * 0.03),
         child: Row(
           children: [
             Container(
-              width: 70,
-              height: 70,
+              width: screenWidth * 0.18,
+              height: screenWidth * 0.18,
               decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(screenWidth * 0.03),
                 color: Colors.grey[200],
               ),
               child: ClipRRect(
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(screenWidth * 0.03),
                 child: profilePicUrl.isNotEmpty
                     ? Image.network(
                   profilePicUrl,
                   fit: BoxFit.cover,
                   errorBuilder: (context, error, stackTrace) {
                     return Icon(Icons.person,
-                        color: Colors.grey[400], size: 35);
+                        color: Colors.grey[400], size: screenWidth * 0.09);
                   },
                 )
-                    : Icon(Icons.person, color: Colors.grey[400], size: 35),
+                    : Icon(Icons.person, color: Colors.grey[400], size: screenWidth * 0.09),
               ),
             ),
-            SizedBox(width: 16),
+            SizedBox(width: screenWidth * 0.04),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -689,36 +686,36 @@ class ProviderCard extends StatelessWidget {
                     name,
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
-                      fontSize: 16,
+                      fontSize: screenWidth * 0.04,
                       color: Colors.black87,
                     ),
                   ),
-                  SizedBox(height: 4),
+                  SizedBox(height: screenWidth * 0.01),
                   Text(
                     phoneNumber,
                     style: TextStyle(
-                      color: Color(0xFF060644),
-                      fontSize: 14,
+                      color: AppTheme.primaryColorCustom,
+                      fontSize: screenWidth * 0.035,
                       fontWeight: FontWeight.w500,
                     ),
                   ),
-                  SizedBox(height: 6),
+                  SizedBox(height: screenWidth * 0.015),
                   Row(
                     children: [
-                      Icon(Icons.star, color: Colors.amber, size: 16),
-                      SizedBox(width: 4),
+                      Icon(Icons.star, color: Colors.amber, size: screenWidth * 0.04),
+                      SizedBox(width: screenWidth * 0.01),
                       Text(
                         "4.8",
                         style: TextStyle(
                           fontWeight: FontWeight.w600,
-                          fontSize: 13,
+                          fontSize: screenWidth * 0.032,
                         ),
                       ),
                       Text(
                         " (120 reviews)",
                         style: TextStyle(
                           color: Colors.grey[600],
-                          fontSize: 13,
+                          fontSize: screenWidth * 0.032,
                         ),
                       ),
                     ],
@@ -728,14 +725,14 @@ class ProviderCard extends StatelessWidget {
             ),
             Container(
               decoration: BoxDecoration(
-                color: Color(0xFF060644).withOpacity(0.1),
-                borderRadius: BorderRadius.circular(8),
+                color: AppTheme.primaryColorCustom.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(screenWidth * 0.02),
               ),
               child: IconButton(
                 icon: Icon(
                   Icons.arrow_forward_ios,
-                  size: 16,
-                  color: Color(0xFF060644),
+                  size: screenWidth * 0.04,
+                  color: AppTheme.primaryColorCustom,
                 ),
                 onPressed: () {},
               ),
@@ -759,19 +756,21 @@ class GridCategoryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
     return Padding(
-      padding: const EdgeInsets.only(bottom: 16.0), // Added bottom padding
+      padding: EdgeInsets.only(bottom: screenWidth * 0.04),
       child: Card(
         elevation: 5,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: BorderRadius.circular(screenWidth * 0.025),
         ),
+        color: AppTheme.secondaryColorCustom,
         child: Column(
-          mainAxisSize: MainAxisSize.min, // Ensures it doesn't take extra space
+          mainAxisSize: MainAxisSize.min,
           children: [
             Expanded(
               child: ClipRRect(
-                borderRadius: BorderRadius.vertical(top: Radius.circular(10)),
+                borderRadius: BorderRadius.vertical(top: Radius.circular(screenWidth * 0.025)),
                 child: Image.network(
                   imagePath,
                   fit: BoxFit.cover,
@@ -780,7 +779,7 @@ class GridCategoryCard extends StatelessWidget {
                     if (loadingProgress == null) return child;
                     return Center(
                       child: CircularProgressIndicator(
-                        color: Color(0xFFFFFFFF),
+                        color: AppTheme.secondaryColorCustom,
                       ),
                     );
                   },
@@ -788,12 +787,12 @@ class GridCategoryCard extends StatelessWidget {
               ),
             ),
             Padding(
-              padding: const EdgeInsets.all(8.0),
+              padding: EdgeInsets.all(screenWidth * 0.02),
               child: Text(
                 title,
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
-                  fontSize: 16,
+                  fontSize: screenWidth * 0.04,
                   color: Colors.black,
                 ),
               ),
@@ -804,8 +803,6 @@ class GridCategoryCard extends StatelessWidget {
     );
   }
 }
-
-
 
 // Service Model
 class Service {

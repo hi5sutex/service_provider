@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'chat_service.dart';
-import 'chat_message.dart';
+import 'package:service_provider/User%20Panel/chat_funtionality/chat_service.dart';
+import 'package:service_provider/User%20Panel/chat_funtionality/chat_message.dart';
+import 'package:service_provider/theme.dart';
 
 class ChatScreen extends StatefulWidget {
   final String userId;
@@ -31,7 +32,6 @@ class _ChatScreenState extends State<ChatScreen> {
   @override
   void initState() {
     super.initState();
-    // Scroll to the bottom when the screen loads
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _scrollToBottom();
     });
@@ -44,12 +44,10 @@ class _ChatScreenState extends State<ChatScreen> {
     super.dispose();
   }
 
-  // Function to scroll to the bottom of the chat smoothly
   void _scrollToBottom() {
     if (_scrollController.hasClients) {
-      // For reverse: true, the bottom is at offset 0.0
       _scrollController.animateTo(
-        0.0, // Scroll to the bottom (top of reversed list)
+        0.0,
         duration: const Duration(milliseconds: 300),
         curve: Curves.easeOut,
       );
@@ -58,34 +56,50 @@ class _ChatScreenState extends State<ChatScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
+
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
+          icon: Icon(Icons.arrow_back,
+              color: AppTheme.primaryColorCustom, size: screenWidth * 0.06),
           onPressed: () {
             Navigator.pop(context);
           },
         ),
         title: Row(
           children: [
-            const CircleAvatar(
-              radius: 20,
-              backgroundImage: NetworkImage('https://avatar.iran.liara.run/public'),
+            CircleAvatar(
+              radius: screenWidth * 0.05,
+              backgroundImage:
+              const NetworkImage('https://avatar.iran.liara.run/public'),
             ),
-            const SizedBox(width: 12),
+            SizedBox(width: screenWidth * 0.03),
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(widget.providerName, style: const TextStyle(color: Colors.black)),
-                const Text('Online', style: TextStyle(color: Colors.green, fontSize: 12)),
+                Text(
+                  widget.providerName,
+                  style: TextStyle(
+                      color: AppTheme.primaryColorCustom,
+                      fontSize: screenWidth * 0.045),
+                ),
+                Text(
+                  'Online',
+                  style: TextStyle(
+                      color: AppTheme.providerGreen,
+                      fontSize: screenWidth * 0.03),
+                ),
               ],
             ),
           ],
         ),
-        backgroundColor: Colors.white,
+        backgroundColor: AppTheme.secondaryColorCustom,
         elevation: 1,
-        iconTheme: const IconThemeData(color: Colors.black),
+        iconTheme: IconThemeData(color: AppTheme.primaryColorCustom),
       ),
+      backgroundColor: AppTheme.secondaryColorCustom, // Changed to white
       body: Column(
         children: [
           Expanded(
@@ -93,21 +107,26 @@ class _ChatScreenState extends State<ChatScreen> {
               stream: _chatService.getMessages(widget.userId, widget.receiverId),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator());
+                  return Center(
+                      child: CircularProgressIndicator(
+                          color: AppTheme.primaryColorCustom));
                 } else if (snapshot.hasError) {
-                  return Center(child: Text('Error: ${snapshot.error}'));
+                  return Center(
+                      child: Text('Error: ${snapshot.error}',
+                          style: TextStyle(fontSize: screenWidth * 0.04)));
                 } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                  return const Center(child: Text('No messages yet. Start chatting!'));
+                  return Center(
+                      child: Text('No messages yet. Start chatting!',
+                          style: TextStyle(fontSize: screenWidth * 0.04)));
                 } else {
                   final messages = snapshot.data!;
-                  // Scroll to bottom after new messages are rendered
                   WidgetsBinding.instance.addPostFrameCallback((_) {
                     _scrollToBottom();
                   });
                   return ListView.builder(
                     controller: _scrollController,
-                    padding: const EdgeInsets.all(16),
-                    reverse: true, // Latest messages at the bottom
+                    padding: EdgeInsets.all(screenWidth * 0.04),
+                    reverse: true,
                     itemCount: messages.length,
                     itemBuilder: (context, index) {
                       final message = messages[index];
@@ -115,7 +134,9 @@ class _ChatScreenState extends State<ChatScreen> {
                       return buildChatBubble(
                         isSender: isSender,
                         text: message.message,
-                        time: message.timestamp.toDate().toString().substring(11, 16),
+                        time:
+                        message.timestamp.toDate().toString().substring(11, 16),
+                        screenWidth: screenWidth,
                       );
                     },
                   );
@@ -123,20 +144,25 @@ class _ChatScreenState extends State<ChatScreen> {
               },
             ),
           ),
-          buildMessageInput(),
+          buildMessageInput(screenWidth, screenHeight),
         ],
       ),
     );
   }
 
-  Widget buildChatBubble({required bool isSender, required String text, required String time}) {
+  Widget buildChatBubble({
+    required bool isSender,
+    required String text,
+    required String time,
+    required double screenWidth,
+  }) {
     return Align(
       alignment: isSender ? Alignment.centerRight : Alignment.centerLeft,
       child: Container(
-        margin: const EdgeInsets.symmetric(vertical: 4),
-        padding: const EdgeInsets.all(12),
+        margin: EdgeInsets.symmetric(vertical: screenWidth * 0.01),
+        padding: EdgeInsets.all(screenWidth * 0.03),
         decoration: BoxDecoration(
-          color: isSender ? Colors.blue : Colors.white,
+          color: isSender ? Colors.blue : AppTheme.secondaryColorCustom,
           borderRadius: BorderRadius.circular(12),
           boxShadow: const [
             BoxShadow(
@@ -151,14 +177,18 @@ class _ChatScreenState extends State<ChatScreen> {
           children: [
             Text(
               text,
-              style: TextStyle(color: isSender ? Colors.white : Colors.black),
+              style: TextStyle(
+                  color: isSender ? AppTheme.secondaryColorCustom : Colors.black,
+                  fontSize: screenWidth * 0.035),
             ),
-            const SizedBox(height: 4),
+            SizedBox(height: screenWidth * 0.01),
             Text(
               time,
               style: TextStyle(
-                fontSize: 10,
-                color: isSender ? Colors.white70 : Colors.grey,
+                fontSize: screenWidth * 0.025,
+                color: isSender
+                    ? AppTheme.secondaryColorCustom.withOpacity(0.7)
+                    : AppTheme.greyLight,
               ),
             ),
           ],
@@ -167,36 +197,36 @@ class _ChatScreenState extends State<ChatScreen> {
     );
   }
 
-  Widget buildMessageInput() {
+  Widget buildMessageInput(double screenWidth, double screenHeight) {
     return Container(
-      padding: const EdgeInsets.all(8),
-      color: Colors.white,
+      padding: EdgeInsets.all(screenWidth * 0.02),
+      color: AppTheme.secondaryColorCustom,
       child: Row(
         children: [
           IconButton(
-            icon: const Icon(Icons.attachment, color: Colors.grey),
-            onPressed: () {
-              // Add attachment functionality here if needed
-            },
+            icon: Icon(Icons.attachment,
+                color: AppTheme.greyLight, size: screenWidth * 0.06),
+            onPressed: () {},
           ),
           Expanded(
             child: TextField(
               controller: _messageController,
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 hintText: 'Type a message...',
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.all(Radius.circular(30)),
                 ),
-                contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 0),
+                contentPadding: EdgeInsets.symmetric(
+                    horizontal: screenWidth * 0.04, vertical: 0),
               ),
+              style: TextStyle(fontSize: screenWidth * 0.035),
             ),
           ),
           IconButton(
-            icon: const Icon(Icons.send, color: Colors.blue),
+            icon: Icon(Icons.send, color: Colors.blue, size: screenWidth * 0.06),
             onPressed: () async {
               if (_messageController.text.trim().isNotEmpty) {
                 try {
-                  // Send the message first
                   await _chatService.sendMessage(
                     senderId: widget.userId,
                     receiverId: widget.receiverId,
@@ -204,9 +234,7 @@ class _ChatScreenState extends State<ChatScreen> {
                     receiverEmail: widget.receiverEmail,
                     message: _messageController.text.trim(),
                   );
-                  // Clear the text field only after successful send
                   _messageController.clear();
-                  // Scroll to the latest message
                   _scrollToBottom();
                 } catch (e) {
                   ScaffoldMessenger.of(context).showSnackBar(

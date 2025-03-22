@@ -6,7 +6,7 @@ import 'package:dio/dio.dart';
 import 'package:service_provider/User%20Panel/UserOtpPage.dart';
 import 'package:service_provider/User%20Panel/edit_profile.dart';
 import 'package:service_provider/User%20Panel/user_login.dart';
-import 'package:service_provider/User%20Panel/UserOtpPage.dart'; // Import UserOtpPage
+import 'package:service_provider/theme.dart';
 
 class UserProfile extends StatefulWidget {
   @override
@@ -87,47 +87,52 @@ class _UserProfileState extends State<UserProfile> {
   }
 
   Future<void> _showLogoutConfirmation(BuildContext context) async {
+    final screenWidth = MediaQuery.of(context).size.width;
     return showDialog<void>(
       context: context,
       barrierDismissible: true,
       builder: (BuildContext context) {
         return Dialog(
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-          backgroundColor: Color(0xFF060644),
+          backgroundColor: AppTheme.primaryColorCustom, // Dark Blue
           child: Padding(
-            padding: EdgeInsets.all(20),
+            padding: EdgeInsets.all(screenWidth * 0.05),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(Icons.logout, size: 50, color: Colors.white),
-                SizedBox(height: 16),
+                Icon(Icons.logout,
+                    size: screenWidth * 0.12, color: AppTheme.secondaryColorCustom),
+                SizedBox(height: screenWidth * 0.04),
                 Text(
                   'Are you sure?',
                   style: TextStyle(
-                    fontSize: 20,
+                    fontSize: screenWidth * 0.05,
                     fontWeight: FontWeight.bold,
-                    color: Colors.white,
+                    color: AppTheme.secondaryColorCustom,
                   ),
                 ),
-                SizedBox(height: 10),
+                SizedBox(height: screenWidth * 0.025),
                 Text(
                   'You will be logged out of your account.',
                   style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.white70,
+                    fontSize: screenWidth * 0.035,
+                    color: AppTheme.secondaryColorCustom.withOpacity(0.7),
                   ),
                   textAlign: TextAlign.center,
                 ),
-                SizedBox(height: 20),
+                SizedBox(height: screenWidth * 0.05),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
                     ElevatedButton(
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.white,
+                        backgroundColor: AppTheme.secondaryColorCustom,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(10),
                         ),
+                        padding: EdgeInsets.symmetric(
+                            horizontal: screenWidth * 0.05,
+                            vertical: screenWidth * 0.025),
                       ),
                       onPressed: () {
                         Navigator.pop(context);
@@ -135,21 +140,25 @@ class _UserProfileState extends State<UserProfile> {
                       child: Text(
                         'Cancel',
                         style: TextStyle(
-                          color: Color(0xFF060644),
+                          color: AppTheme.primaryColorCustom,
                           fontWeight: FontWeight.bold,
+                          fontSize: screenWidth * 0.035,
                         ),
                       ),
                     ),
                     ElevatedButton(
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.red,
+                        backgroundColor: AppTheme.errorRed,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(10),
                         ),
+                        padding: EdgeInsets.symmetric(
+                            horizontal: screenWidth * 0.05,
+                            vertical: screenWidth * 0.025),
                       ),
                       onPressed: () async {
                         await _auth.signOut();
-                        Navigator.pop(context); // Close the dialog
+                        Navigator.pop(context);
                         Navigator.pushReplacement(
                           context,
                           MaterialPageRoute(builder: (context) => LoginPage()),
@@ -158,8 +167,9 @@ class _UserProfileState extends State<UserProfile> {
                       child: Text(
                         'Logout',
                         style: TextStyle(
-                          color: Colors.white,
+                          color: AppTheme.secondaryColorCustom,
                           fontWeight: FontWeight.bold,
+                          fontSize: screenWidth * 0.035,
                         ),
                       ),
                     ),
@@ -175,13 +185,17 @@ class _UserProfileState extends State<UserProfile> {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
+
     return Scaffold(
-      backgroundColor: Color(0xFF060644),
+      backgroundColor: AppTheme.primaryColorCustom, // Dark Blue
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Colors.white),
+          icon: Icon(Icons.arrow_back,
+              color: AppTheme.secondaryColorCustom, size: screenWidth * 0.06),
           onPressed: () => Navigator.pop(context),
         ),
       ),
@@ -190,13 +204,16 @@ class _UserProfileState extends State<UserProfile> {
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return Center(
-              child: CircularProgressIndicator(color: Colors.white),
+              child: CircularProgressIndicator(
+                  color: AppTheme.secondaryColorCustom),
             );
           } else if (snapshot.hasError) {
             return Center(
               child: Text(
                 'Error loading profile',
-                style: TextStyle(color: Colors.white),
+                style: TextStyle(
+                    color: AppTheme.secondaryColorCustom,
+                    fontSize: screenWidth * 0.045),
               ),
             );
           }
@@ -207,14 +224,14 @@ class _UserProfileState extends State<UserProfile> {
               Container(
                 width: double.infinity,
                 decoration: BoxDecoration(
-                  color: Color(0xFF060644),
+                  color: AppTheme.primaryColorCustom,
                   borderRadius: BorderRadius.vertical(
-                    bottom: Radius.circular(30),
+                    bottom: Radius.circular(screenWidth * 0.075),
                   ),
                 ),
                 child: SafeArea(
                   child: Padding(
-                    padding: EdgeInsets.all(20),
+                    padding: EdgeInsets.all(screenWidth * 0.05),
                     child: Column(
                       children: [
                         GestureDetector(
@@ -225,19 +242,20 @@ class _UserProfileState extends State<UserProfile> {
                                 decoration: BoxDecoration(
                                   shape: BoxShape.circle,
                                   border: Border.all(
-                                    color: Colors.white,
+                                    color: AppTheme.secondaryColorCustom,
                                     width: 4,
                                   ),
                                 ),
                                 child: CircleAvatar(
-                                  radius: 50,
-                                  backgroundColor: Colors.grey[300],
+                                  radius: screenWidth * 0.12,
+                                  backgroundColor: AppTheme.greyLight,
                                   backgroundImage: _profileImageUrl != null
                                       ? NetworkImage(_profileImageUrl!)
                                       : null,
                                   child: _profileImageUrl == null
                                       ? Icon(Icons.person,
-                                      size: 50, color: Colors.grey[400])
+                                      size: screenWidth * 0.12,
+                                      color: Colors.grey[400])
                                       : null,
                                 ),
                               ),
@@ -245,25 +263,26 @@ class _UserProfileState extends State<UserProfile> {
                                 bottom: 0,
                                 right: 0,
                                 child: Container(
-                                  padding: EdgeInsets.all(4),
+                                  padding: EdgeInsets.all(screenWidth * 0.01),
                                   decoration: BoxDecoration(
-                                    color: Colors.white,
+                                    color: AppTheme.secondaryColorCustom,
                                     shape: BoxShape.circle,
                                   ),
                                   child: Icon(Icons.camera_alt,
-                                      size: 16, color: Color(0xFF060644)),
+                                      size: screenWidth * 0.04,
+                                      color: AppTheme.primaryColorCustom),
                                 ),
                               ),
                             ],
                           ),
                         ),
-                        SizedBox(height: 16),
+                        SizedBox(height: screenHeight * 0.02),
                         Text(
                           _userName ?? 'Hello, User',
                           style: TextStyle(
-                            fontSize: 24,
+                            fontSize: screenWidth * 0.06,
                             fontWeight: FontWeight.bold,
-                            color: Colors.white,
+                            color: AppTheme.secondaryColorCustom,
                           ),
                         ),
                         Text(
@@ -271,10 +290,12 @@ class _UserProfileState extends State<UserProfile> {
                               ? '+91 $_phoneNumber'
                               : 'Lagos, Nigeria',
                           style: TextStyle(
-                            fontSize: 16,
-                            color: Colors.white70,
+                            fontSize: screenWidth * 0.04,
+                            color:
+                            AppTheme.secondaryColorCustom.withOpacity(0.7),
                           ),
                         ),
+                        SizedBox(height: screenHeight * 0.02),
                       ],
                     ),
                   ),
@@ -283,81 +304,90 @@ class _UserProfileState extends State<UserProfile> {
               // Bottom White Section
               Expanded(
                 child: Container(
-                  padding: EdgeInsets.all(20),
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: AppTheme.secondaryColorCustom,
                     borderRadius: BorderRadius.vertical(
-                      top: Radius.circular(30),
+                      top: Radius.circular(screenWidth * 0.075),
                     ),
                   ),
-                  child: SingleChildScrollView(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        ListTile(
-                          leading: Icon(Icons.person_outline,
-                              color: Color(0xFF060644)),
-                          title: Text('Edit Profile'),
-                          trailing: Icon(Icons.arrow_forward_ios,
-                              color: Color(0xFF060644)),
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) => EditUserProfile()),
-                            );
-                          },
+                  child: ListView(
+                    padding: EdgeInsets.all(screenWidth * 0.05),
+                    children: [
+                      ListTile(
+                        leading: Icon(Icons.person_outline,
+                            color: AppTheme.primaryColorCustom,
+                            size: screenWidth * 0.06),
+                        title: Text('Edit Profile',
+                            style:
+                            TextStyle(fontSize: screenWidth * 0.045)),
+                        trailing: Icon(Icons.arrow_forward_ios,
+                            color: AppTheme.primaryColorCustom,
+                            size: screenWidth * 0.045),
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => EditUserProfile()),
+                          );
+                        },
+                      ),
+                      Divider(color: AppTheme.greyLight),
+                      ListTile(
+                        leading: Icon(Icons.lock_outline,
+                            color: AppTheme.primaryColorCustom,
+                            size: screenWidth * 0.06),
+                        title: Text('Change Password',
+                            style:
+                            TextStyle(fontSize: screenWidth * 0.045)),
+                        trailing: Icon(Icons.arrow_forward_ios,
+                            color: AppTheme.primaryColorCustom,
+                            size: screenWidth * 0.045),
+                        onTap: () {},
+                      ),
+                      Divider(color: AppTheme.greyLight),
+                      ListTile(
+                        leading: Icon(Icons.dark_mode_outlined,
+                            color: AppTheme.primaryColorCustom,
+                            size: screenWidth * 0.06),
+                        title: Text('Dark Mode',
+                            style:
+                            TextStyle(fontSize: screenWidth * 0.045)),
+                        trailing: Switch(
+                          value: true,
+                          onChanged: (value) {},
+                          activeColor: AppTheme.primaryColorCustom,
                         ),
-                        Divider(),
-                        ListTile(
-                          leading:
-                          Icon(Icons.lock_outline, color: Color(0xFF060644)),
-                          title: Text('Change Password'),
-                          trailing: Icon(Icons.arrow_forward_ios,
-                              color: Color(0xFF060644)),
-                          onTap: () {},
-                        ),
-                        Divider(),
-                        ListTile(
-                          leading: Icon(Icons.dark_mode_outlined,
-                              color: Color(0xFF060644)),
-                          title: Text('Dark Mode'),
-                          trailing: Switch(
-                            value: true,
-                            onChanged: (value) {},
-                            activeColor: Color(0xFF060644),
-                          ),
-                        ),
-                        Divider(),
-                        ListTile(
-                          leading: Icon(Icons.payment, color: Color(0xFF060644)),
-                          title: Text('Add Payment Method'),
-                          trailing: Icon(Icons.arrow_forward_ios,
-                              color: Color(0xFF060644)),
-                          onTap: () {},
-                        ),
-                        Divider(),
-                        ListTile(
-                          leading: Icon(Icons.vpn_key, color: Color(0xFF060644)), // New icon for OTP
-                          title: Text('View OTP'),
-                          trailing: Icon(Icons.arrow_forward_ios,
-                              color: Color(0xFF060644)),
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) => UserOtpPage()),
-                            );
-                          },
-                        ),
-                        Divider(),
-                        ListTile(
-                          leading: Icon(Icons.logout, color: Color(0xFF060644)),
-                          title: Text('Logout'),
-                          onTap: () => _showLogoutConfirmation(context),
-                        ),
-                      ],
-                    ),
+                      ),
+                      Divider(color: AppTheme.greyLight),
+                      ListTile(
+                        leading: Icon(Icons.vpn_key,
+                            color: AppTheme.primaryColorCustom,
+                            size: screenWidth * 0.06),
+                        title: Text('View OTP',
+                            style:
+                            TextStyle(fontSize: screenWidth * 0.045)),
+                        trailing: Icon(Icons.arrow_forward_ios,
+                            color: AppTheme.primaryColorCustom,
+                            size: screenWidth * 0.045),
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => UserOtpPage()),
+                          );
+                        },
+                      ),
+                      Divider(color: AppTheme.greyLight),
+                      ListTile(
+                        leading: Icon(Icons.logout,
+                            color: AppTheme.primaryColorCustom,
+                            size: screenWidth * 0.06),
+                        title: Text('Logout',
+                            style:
+                            TextStyle(fontSize: screenWidth * 0.045)),
+                        onTap: () => _showLogoutConfirmation(context),
+                      ),
+                    ],
                   ),
                 ),
               ),

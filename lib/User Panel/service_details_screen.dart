@@ -1,14 +1,14 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:service_provider/User Panel/ConfirmBookingPage.dart';
-import 'package:service_provider/User Panel/chat_funtionality/chat_screen.dart';
+import 'package:service_provider/User%20Panel/ConfirmBookingPage.dart';
+import 'package:service_provider/User%20Panel/chat_funtionality/chat_screen.dart';
+import 'package:service_provider/theme.dart';
 
 class ServiceDetailsScreen extends StatefulWidget {
   final String serviceId;
 
-  const ServiceDetailsScreen({Key? key, required this.serviceId})
-      : super(key: key);
+  const ServiceDetailsScreen({Key? key, required this.serviceId}) : super(key: key);
 
   @override
   _ServiceDetailsScreenState createState() => _ServiceDetailsScreenState();
@@ -67,19 +67,15 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
 
   Future<void> _fetchServiceAndProviderDetails() async {
     try {
-      DocumentSnapshot serviceSnapshot = await _firestore
-          .collection('services')
-          .doc(widget.serviceId)
-          .get();
+      DocumentSnapshot serviceSnapshot =
+      await _firestore.collection('services').doc(widget.serviceId).get();
 
       if (serviceSnapshot.exists) {
         serviceData = serviceSnapshot.data() as Map<String, dynamic>;
         String providerId = serviceData!['createdBy'];
 
-        DocumentSnapshot providerSnapshot = await _firestore
-            .collection('providers')
-            .doc(providerId)
-            .get();
+        DocumentSnapshot providerSnapshot =
+        await _firestore.collection('providers').doc(providerId).get();
 
         if (providerSnapshot.exists) {
           setState(() {
@@ -99,11 +95,11 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
         context,
         MaterialPageRoute(
           builder: (context) => ChatScreen(
-            userId: currentUser.uid,              // Current user's UID
-            receiverId: serviceData!['createdBy'], // Provider's UID
-            senderEmail: currentUser.email!,      // Current user's email
+            userId: currentUser.uid,
+            receiverId: serviceData!['createdBy'],
+            senderEmail: currentUser.email!,
             receiverEmail: providerData!['email'],
-            providerName: providerData!['name'],// Provider's email
+            providerName: providerData!['name'],
           ),
         ),
       );
@@ -116,33 +112,37 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
+
     return Scaffold(
-      backgroundColor: Colors.grey[100],
+      backgroundColor: AppTheme.secondaryColorCustom, // White background
       appBar: AppBar(
         title: Text(
           serviceData?['name'] ?? 'Service Details',
-          style: TextStyle(color: Color(0xFFFFFFFF)),
+          style: TextStyle(color: AppTheme.secondaryColorCustom),
         ),
-        backgroundColor: Color(0xFF060644),
-        foregroundColor: Colors.white,
+        backgroundColor: AppTheme.primaryColorCustom,
+        foregroundColor: AppTheme.secondaryColorCustom,
       ),
       body: serviceData == null
-          ? const Center(child: CircularProgressIndicator())
+          ? Center(child: CircularProgressIndicator(color: AppTheme.primaryColorCustom))
           : SingleChildScrollView(
         child: Padding(
-          padding: const EdgeInsets.all(16.0),
+          padding: EdgeInsets.all(screenWidth * 0.04),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _buildImageSlider(),
-              SizedBox(height: 16),
+              SizedBox(height: screenHeight * 0.02),
               Card(
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16.0),
+                  borderRadius: BorderRadius.circular(screenWidth * 0.04),
                 ),
                 elevation: 4,
+                color: AppTheme.secondaryColorCustom, // White card
                 child: Padding(
-                  padding: const EdgeInsets.all(16.0),
+                  padding: EdgeInsets.all(screenWidth * 0.04),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -150,66 +150,61 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
                         serviceData!['name'] ?? 'Unnamed Service',
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
-                          fontSize: 24,
+                          fontSize: screenWidth * 0.06,
                         ),
                       ),
-                      SizedBox(height: 8),
+                      SizedBox(height: screenHeight * 0.01),
                       Text(
                         'Category: ${serviceData!['category'] ?? 'N/A'}',
-                        style:
-                        TextStyle(color: Colors.grey[700], fontSize: 16),
+                        style: TextStyle(
+                            color: Colors.grey[700], fontSize: screenWidth * 0.04),
                       ),
-                      SizedBox(height: 16),
+                      SizedBox(height: screenHeight * 0.02),
                       Text(
                         '₹${serviceData!['price']?.toString() ?? 'N/A'}',
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
-                          fontSize: 20,
-                          color: Color(0xFF060644),
+                          fontSize: screenWidth * 0.05,
+                          color: AppTheme.primaryColorCustom,
                         ),
                       ),
-                      SizedBox(height: 16),
+                      SizedBox(height: screenHeight * 0.02),
                       Text(
-                        serviceData!['description'] ??
-                            'No description available',
-                        style: TextStyle(fontSize: 16),
+                        serviceData!['description'] ?? 'No description available',
+                        style: TextStyle(fontSize: screenWidth * 0.04),
                       ),
                     ],
                   ),
                 ),
               ),
-              SizedBox(height: 24),
-              if ((serviceData!['whatsIncluded'] as List<dynamic>?)
-                  ?.isNotEmpty ??
-                  false)
+              SizedBox(height: screenHeight * 0.03),
+              if ((serviceData!['whatsIncluded'] as List<dynamic>?)?.isNotEmpty ?? false)
                 Card(
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16.0),
+                    borderRadius: BorderRadius.circular(screenWidth * 0.04),
                   ),
                   elevation: 4,
+                  color: AppTheme.secondaryColorCustom, // White card
                   child: Padding(
-                    padding: const EdgeInsets.all(16.0),
+                    padding: EdgeInsets.all(screenWidth * 0.04),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
                           "What's Included",
                           style: TextStyle(
-                            fontSize: 20,
+                            fontSize: screenWidth * 0.05,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-                        SizedBox(height: 8),
-                        ...(serviceData!['whatsIncluded'] as List<dynamic>)
-                            .map(
+                        SizedBox(height: screenHeight * 0.01),
+                        ...(serviceData!['whatsIncluded'] as List<dynamic>).map(
                               (item) => Padding(
-                            padding:
-                            const EdgeInsets.symmetric(vertical: 4),
+                            padding: EdgeInsets.symmetric(vertical: screenHeight * 0.005),
                             child: Row(
                               children: [
-                                Icon(Icons.check_circle,
-                                    color: Colors.green),
-                                SizedBox(width: 8),
+                                Icon(Icons.check_circle, color: AppTheme.providerGreen),
+                                SizedBox(width: screenWidth * 0.02),
                                 Expanded(child: Text(item.toString())),
                               ],
                             ),
@@ -219,39 +214,34 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
                     ),
                   ),
                 ),
-              SizedBox(height: 24),
-              if ((serviceData!['responsibilities'] as List<dynamic>?)
-                  ?.isNotEmpty ??
-                  false)
+              SizedBox(height: screenHeight * 0.03),
+              if ((serviceData!['responsibilities'] as List<dynamic>?)?.isNotEmpty ?? false)
                 Card(
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16.0),
+                    borderRadius: BorderRadius.circular(screenWidth * 0.04),
                   ),
                   elevation: 4,
+                  color: AppTheme.secondaryColorCustom, // White card
                   child: Padding(
-                    padding: const EdgeInsets.all(16.0),
+                    padding: EdgeInsets.all(screenWidth * 0.04),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
                           'Responsibilities',
                           style: TextStyle(
-                            fontSize: 20,
+                            fontSize: screenWidth * 0.05,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-                        SizedBox(height: 8),
-                        ...(serviceData!['responsibilities']
-                        as List<dynamic>)
-                            .map(
+                        SizedBox(height: screenHeight * 0.01),
+                        ...(serviceData!['responsibilities'] as List<dynamic>).map(
                               (item) => Padding(
-                            padding:
-                            const EdgeInsets.symmetric(vertical: 4),
+                            padding: EdgeInsets.symmetric(vertical: screenHeight * 0.005),
                             child: Row(
                               children: [
-                                Icon(Icons.arrow_right,
-                                    color: Colors.blue),
-                                SizedBox(width: 8),
+                                Icon(Icons.arrow_right, color: Colors.blue),
+                                SizedBox(width: screenWidth * 0.02),
                                 Expanded(child: Text(item.toString())),
                               ],
                             ),
@@ -261,36 +251,35 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
                     ),
                   ),
                 ),
-              SizedBox(height: 24),
+              SizedBox(height: screenHeight * 0.03),
               Card(
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16.0),
+                  borderRadius: BorderRadius.circular(screenWidth * 0.04),
                 ),
                 elevation: 4,
+                color: AppTheme.secondaryColorCustom, // White card
                 child: Padding(
-                  padding: const EdgeInsets.all(16.0),
+                  padding: EdgeInsets.all(screenWidth * 0.04),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
                         'Additional Information',
                         style: TextStyle(
-                          fontSize: 20,
+                          fontSize: screenWidth * 0.05,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                      SizedBox(height: 16),
+                      SizedBox(height: screenHeight * 0.02),
                       ListTile(
                         leading: Icon(Icons.access_time, color: Colors.blue),
                         title: Text('Flexible Scheduling'),
                         subtitle: Text('Book at your convenient time'),
                       ),
                       ListTile(
-                        leading:
-                        Icon(Icons.verified_user, color: Colors.blue),
+                        leading: Icon(Icons.verified_user, color: Colors.blue),
                         title: Text('Verified Providers'),
-                        subtitle:
-                        Text('All providers are verified and trusted'),
+                        subtitle: Text('All providers are verified and trusted'),
                       ),
                       ListTile(
                         leading: Icon(Icons.thumb_up, color: Colors.blue),
@@ -301,53 +290,52 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
                   ),
                 ),
               ),
-              SizedBox(height: 24),
+              SizedBox(height: screenHeight * 0.03),
               if (providerData != null)
                 Card(
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16.0),
+                    borderRadius: BorderRadius.circular(screenWidth * 0.04),
                   ),
                   elevation: 4,
+                  color: AppTheme.secondaryColorCustom, // White card
                   child: Padding(
-                    padding: const EdgeInsets.all(16.0),
+                    padding: EdgeInsets.all(screenWidth * 0.04),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
                           'Service Provider',
                           style: TextStyle(
-                            fontSize: 20,
+                            fontSize: screenWidth * 0.05,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-                        SizedBox(height: 16),
+                        SizedBox(height: screenHeight * 0.02),
                         ListTile(
-                          leading: CircleAvatar(
-                            child: Icon(Icons.person),
-                          ),
+                          leading: CircleAvatar(child: Icon(Icons.person)),
                           title: Text(providerData!['name'] ?? 'N/A'),
                           subtitle: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(providerData!['phone'] ?? 'N/A'),
                               Text(providerData!['email'] ?? 'N/A'),
-                              Text(providerData!['address']?['string'] ??
-                                  'N/A'),
+                              Text(providerData!['address']?['string'] ?? 'N/A'),
                             ],
                           ),
                         ),
-                        SizedBox(height: 16),
+                        SizedBox(height: screenHeight * 0.02),
                         Container(
                           width: double.infinity,
                           child: ElevatedButton(
                             onPressed: () => _navigateToChat(context),
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: Color(0xFF060644),
-                              foregroundColor: Colors.white,
+                              backgroundColor: AppTheme.primaryColorCustom,
+                              foregroundColor: AppTheme.secondaryColorCustom,
                               padding: EdgeInsets.symmetric(
-                                  horizontal: 16.0, vertical: 12.0),
+                                  horizontal: screenWidth * 0.04,
+                                  vertical: screenHeight * 0.015),
                               shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12.0),
+                                borderRadius: BorderRadius.circular(screenWidth * 0.03),
                               ),
                             ),
                             child: Text('Message Provider'),
@@ -357,18 +345,18 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
                     ),
                   ),
                 ),
-              SizedBox(height: 32),
+              SizedBox(height: screenHeight * 0.04),
               Center(
                 child: ElevatedButton(
                   onPressed: _showBookingSheet,
                   child: Text('Book Now',
-                      style: TextStyle(color: Color(0xffffffff))),
+                      style: TextStyle(color: AppTheme.secondaryColorCustom)),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Color(0xFF6A9AFF),
-                    padding:
-                    EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                    padding: EdgeInsets.symmetric(
+                        horizontal: screenWidth * 0.06, vertical: screenHeight * 0.015),
                     shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12)),
+                        borderRadius: BorderRadius.circular(screenWidth * 0.03)),
                   ),
                 ),
               ),
@@ -380,18 +368,20 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
   }
 
   Widget _buildImageSlider() {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
     final List<String> images =
         (serviceData!['images'] as List<dynamic>?)?.cast<String>() ?? [];
 
     if (images.isEmpty) {
       return Container(
-        height: 200,
+        height: screenHeight * 0.25,
         decoration: BoxDecoration(
           color: Colors.grey[300],
-          borderRadius: BorderRadius.circular(16.0),
+          borderRadius: BorderRadius.circular(screenWidth * 0.04),
         ),
         child: Center(
-          child: Icon(Icons.image, size: 80, color: Colors.grey),
+          child: Icon(Icons.image, size: screenWidth * 0.2, color: Colors.grey),
         ),
       );
     }
@@ -399,7 +389,7 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
     return Column(
       children: [
         SizedBox(
-          height: 200,
+          height: screenHeight * 0.25,
           child: PageView.builder(
             controller: _pageController,
             onPageChanged: (index) {
@@ -410,27 +400,27 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
             itemCount: images.length,
             itemBuilder: (context, index) {
               return ClipRRect(
-                borderRadius: BorderRadius.circular(16.0),
+                borderRadius: BorderRadius.circular(screenWidth * 0.04),
                 child: Image.network(
                   images[index],
                   fit: BoxFit.cover,
                   errorBuilder: (context, error, stackTrace) => Container(
                     color: Colors.grey[300],
-                    child: Icon(Icons.image, size: 80, color: Colors.grey),
+                    child: Icon(Icons.image, size: screenWidth * 0.2, color: Colors.grey),
                   ),
                 ),
               );
             },
           ),
         ),
-        SizedBox(height: 8),
+        SizedBox(height: screenHeight * 0.01),
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: List.generate(images.length, (index) {
             return Container(
-              margin: const EdgeInsets.symmetric(horizontal: 4.0),
-              width: _currentPage == index ? 8.0 : 5.0,
-              height: _currentPage == index ? 8.0 : 5.0,
+              margin: EdgeInsets.symmetric(horizontal: screenWidth * 0.01),
+              width: _currentPage == index ? screenWidth * 0.02 : screenWidth * 0.012,
+              height: _currentPage == index ? screenWidth * 0.02 : screenWidth * 0.012,
               decoration: BoxDecoration(
                 color: _currentPage == index ? Colors.blue : Colors.grey,
                 shape: BoxShape.circle,
@@ -443,11 +433,14 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
   }
 
   void _showBookingSheet() {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(screenWidth * 0.05)),
       ),
       builder: (context) {
         return StatefulBuilder(
@@ -490,11 +483,11 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
             }
 
             return Container(
-              height: MediaQuery.of(context).size.height * 0.65,
-              padding: EdgeInsets.all(20),
+              height: screenHeight * 0.65,
+              padding: EdgeInsets.all(screenWidth * 0.05),
               decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+                color: AppTheme.secondaryColorCustom, // White bottom sheet
+                borderRadius: BorderRadius.vertical(top: Radius.circular(screenWidth * 0.05)),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -502,18 +495,18 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
                   Text(
                     'Choose Appointment Time',
                     style: TextStyle(
-                        fontSize: 20,
+                        fontSize: screenWidth * 0.05,
                         fontWeight: FontWeight.bold,
                         color: Colors.black),
                   ),
-                  SizedBox(height: 5),
+                  SizedBox(height: screenHeight * 0.006),
                   Text('Service will take approximately 45 minutes',
-                      style: TextStyle(color: Colors.grey, fontSize: 14)),
-                  SizedBox(height: 20),
+                      style: TextStyle(color: Colors.grey, fontSize: screenWidth * 0.035)),
+                  SizedBox(height: screenHeight * 0.025),
                   Text('Select a Date',
-                      style:
-                      TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                  SizedBox(height: 8),
+                      style: TextStyle(
+                          fontSize: screenWidth * 0.04, fontWeight: FontWeight.bold)),
+                  SizedBox(height: screenHeight * 0.01),
                   SingleChildScrollView(
                     scrollDirection: Axis.horizontal,
                     child: Row(
@@ -530,15 +523,16 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
                             });
                           },
                           child: Container(
-                            margin: EdgeInsets.symmetric(horizontal: 6),
+                            margin: EdgeInsets.symmetric(horizontal: screenWidth * 0.015),
                             padding: EdgeInsets.symmetric(
-                                vertical: 10, horizontal: 14),
+                                vertical: screenHeight * 0.012,
+                                horizontal: screenWidth * 0.035),
                             decoration: BoxDecoration(
                               border: Border.all(
                                   color: isSelected
                                       ? Colors.deepPurple
                                       : Colors.grey.shade300),
-                              borderRadius: BorderRadius.circular(12),
+                              borderRadius: BorderRadius.circular(screenWidth * 0.03),
                               color: isSelected
                                   ? Colors.deepPurple[100]
                                   : Colors.grey.shade100,
@@ -563,21 +557,19 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
                                     'Sat'
                                   ][date.weekday % 7],
                                   style: TextStyle(
-                                    fontSize: 14,
+                                    fontSize: screenWidth * 0.035,
                                     fontWeight: FontWeight.bold,
-                                    color: isSelected
-                                        ? Colors.deepPurple
-                                        : Colors.black,
+                                    color:
+                                    isSelected ? Colors.deepPurple : Colors.black,
                                   ),
                                 ),
                                 Text(
                                   '${date.day}',
                                   style: TextStyle(
-                                    fontSize: 16,
+                                    fontSize: screenWidth * 0.04,
                                     fontWeight: FontWeight.bold,
-                                    color: isSelected
-                                        ? Colors.deepPurple
-                                        : Colors.black,
+                                    color:
+                                    isSelected ? Colors.deepPurple : Colors.black,
                                   ),
                                 ),
                               ],
@@ -587,45 +579,42 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
                       }).toList(),
                     ),
                   ),
-                  SizedBox(height: 20),
+                  SizedBox(height: screenHeight * 0.025),
                   Text('Select Time Slot',
-                      style:
-                      TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                  SizedBox(height: 8),
+                      style: TextStyle(
+                          fontSize: screenWidth * 0.04, fontWeight: FontWeight.bold)),
+                  SizedBox(height: screenHeight * 0.01),
                   Expanded(
                     child: selectedDate == null
                         ? Center(
                         child: Text("Select a date first",
-                            style:
-                            TextStyle(color: Colors.grey, fontSize: 16)))
+                            style: TextStyle(
+                                color: Colors.grey, fontSize: screenWidth * 0.04)))
                         : GridView.builder(
-                      gridDelegate:
-                      SliverGridDelegateWithFixedCrossAxisCount(
+                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                         crossAxisCount: 3,
-                        crossAxisSpacing: 10,
-                        mainAxisSpacing: 10,
+                        crossAxisSpacing: screenWidth * 0.025,
+                        mainAxisSpacing: screenHeight * 0.015,
                         childAspectRatio: 2.5,
                       ),
                       itemCount: getTimeSlots().length,
                       itemBuilder: (context, i) {
                         String timeSlot = getTimeSlots()[i];
-                        bool isSelected =
-                            selectedTime == _parseTime(timeSlot);
+                        bool isSelected = selectedTime == _parseTime(timeSlot);
 
                         return GestureDetector(
                           onTap: () {
-                            setModalState(
-                                    () => selectedTime = _parseTime(timeSlot));
+                            setModalState(() => selectedTime = _parseTime(timeSlot));
                           },
                           child: Container(
                             alignment: Alignment.center,
                             padding: EdgeInsets.symmetric(
-                                vertical: 10, horizontal: 8),
+                                vertical: screenHeight * 0.012,
+                                horizontal: screenWidth * 0.02),
                             decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(10),
-                              color: isSelected
-                                  ? Colors.deepPurple[100]
-                                  : Colors.white,
+                              borderRadius: BorderRadius.circular(screenWidth * 0.025),
+                              color:
+                              isSelected ? Colors.deepPurple[100] : Colors.white,
                               border: Border.all(
                                   color: isSelected
                                       ? Colors.deepPurple
@@ -633,8 +622,7 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
                               boxShadow: isSelected
                                   ? [
                                 BoxShadow(
-                                    color:
-                                    Colors.deepPurple.shade100,
+                                    color: Colors.deepPurple.shade100,
                                     blurRadius: 5,
                                     spreadRadius: 1)
                               ]
@@ -647,7 +635,7 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
                                     ? Colors.deepPurple[900]
                                     : Colors.black,
                                 fontWeight: FontWeight.w500,
-                                fontSize: 14,
+                                fontSize: screenWidth * 0.035,
                               ),
                             ),
                           ),
@@ -655,7 +643,7 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
                       },
                     ),
                   ),
-                  SizedBox(height: 20),
+                  SizedBox(height: screenHeight * 0.025),
                   ElevatedButton(
                     onPressed: selectedDate != null && selectedTime != null
                         ? () {
@@ -677,16 +665,16 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
                       backgroundColor: selectedDate != null && selectedTime != null
                           ? Colors.deepPurple
                           : Colors.grey[400],
-                      padding: EdgeInsets.symmetric(vertical: 14),
+                      padding: EdgeInsets.symmetric(vertical: screenHeight * 0.017),
                       shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12)),
+                          borderRadius: BorderRadius.circular(screenWidth * 0.03)),
                       elevation: 5,
                     ),
                     child: Center(
                       child: Text(
                         'Confirm Booking',
                         style: TextStyle(
-                            fontSize: 16,
+                            fontSize: screenWidth * 0.04,
                             fontWeight: FontWeight.bold,
                             color: Colors.white),
                       ),

@@ -11,8 +11,11 @@ class AppTheme {
   // Primary and secondary colors
   static const Color primaryColorCustom = Color(0xFF060644); // Dark Blue
   static const Color secondaryColorCustom = Color(0xFFFFFFFF); // White
-  static const Color secondarytext = Color(0xFFB0B0C0); // White
 
+  // New colors
+  static const Color greyLight = Color(0xFFB0BEC5); // Approx Colors.grey[300]
+  static const Color providerGreen = Color(0xFF4CAF50); // Approx Colors.green
+  static const Color errorRed = Color(0xFFF44336); // Approx Colors.red
 
   static ThemeData get lightTheme {
     return ThemeData(
@@ -32,16 +35,13 @@ class AppTheme {
           900: Color(0xFF02021C),
         },
       ),
-
       scaffoldBackgroundColor: lightLavender,
       canvasColor: lightLavender,
-
       appBarTheme: const AppBarTheme(
         backgroundColor: primaryColorCustom,
         foregroundColor: secondaryColorCustom,
         elevation: 2,
       ),
-
       textTheme: const TextTheme(
         displayLarge: TextStyle(color: primaryColorCustom, fontWeight: FontWeight.bold),
         displayMedium: TextStyle(color: primaryColorCustom),
@@ -49,39 +49,36 @@ class AppTheme {
         bodyMedium: TextStyle(color: darkNavy),
         labelLarge: TextStyle(color: secondaryColorCustom),
       ),
-
-      // Updated ElevatedButton theme
       elevatedButtonTheme: ElevatedButtonThemeData(
-        style: ElevatedButton.styleFrom(
-          backgroundColor: deepPurple, // #69306D for Sign In
-          foregroundColor: secondaryColorCustom, // White text/icon
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(25.0),
+        style: ButtonStyle(
+          backgroundColor: MaterialStateProperty.all(deepPurple),
+          foregroundColor: MaterialStateProperty.all(secondaryColorCustom),
+          shape: MaterialStateProperty.all(
+            RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(25.0),
+            ),
           ),
         ),
       ),
-
-      // Updated OutlinedButton theme
       outlinedButtonTheme: OutlinedButtonThemeData(
-        style: OutlinedButton.styleFrom(
-          foregroundColor: mutedPlum, // #A5668B for Sign Up text
-          backgroundColor: secondaryColorCustom, // White background
-          side: BorderSide(color: mutedPlum), // #A5668B border
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(25.0),
+        style: ButtonStyle(
+          backgroundColor: MaterialStateProperty.all(secondaryColorCustom),
+          foregroundColor: MaterialStateProperty.all(mutedPlum),
+          side: MaterialStateProperty.all(BorderSide(color: mutedPlum)),
+          shape: MaterialStateProperty.all(
+            RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(25.0),
+            ),
           ),
         ),
       ),
-
       cardTheme: const CardTheme(
         color: softMauve,
         elevation: 1,
       ),
-
       iconTheme: const IconThemeData(
         color: primaryColorCustom,
       ),
-
       colorScheme: ColorScheme.light(
         primary: primaryColorCustom,
         secondary: secondaryColorCustom,

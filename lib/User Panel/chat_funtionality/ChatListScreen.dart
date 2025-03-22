@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:service_provider/User Panel/chat_funtionality/chat_screen.dart';
+import 'package:service_provider/User%20Panel/chat_funtionality/chat_screen.dart';
+import 'package:service_provider/theme.dart';
 
 class ChatListScreen extends StatefulWidget {
   const ChatListScreen({Key? key}) : super(key: key);
@@ -29,27 +30,39 @@ class _ChatListScreenState extends State<ChatListScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
+
     if (currentUserEmail == null || currentUserId == null) {
       return Scaffold(
         appBar: AppBar(
-          title: const Text('Messages', style: TextStyle(color: Colors.black)),
-          backgroundColor: Colors.white,
+          title: Text('Messages',
+              style: TextStyle(
+                  color: AppTheme.primaryColorCustom,
+                  fontSize: screenWidth * 0.05)),
+          backgroundColor: AppTheme.secondaryColorCustom,
           elevation: 1,
-          iconTheme: const IconThemeData(color: Colors.black),
+          iconTheme: IconThemeData(color: AppTheme.primaryColorCustom),
         ),
-        body: const Center(
-          child: Text('Please log in to view your chats.'),
+        body: Center(
+          child: Text('Please log in to view your chats.',
+              style: TextStyle(fontSize: screenWidth * 0.04)),
         ),
+        backgroundColor: AppTheme.secondaryColorCustom, // Changed to white
       );
     }
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Messages', style: TextStyle(color: Colors.black)),
-        backgroundColor: Colors.white,
+        title: Text('Messages',
+            style: TextStyle(
+                color: AppTheme.primaryColorCustom,
+                fontSize: screenWidth * 0.05)),
+        backgroundColor: AppTheme.secondaryColorCustom,
         elevation: 1,
-        iconTheme: const IconThemeData(color: Colors.black),
+        iconTheme: IconThemeData(color: AppTheme.primaryColorCustom),
       ),
+      backgroundColor: AppTheme.secondaryColorCustom, // Changed to white
       body: StreamBuilder<QuerySnapshot>(
         stream: _firestore
             .collection('user_chatroom')
@@ -57,13 +70,19 @@ class _ChatListScreenState extends State<ChatListScreen> {
             .snapshots(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
+            return Center(
+                child: CircularProgressIndicator(
+                    color: AppTheme.primaryColorCustom));
           }
           if (snapshot.hasError) {
-            return Center(child: Text('Error: ${snapshot.error}'));
+            return Center(
+                child: Text('Error: ${snapshot.error}',
+                    style: TextStyle(fontSize: screenWidth * 0.04)));
           }
           if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-            return const Center(child: Text('No chats found.'));
+            return Center(
+                child: Text('No chats found.',
+                    style: TextStyle(fontSize: screenWidth * 0.04)));
           }
 
           final Set<String> uniqueProviderEmails = {};
@@ -85,13 +104,13 @@ class _ChatListScreenState extends State<ChatListScreen> {
                 'chatRoomId': doc.id,
                 'lastMessage': doc['lastMessage'] ?? 'No messages yet',
                 'timestamp': timestamp,
-                'unreadCount': 0, // Placeholder, implement unread logic if needed
+                'unreadCount': 0,
               });
             }
           }
 
           return ListView(
-            padding: const EdgeInsets.all(16.0),
+            padding: EdgeInsets.all(screenWidth * 0.04),
             children: chatContacts.map((contact) {
               return StreamBuilder<QuerySnapshot>(
                 stream: _firestore
@@ -108,7 +127,7 @@ class _ChatListScreenState extends State<ChatListScreen> {
                     final providerDoc = providerSnapshot.data!.docs.first;
                     providerName = providerDoc['name'] ?? 'Unknown Provider';
                     providerId = providerDoc.id;
-                    serviceName = 'Service'; // Replace with actual service fetch if available
+                    serviceName = 'Service';
                   }
 
                   return buildChatListItem(
@@ -116,11 +135,13 @@ class _ChatListScreenState extends State<ChatListScreen> {
                     providerId: providerId,
                     providerName: providerName,
                     providerEmail: contact['email'],
-                    lastMessage: contact['lastMessage'], // Pass lastMessage
+                    lastMessage: contact['lastMessage'],
                     time: contact['timestamp'] != null
                         ? _formatTimeAgo(contact['timestamp'].toDate())
                         : 'Unknown',
                     unreadCount: contact['unreadCount'],
+                    screenWidth: screenWidth,
+                    screenHeight: screenHeight,
                   );
                 },
               );
@@ -136,8 +157,10 @@ class _ChatListScreenState extends State<ChatListScreen> {
     required String providerId,
     required String providerName,
     required String providerEmail,
-    required String lastMessage, // Added lastMessage parameter
+    required String lastMessage,
     required String time,
+    required double screenWidth,
+    required double screenHeight,
     int unreadCount = 0,
   }) {
     return GestureDetector(
@@ -151,10 +174,10 @@ class _ChatListScreenState extends State<ChatListScreen> {
         );
       },
       child: Container(
-        margin: const EdgeInsets.symmetric(vertical: 8.0),
-        padding: const EdgeInsets.all(16.0),
+        margin: EdgeInsets.symmetric(vertical: screenHeight * 0.01),
+        padding: EdgeInsets.all(screenWidth * 0.04),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: AppTheme.secondaryColorCustom,
           borderRadius: BorderRadius.circular(12),
           boxShadow: const [
             BoxShadow(
@@ -166,28 +189,29 @@ class _ChatListScreenState extends State<ChatListScreen> {
         ),
         child: Row(
           children: [
-            const CircleAvatar(
-              radius: 30,
-              backgroundImage: NetworkImage('https://avatar.iran.liara.run/public'),
+            CircleAvatar(
+              radius: screenWidth * 0.075,
+              backgroundImage:
+              const NetworkImage('https://avatar.iran.liara.run/public'),
             ),
-            const SizedBox(width: 16),
+            SizedBox(width: screenWidth * 0.04),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     providerName,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                    ),
+                    style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: screenWidth * 0.04),
                   ),
-                  const SizedBox(height: 4),
+                  SizedBox(height: screenHeight * 0.005),
                   Text(
-                    lastMessage, // Display the last message
-                    style: TextStyle(color: Colors.grey[600]),
-                    maxLines: 1, // Limit to one line
-                    overflow: TextOverflow.ellipsis, // Add ellipsis if too long
+                    lastMessage,
+                    style: TextStyle(
+                        color: AppTheme.greyLight, fontSize: screenWidth * 0.035),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ],
               ),
@@ -196,19 +220,22 @@ class _ChatListScreenState extends State<ChatListScreen> {
               children: [
                 Text(
                   time,
-                  style: TextStyle(color: Colors.grey[600], fontSize: 12),
+                  style: TextStyle(
+                      color: AppTheme.greyLight, fontSize: screenWidth * 0.03),
                 ),
                 if (unreadCount > 0)
                   Container(
-                    margin: const EdgeInsets.only(top: 8),
-                    padding: const EdgeInsets.all(6),
-                    decoration: const BoxDecoration(
-                      color: Color(0xFF060644),
+                    margin: EdgeInsets.only(top: screenHeight * 0.01),
+                    padding: EdgeInsets.all(screenWidth * 0.015),
+                    decoration: BoxDecoration(
+                      color: AppTheme.primaryColorCustom,
                       shape: BoxShape.circle,
                     ),
                     child: Text(
                       unreadCount.toString(),
-                      style: const TextStyle(color: Colors.white, fontSize: 12),
+                      style: TextStyle(
+                          color: AppTheme.secondaryColorCustom,
+                          fontSize: screenWidth * 0.03),
                     ),
                   ),
               ],
