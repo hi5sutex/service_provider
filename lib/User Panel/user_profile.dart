@@ -94,39 +94,43 @@ class _UserProfileState extends State<UserProfile> {
       builder: (BuildContext context) {
         return Dialog(
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-          backgroundColor: AppTheme.primaryColorCustom, // Dark Blue
+          backgroundColor: ProviderTheme.primaryColor, // Matches #060644 (Primary)
           child: Padding(
             padding: EdgeInsets.all(screenWidth * 0.05),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(Icons.logout,
-                    size: screenWidth * 0.12, color: AppTheme.secondaryColorCustom),
+                Icon(
+                  Icons.logout,
+                  size: screenWidth * 0.12,
+                  color: ProviderTheme.onPrimaryTextColor, // Matches #FFFFFF (On Primary Text)
+                ),
                 SizedBox(height: screenWidth * 0.04),
                 Text(
                   'Are you sure?',
                   style: TextStyle(
                     fontSize: screenWidth * 0.05,
                     fontWeight: FontWeight.bold,
-                    color: AppTheme.secondaryColorCustom,
+                    color: ProviderTheme.onPrimaryTextColor, // Matches #FFFFFF (On Primary Text)
                   ),
                 ),
                 SizedBox(height: screenWidth * 0.025),
                 Text(
                   'You will be logged out of your account.',
+                  textAlign: TextAlign.center, // Apply it here
                   style: TextStyle(
                     fontSize: screenWidth * 0.035,
-                    color: AppTheme.secondaryColorCustom.withOpacity(0.7),
+                    color: ProviderTheme.onPrimaryTextColor.withOpacity(0.7), // Matches #FFFFFF with opacity
                   ),
-                  textAlign: TextAlign.center,
                 ),
+
                 SizedBox(height: screenWidth * 0.05),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
                     ElevatedButton(
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: AppTheme.secondaryColorCustom,
+                        backgroundColor: ProviderTheme.surfaceColor, // Matches #FFFFFF (Surface)
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(10),
                         ),
@@ -140,7 +144,7 @@ class _UserProfileState extends State<UserProfile> {
                       child: Text(
                         'Cancel',
                         style: TextStyle(
-                          color: AppTheme.primaryColorCustom,
+                          color: ProviderTheme.primaryColor, // Matches #060644 (Primary)
                           fontWeight: FontWeight.bold,
                           fontSize: screenWidth * 0.035,
                         ),
@@ -148,7 +152,7 @@ class _UserProfileState extends State<UserProfile> {
                     ),
                     ElevatedButton(
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: AppTheme.errorRed,
+                        backgroundColor: ProviderTheme.errorTextColor, // Matches #D32F2F (Error Text)
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(10),
                         ),
@@ -167,7 +171,7 @@ class _UserProfileState extends State<UserProfile> {
                       child: Text(
                         'Logout',
                         style: TextStyle(
-                          color: AppTheme.secondaryColorCustom,
+                          color: ProviderTheme.onPrimaryTextColor, // Matches #FFFFFF (On Primary Text)
                           fontWeight: FontWeight.bold,
                           fontSize: screenWidth * 0.035,
                         ),
@@ -189,13 +193,16 @@ class _UserProfileState extends State<UserProfile> {
     final screenHeight = MediaQuery.of(context).size.height;
 
     return Scaffold(
-      backgroundColor: AppTheme.primaryColorCustom, // Dark Blue
+      backgroundColor: ProviderTheme.primaryColor, // Matches #060644 (Primary)
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back,
-              color: AppTheme.secondaryColorCustom, size: screenWidth * 0.06),
+          icon: Icon(
+            Icons.arrow_back,
+            color: ProviderTheme.onPrimaryTextColor, // Matches #FFFFFF (On Primary Text)
+            size: screenWidth * 0.06,
+          ),
           onPressed: () => Navigator.pop(context),
         ),
       ),
@@ -205,15 +212,17 @@ class _UserProfileState extends State<UserProfile> {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return Center(
               child: CircularProgressIndicator(
-                  color: AppTheme.secondaryColorCustom),
+                color: ProviderTheme.onPrimaryTextColor, // Matches #FFFFFF (On Primary Text)
+              ),
             );
           } else if (snapshot.hasError) {
             return Center(
               child: Text(
                 'Error loading profile',
                 style: TextStyle(
-                    color: AppTheme.secondaryColorCustom,
-                    fontSize: screenWidth * 0.045),
+                  color: ProviderTheme.onPrimaryTextColor, // Matches #FFFFFF (On Primary Text)
+                  fontSize: screenWidth * 0.045,
+                ),
               ),
             );
           }
@@ -224,7 +233,7 @@ class _UserProfileState extends State<UserProfile> {
               Container(
                 width: double.infinity,
                 decoration: BoxDecoration(
-                  color: AppTheme.primaryColorCustom,
+                  color: ProviderTheme.primaryColor, // Matches #060644 (Primary)
                   borderRadius: BorderRadius.vertical(
                     bottom: Radius.circular(screenWidth * 0.075),
                   ),
@@ -242,20 +251,22 @@ class _UserProfileState extends State<UserProfile> {
                                 decoration: BoxDecoration(
                                   shape: BoxShape.circle,
                                   border: Border.all(
-                                    color: AppTheme.secondaryColorCustom,
+                                    color: ProviderTheme.onPrimaryTextColor, // Matches #FFFFFF (On Primary Text)
                                     width: 4,
                                   ),
                                 ),
                                 child: CircleAvatar(
                                   radius: screenWidth * 0.12,
-                                  backgroundColor: AppTheme.greyLight,
+                                  backgroundColor: ProviderTheme.dividerColor, // Matches #D1D9E1 (Divider)
                                   backgroundImage: _profileImageUrl != null
                                       ? NetworkImage(_profileImageUrl!)
                                       : null,
                                   child: _profileImageUrl == null
-                                      ? Icon(Icons.person,
-                                      size: screenWidth * 0.12,
-                                      color: Colors.grey[400])
+                                      ? Icon(
+                                    Icons.person,
+                                    size: screenWidth * 0.12,
+                                    color: ProviderTheme.secondaryTextColor, // Matches #6B7280 (Secondary Text)
+                                  )
                                       : null,
                                 ),
                               ),
@@ -265,12 +276,14 @@ class _UserProfileState extends State<UserProfile> {
                                 child: Container(
                                   padding: EdgeInsets.all(screenWidth * 0.01),
                                   decoration: BoxDecoration(
-                                    color: AppTheme.secondaryColorCustom,
+                                    color: ProviderTheme.onPrimaryTextColor, // Matches #FFFFFF (On Primary Text)
                                     shape: BoxShape.circle,
                                   ),
-                                  child: Icon(Icons.camera_alt,
-                                      size: screenWidth * 0.04,
-                                      color: AppTheme.primaryColorCustom),
+                                  child: Icon(
+                                    Icons.camera_alt,
+                                    size: screenWidth * 0.04,
+                                    color: ProviderTheme.primaryColor, // Matches #060644 (Primary)
+                                  ),
                                 ),
                               ),
                             ],
@@ -282,7 +295,7 @@ class _UserProfileState extends State<UserProfile> {
                           style: TextStyle(
                             fontSize: screenWidth * 0.06,
                             fontWeight: FontWeight.bold,
-                            color: AppTheme.secondaryColorCustom,
+                            color: ProviderTheme.onPrimaryTextColor, // Matches #FFFFFF (On Primary Text)
                           ),
                         ),
                         Text(
@@ -291,8 +304,7 @@ class _UserProfileState extends State<UserProfile> {
                               : 'Lagos, Nigeria',
                           style: TextStyle(
                             fontSize: screenWidth * 0.04,
-                            color:
-                            AppTheme.secondaryColorCustom.withOpacity(0.7),
+                            color: ProviderTheme.onPrimaryTextColor.withOpacity(0.7), // Matches #FFFFFF with opacity
                           ),
                         ),
                         SizedBox(height: screenHeight * 0.02),
@@ -305,7 +317,7 @@ class _UserProfileState extends State<UserProfile> {
               Expanded(
                 child: Container(
                   decoration: BoxDecoration(
-                    color: AppTheme.secondaryColorCustom,
+                    color: ProviderTheme.surfaceColor, // Matches #FFFFFF (Surface)
                     borderRadius: BorderRadius.vertical(
                       top: Radius.circular(screenWidth * 0.075),
                     ),
@@ -314,15 +326,23 @@ class _UserProfileState extends State<UserProfile> {
                     padding: EdgeInsets.all(screenWidth * 0.05),
                     children: [
                       ListTile(
-                        leading: Icon(Icons.person_outline,
-                            color: AppTheme.primaryColorCustom,
-                            size: screenWidth * 0.06),
-                        title: Text('Edit Profile',
-                            style:
-                            TextStyle(fontSize: screenWidth * 0.045)),
-                        trailing: Icon(Icons.arrow_forward_ios,
-                            color: AppTheme.primaryColorCustom,
-                            size: screenWidth * 0.045),
+                        leading: Icon(
+                          Icons.person_outline,
+                          color: ProviderTheme.primaryColor, // Matches #060644 (Primary)
+                          size: screenWidth * 0.06,
+                        ),
+                        title: Text(
+                          'Edit Profile',
+                          style: TextStyle(
+                            fontSize: screenWidth * 0.045,
+                            color: ProviderTheme.primaryTextColor, // Matches #060644 (Primary Text)
+                          ),
+                        ),
+                        trailing: Icon(
+                          Icons.arrow_forward_ios,
+                          color: ProviderTheme.primaryColor, // Matches #060644 (Primary)
+                          size: screenWidth * 0.045,
+                        ),
                         onTap: () {
                           Navigator.push(
                             context,
@@ -331,44 +351,66 @@ class _UserProfileState extends State<UserProfile> {
                           );
                         },
                       ),
-                      Divider(color: AppTheme.greyLight),
+                      Divider(color: ProviderTheme.dividerColor), // Matches #D1D9E1 (Divider)
                       ListTile(
-                        leading: Icon(Icons.lock_outline,
-                            color: AppTheme.primaryColorCustom,
-                            size: screenWidth * 0.06),
-                        title: Text('Change Password',
-                            style:
-                            TextStyle(fontSize: screenWidth * 0.045)),
-                        trailing: Icon(Icons.arrow_forward_ios,
-                            color: AppTheme.primaryColorCustom,
-                            size: screenWidth * 0.045),
+                        leading: Icon(
+                          Icons.lock_outline,
+                          color: ProviderTheme.primaryColor, // Matches #060644 (Primary)
+                          size: screenWidth * 0.06,
+                        ),
+                        title: Text(
+                          'Change Password',
+                          style: TextStyle(
+                            fontSize: screenWidth * 0.045,
+                            color: ProviderTheme.primaryTextColor, // Matches #060644 (Primary Text)
+                          ),
+                        ),
+                        trailing: Icon(
+                          Icons.arrow_forward_ios,
+                          color: ProviderTheme.primaryColor, // Matches #060644 (Primary)
+                          size: screenWidth * 0.045,
+                        ),
                         onTap: () {},
                       ),
-                      Divider(color: AppTheme.greyLight),
+                      Divider(color: ProviderTheme.dividerColor), // Matches #D1D9E1 (Divider)
                       ListTile(
-                        leading: Icon(Icons.dark_mode_outlined,
-                            color: AppTheme.primaryColorCustom,
-                            size: screenWidth * 0.06),
-                        title: Text('Dark Mode',
-                            style:
-                            TextStyle(fontSize: screenWidth * 0.045)),
+                        leading: Icon(
+                          Icons.dark_mode_outlined,
+                          color: ProviderTheme.primaryColor, // Matches #060644 (Primary)
+                          size: screenWidth * 0.06,
+                        ),
+                        title: Text(
+                          'Dark Mode',
+                          style: TextStyle(
+                            fontSize: screenWidth * 0.045,
+                            color: ProviderTheme.primaryTextColor, // Matches #060644 (Primary Text)
+                          ),
+                        ),
                         trailing: Switch(
                           value: true,
                           onChanged: (value) {},
-                          activeColor: AppTheme.primaryColorCustom,
+                          activeColor: ProviderTheme.primaryColor, // Matches #060644 (Primary)
                         ),
                       ),
-                      Divider(color: AppTheme.greyLight),
+                      Divider(color: ProviderTheme.dividerColor), // Matches #D1D9E1 (Divider)
                       ListTile(
-                        leading: Icon(Icons.vpn_key,
-                            color: AppTheme.primaryColorCustom,
-                            size: screenWidth * 0.06),
-                        title: Text('View OTP',
-                            style:
-                            TextStyle(fontSize: screenWidth * 0.045)),
-                        trailing: Icon(Icons.arrow_forward_ios,
-                            color: AppTheme.primaryColorCustom,
-                            size: screenWidth * 0.045),
+                        leading: Icon(
+                          Icons.vpn_key,
+                          color: ProviderTheme.primaryColor, // Matches #060644 (Primary)
+                          size: screenWidth * 0.06,
+                        ),
+                        title: Text(
+                          'View OTP',
+                          style: TextStyle(
+                            fontSize: screenWidth * 0.045,
+                            color: ProviderTheme.primaryTextColor, // Matches #060644 (Primary Text)
+                          ),
+                        ),
+                        trailing: Icon(
+                          Icons.arrow_forward_ios,
+                          color: ProviderTheme.primaryColor, // Matches #060644 (Primary)
+                          size: screenWidth * 0.045,
+                        ),
                         onTap: () {
                           Navigator.push(
                             context,
@@ -377,14 +419,20 @@ class _UserProfileState extends State<UserProfile> {
                           );
                         },
                       ),
-                      Divider(color: AppTheme.greyLight),
+                      Divider(color: ProviderTheme.dividerColor), // Matches #D1D9E1 (Divider)
                       ListTile(
-                        leading: Icon(Icons.logout,
-                            color: AppTheme.primaryColorCustom,
-                            size: screenWidth * 0.06),
-                        title: Text('Logout',
-                            style:
-                            TextStyle(fontSize: screenWidth * 0.045)),
+                        leading: Icon(
+                          Icons.logout,
+                          color: ProviderTheme.primaryColor, // Matches #060644 (Primary)
+                          size: screenWidth * 0.06,
+                        ),
+                        title: Text(
+                          'Logout',
+                          style: TextStyle(
+                            fontSize: screenWidth * 0.045,
+                            color: ProviderTheme.primaryTextColor, // Matches #060644 (Primary Text)
+                          ),
+                        ),
                         onTap: () => _showLogoutConfirmation(context),
                       ),
                     ],

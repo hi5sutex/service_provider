@@ -69,7 +69,6 @@ class _EditUserProfileState extends State<EditUserProfile> {
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
         margin: EdgeInsets.all(10),
-        backgroundColor: AppTheme.primaryColorCustom,
       ),
     );
   }
@@ -145,22 +144,24 @@ class _EditUserProfileState extends State<EditUserProfile> {
     final screenHeight = MediaQuery.of(context).size.height;
 
     return Scaffold(
-      backgroundColor: AppTheme.secondaryColorCustom, // White
+      // Background color is set by ProviderTheme.scaffoldBackgroundColor (#F5F7FA)
       body: isLoading
           ? Center(
-          child: CircularProgressIndicator(
-              color: AppTheme.primaryColorCustom))
+        child: CircularProgressIndicator(
+          color: ProviderTheme.primaryColor, // Matches #060644 (Primary)
+        ),
+      )
           : CustomScrollView(
         slivers: [
           SliverAppBar(
-            expandedHeight: screenHeight * 0.08, // Reduced height
+            expandedHeight: screenHeight * 0.08,
             pinned: true,
-            backgroundColor: AppTheme.primaryColorCustom,
+            // Background color is set by ProviderTheme.appBarTheme (Primary #060644)
             flexibleSpace: FlexibleSpaceBar(
               title: Text(
                 "Edit Profile",
                 style: TextStyle(
-                  color: AppTheme.secondaryColorCustom,
+                  color: ProviderTheme.onPrimaryTextColor, // Matches #FFFFFF (On Primary Text)
                   fontSize: screenWidth * 0.045,
                   fontWeight: FontWeight.bold,
                 ),
@@ -177,8 +178,8 @@ class _EditUserProfileState extends State<EditUserProfile> {
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                       colors: [
-                        AppTheme.primaryColorCustom,
-                        Color(0xFF2A2A6F),
+                        ProviderTheme.primaryColor, // Matches #060644 (Primary)
+                        Color(0xFF2A2A6F), // Retain the gradient end color
                       ],
                     ),
                   ),
@@ -186,16 +187,20 @@ class _EditUserProfileState extends State<EditUserProfile> {
               ),
             ),
             leading: IconButton(
-              icon: Icon(Icons.arrow_back,
-                  color: AppTheme.secondaryColorCustom,
-                  size: screenWidth * 0.06),
+              icon: Icon(
+                Icons.arrow_back,
+                color: ProviderTheme.onPrimaryTextColor, // Matches #FFFFFF (On Primary Text)
+                size: screenWidth * 0.06,
+              ),
               onPressed: () => Navigator.pop(context),
             ),
             actions: [
               IconButton(
-                icon: Icon(Icons.check,
-                    color: AppTheme.secondaryColorCustom,
-                    size: screenWidth * 0.06),
+                icon: Icon(
+                  Icons.check,
+                  color: ProviderTheme.onPrimaryTextColor, // Matches #FFFFFF (On Primary Text)
+                  size: screenWidth * 0.06,
+                ),
                 onPressed: _saveChanges,
               ),
             ],
@@ -220,13 +225,13 @@ class _EditUserProfileState extends State<EditUserProfile> {
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
                               border: Border.all(
-                                color: AppTheme.secondaryColorCustom,
+                                color: ProviderTheme.surfaceColor, // Matches #FFFFFF (Surface)
                                 width: 4,
                               ),
                               boxShadow: [
                                 BoxShadow(
                                   blurRadius: 10,
-                                  color: Colors.black.withOpacity(0.1),
+                                  color: ProviderTheme.shadowColor, // Matches #00000029 (Shadow)
                                   spreadRadius: 5,
                                 ),
                               ],
@@ -243,17 +248,19 @@ class _EditUserProfileState extends State<EditUserProfile> {
                               width: screenWidth * 0.08,
                               height: screenWidth * 0.08,
                               decoration: BoxDecoration(
-                                color: AppTheme.primaryColorCustom,
+                                color: ProviderTheme.primaryColor, // Matches #060644 (Primary)
                                 shape: BoxShape.circle,
                                 border: Border.all(
-                                  color: AppTheme.secondaryColorCustom,
+                                  color: ProviderTheme.surfaceColor, // Matches #FFFFFF (Surface)
                                   width: 2,
                                 ),
                               ),
                               child: IconButton(
-                                icon: Icon(Icons.camera_alt,
-                                    color: AppTheme.secondaryColorCustom,
-                                    size: screenWidth * 0.04),
+                                icon: Icon(
+                                  Icons.camera_alt,
+                                  color: ProviderTheme.onPrimaryTextColor, // Matches #FFFFFF (On Primary Text)
+                                  size: screenWidth * 0.04,
+                                ),
                                 onPressed: () {
                                   // Handle image picker
                                 },
@@ -297,7 +304,7 @@ class _EditUserProfileState extends State<EditUserProfile> {
                       controller: bioController,
                       label: "Bio",
                       icon: Icons.edit_note_outlined,
-                      minLines: 1, // Dynamic height based on content
+                      minLines: 1,
                     ),
                     SizedBox(height: screenHeight * 0.025),
 
@@ -306,9 +313,11 @@ class _EditUserProfileState extends State<EditUserProfile> {
                       label: "Address",
                       icon: Icons.location_on_outlined,
                       suffix: IconButton(
-                        icon: Icon(Icons.my_location,
-                            color: AppTheme.primaryColorCustom,
-                            size: screenWidth * 0.06),
+                        icon: Icon(
+                          Icons.my_location,
+                          color: ProviderTheme.primaryColor, // Matches #060644 (Primary)
+                          size: screenWidth * 0.06,
+                        ),
                         onPressed: _getCurrentLocation,
                       ),
                     ),
@@ -319,13 +328,15 @@ class _EditUserProfileState extends State<EditUserProfile> {
                       width: double.infinity,
                       child: ElevatedButton(
                         onPressed: isSaving ? null : _saveChanges,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppTheme.primaryColorCustom,
-                          padding: EdgeInsets.symmetric(
-                              vertical: screenHeight * 0.02),
-                          shape: RoundedRectangleBorder(
-                            borderRadius:
-                            BorderRadius.circular(screenWidth * 0.03),
+                        style: Theme.of(context).elevatedButtonTheme.style?.copyWith(
+                          // Background and text colors are set by ProviderTheme.elevatedButtonTheme
+                          padding: MaterialStateProperty.all(
+                            EdgeInsets.symmetric(vertical: screenHeight * 0.02),
+                          ),
+                          shape: MaterialStateProperty.all(
+                            RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(screenWidth * 0.03),
+                            ),
                           ),
                         ),
                         child: isSaving
@@ -334,9 +345,9 @@ class _EditUserProfileState extends State<EditUserProfile> {
                           height: screenWidth * 0.05,
                           child: CircularProgressIndicator(
                             strokeWidth: 2,
-                            valueColor:
-                            AlwaysStoppedAnimation<Color>(
-                                AppTheme.secondaryColorCustom),
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              ProviderTheme.onPrimaryTextColor, // Matches #FFFFFF (On Primary Text)
+                            ),
                           ),
                         )
                             : Text(
@@ -344,7 +355,7 @@ class _EditUserProfileState extends State<EditUserProfile> {
                           style: TextStyle(
                             fontSize: screenWidth * 0.04,
                             fontWeight: FontWeight.bold,
-                            color: AppTheme.secondaryColorCustom,
+                            color: ProviderTheme.onPrimaryTextColor, // Matches #FFFFFF (On Primary Text)
                           ),
                         ),
                       ),
@@ -366,7 +377,7 @@ class _EditUserProfileState extends State<EditUserProfile> {
     required IconData icon,
     bool readOnly = false,
     bool filled = false,
-    int? minLines, // Changed to optional for dynamic height
+    int? minLines,
     TextInputType? keyboardType,
     String? Function(String?)? validator,
     Widget? suffix,
@@ -374,33 +385,19 @@ class _EditUserProfileState extends State<EditUserProfile> {
     return TextFormField(
       controller: controller,
       readOnly: readOnly,
-      minLines: minLines ?? 1, // Default to 1 if not specified
-      maxLines: null, // Allows dynamic expansion
+      minLines: minLines ?? 1,
+      maxLines: null,
       keyboardType: keyboardType,
       validator: validator,
       decoration: InputDecoration(
         labelText: label,
-        labelStyle: TextStyle(color: Colors.black45), // Changed to black45
-        prefixIcon: Icon(icon, color: AppTheme.primaryColorCustom),
+        // Label style, icon color, borders, etc., are set by ProviderTheme.inputDecorationTheme
+        prefixIcon: Icon(icon),
         suffixIcon: suffix,
         filled: filled,
-        fillColor: filled ? AppTheme.greyLight.withOpacity(0.1) : null,
+        fillColor: filled ? ProviderTheme.dividerColor : null, // Matches #D1D9E1 (Divider)
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: AppTheme.greyLight),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: AppTheme.greyLight),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide:
-          BorderSide(color: AppTheme.primaryColorCustom, width: 2),
-        ),
-        errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: AppTheme.errorRed, width: 2),
         ),
         contentPadding: EdgeInsets.symmetric(
           horizontal: MediaQuery.of(context).size.width * 0.04,

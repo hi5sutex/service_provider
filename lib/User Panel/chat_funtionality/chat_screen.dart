@@ -47,7 +47,7 @@ class _ChatScreenState extends State<ChatScreen> {
   void _scrollToBottom() {
     if (_scrollController.hasClients) {
       _scrollController.animateTo(
-        0.0,
+        _scrollController.position.maxScrollExtent, // Changed to scroll to bottom
         duration: const Duration(milliseconds: 300),
         curve: Curves.easeOut,
       );
@@ -61,9 +61,24 @@ class _ChatScreenState extends State<ChatScreen> {
 
     return Scaffold(
       appBar: AppBar(
+        flexibleSpace: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                Color(0xFF060644), // Matches #060644 (Primary)
+                Color(0xFF1A237E), // Matches #1A237E (Gradient end)
+              ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+          ),
+        ),
         leading: IconButton(
-          icon: Icon(Icons.arrow_back,
-              color: AppTheme.primaryColorCustom, size: screenWidth * 0.06),
+          icon: Icon(
+            Icons.arrow_back,
+            color: ProviderTheme.onPrimaryTextColor, // Matches #FFFFFF (On Primary Text)
+            size: screenWidth * 0.06,
+          ),
           onPressed: () {
             Navigator.pop(context);
           },
@@ -82,24 +97,48 @@ class _ChatScreenState extends State<ChatScreen> {
                 Text(
                   widget.providerName,
                   style: TextStyle(
-                      color: AppTheme.primaryColorCustom,
-                      fontSize: screenWidth * 0.045),
+                    color: ProviderTheme.onPrimaryTextColor, // Matches #FFFFFF (On Primary Text)
+                    fontSize: screenWidth * 0.05,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
                 Text(
                   'Online',
                   style: TextStyle(
-                      color: AppTheme.providerGreen,
-                      fontSize: screenWidth * 0.03),
+                    color: ProviderTheme.successColor, // Matches #388E3C (Success Text)
+                    fontSize: screenWidth * 0.03,
+                  ),
                 ),
               ],
             ),
           ],
         ),
-        backgroundColor: AppTheme.secondaryColorCustom,
-        elevation: 1,
-        iconTheme: IconThemeData(color: AppTheme.primaryColorCustom),
+        actions: [
+          IconButton(
+            icon: Icon(
+              Icons.call,
+              color: ProviderTheme.onPrimaryTextColor, // Matches #FFFFFF (On Primary Text)
+              size: screenWidth * 0.06,
+            ),
+            onPressed: () {},
+          ),
+          IconButton(
+            icon: Icon(
+              Icons.videocam,
+              color: ProviderTheme.onPrimaryTextColor, // Matches #FFFFFF (On Primary Text)
+              size: screenWidth * 0.06,
+            ),
+            onPressed: () {},
+          ),
+        ],
+        centerTitle: false,
+        elevation: 4,
+        shadowColor: ProviderTheme.shadowColor.withOpacity(0.4), // Matches #000000 with opacity
+        iconTheme: IconThemeData(
+          color: ProviderTheme.onPrimaryTextColor, // Matches #FFFFFF (On Primary Text)
+        ),
       ),
-      backgroundColor: AppTheme.secondaryColorCustom, // Changed to white
+      backgroundColor: ProviderTheme.surfaceColor, // Matches #FFFFFF (Surface)
       body: Column(
         children: [
           Expanded(
@@ -108,16 +147,30 @@ class _ChatScreenState extends State<ChatScreen> {
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return Center(
-                      child: CircularProgressIndicator(
-                          color: AppTheme.primaryColorCustom));
+                    child: CircularProgressIndicator(
+                      color: ProviderTheme.primaryColor, // Matches #060644 (Primary)
+                    ),
+                  );
                 } else if (snapshot.hasError) {
                   return Center(
-                      child: Text('Error: ${snapshot.error}',
-                          style: TextStyle(fontSize: screenWidth * 0.04)));
+                    child: Text(
+                      'Error: ${snapshot.error}',
+                      style: TextStyle(
+                        fontSize: screenWidth * 0.04,
+                        color: ProviderTheme.errorTextColor, // Matches #D32F2F (Error Text)
+                      ),
+                    ),
+                  );
                 } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
                   return Center(
-                      child: Text('No messages yet. Start chatting!',
-                          style: TextStyle(fontSize: screenWidth * 0.04)));
+                    child: Text(
+                      'No messages yet. Start chatting!',
+                      style: TextStyle(
+                        fontSize: screenWidth * 0.04,
+                        color: ProviderTheme.primaryTextColor, // Matches #060644 (Primary Text)
+                      ),
+                    ),
+                  );
                 } else {
                   final messages = snapshot.data!;
                   WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -126,7 +179,7 @@ class _ChatScreenState extends State<ChatScreen> {
                   return ListView.builder(
                     controller: _scrollController,
                     padding: EdgeInsets.all(screenWidth * 0.04),
-                    reverse: true,
+                    reverse: false, // Changed to false to match screenshot (newest messages at bottom)
                     itemCount: messages.length,
                     itemBuilder: (context, index) {
                       final message = messages[index];
@@ -134,8 +187,7 @@ class _ChatScreenState extends State<ChatScreen> {
                       return buildChatBubble(
                         isSender: isSender,
                         text: message.message,
-                        time:
-                        message.timestamp.toDate().toString().substring(11, 16),
+                        time: message.timestamp.toDate().toString().substring(11, 16),
                         screenWidth: screenWidth,
                       );
                     },
@@ -156,56 +208,80 @@ class _ChatScreenState extends State<ChatScreen> {
     required String time,
     required double screenWidth,
   }) {
-    return Align(
-      alignment: isSender ? Alignment.centerRight : Alignment.centerLeft,
-      child: Container(
-        margin: EdgeInsets.symmetric(vertical: screenWidth * 0.01),
-        padding: EdgeInsets.all(screenWidth * 0.03),
-        decoration: BoxDecoration(
-          color: isSender ? Colors.blue : AppTheme.secondaryColorCustom,
-          borderRadius: BorderRadius.circular(12),
-          boxShadow: const [
-            BoxShadow(
-              color: Colors.black12,
-              blurRadius: 4,
-              offset: Offset(0, 2),
-            ),
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              text,
-              style: TextStyle(
-                  color: isSender ? AppTheme.secondaryColorCustom : Colors.black,
-                  fontSize: screenWidth * 0.035),
-            ),
-            SizedBox(height: screenWidth * 0.01),
-            Text(
-              time,
-              style: TextStyle(
-                fontSize: screenWidth * 0.025,
+    return Padding(
+      padding: EdgeInsets.symmetric(vertical: screenWidth * 0.01),
+      child: Row(
+        mainAxisAlignment: isSender ? MainAxisAlignment.end : MainAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          Flexible(
+            child: Container(
+              padding: EdgeInsets.symmetric(
+                horizontal: screenWidth * 0.04,
+                vertical: screenWidth * 0.025,
+              ),
+              decoration: BoxDecoration(
                 color: isSender
-                    ? AppTheme.secondaryColorCustom.withOpacity(0.7)
-                    : AppTheme.greyLight,
+                    ? ProviderTheme.primaryColor // Matches #060644 (Primary)
+                    : ProviderTheme.dividerColor, // Matches #D1D9E1 (Divider)
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Text(
+                    text,
+                    style: TextStyle(
+                      color: isSender
+                          ? ProviderTheme.onPrimaryTextColor // Matches #FFFFFF (On Primary Text)
+                          : ProviderTheme.primaryTextColor, // Matches #060644 (Primary Text)
+                      fontSize: screenWidth * 0.04,
+                    ),
+                  ),
+                  SizedBox(height: screenWidth * 0.01),
+                  Text(
+                    time,
+                    style: TextStyle(
+                      fontSize: screenWidth * 0.03,
+                      color: isSender
+                          ? ProviderTheme.onPrimaryTextColor.withOpacity(0.7) // Matches #FFFFFF with opacity
+                          : ProviderTheme.secondaryTextColor, // Matches #6B7280 (Secondary Text)
+                    ),
+                  ),
+                ],
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
 
   Widget buildMessageInput(double screenWidth, double screenHeight) {
     return Container(
-      padding: EdgeInsets.all(screenWidth * 0.02),
-      color: AppTheme.secondaryColorCustom,
+      padding: EdgeInsets.symmetric(
+        horizontal: screenWidth * 0.04,
+        vertical: screenWidth * 0.02,
+      ),
+      decoration: BoxDecoration(
+        color: ProviderTheme.surfaceColor, // Matches #FFFFFF (Surface)
+        boxShadow: [
+          BoxShadow(
+            color: ProviderTheme.shadowColor.withOpacity(0.2), // Matches #000000 with opacity
+            spreadRadius: 1,
+            blurRadius: 3,
+            offset: const Offset(0, -1),
+          ),
+        ],
+      ),
       child: Row(
         children: [
           IconButton(
-            icon: Icon(Icons.attachment,
-                color: AppTheme.greyLight, size: screenWidth * 0.06),
+            icon: Icon(
+              Icons.attachment,
+              color: ProviderTheme.secondaryTextColor, // Matches #6B7280 (Secondary Text)
+              size: screenWidth * 0.06,
+            ),
             onPressed: () {},
           ),
           Expanded(
@@ -213,36 +289,58 @@ class _ChatScreenState extends State<ChatScreen> {
               controller: _messageController,
               decoration: InputDecoration(
                 hintText: 'Type a message...',
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.all(Radius.circular(30)),
+                hintStyle: TextStyle(
+                  color: ProviderTheme.secondaryTextColor, // Matches #6B7280 (Secondary Text)
                 ),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(20),
+                  borderSide: BorderSide.none,
+                ),
+                filled: true,
+                fillColor: ProviderTheme.dividerColor, // Matches #D1D9E1 (Divider)
                 contentPadding: EdgeInsets.symmetric(
-                    horizontal: screenWidth * 0.04, vertical: 0),
+                  horizontal: screenWidth * 0.04,
+                  vertical: screenWidth * 0.02,
+                ),
               ),
-              style: TextStyle(fontSize: screenWidth * 0.035),
+              style: TextStyle(
+                fontSize: screenWidth * 0.04,
+                color: ProviderTheme.primaryTextColor, // Matches #060644 (Primary Text)
+              ),
             ),
           ),
-          IconButton(
-            icon: Icon(Icons.send, color: Colors.blue, size: screenWidth * 0.06),
-            onPressed: () async {
-              if (_messageController.text.trim().isNotEmpty) {
-                try {
-                  await _chatService.sendMessage(
-                    senderId: widget.userId,
-                    receiverId: widget.receiverId,
-                    senderEmail: widget.senderEmail,
-                    receiverEmail: widget.receiverEmail,
-                    message: _messageController.text.trim(),
-                  );
-                  _messageController.clear();
-                  _scrollToBottom();
-                } catch (e) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Failed to send message: $e')),
-                  );
+          const SizedBox(width: 8),
+          Container(
+            decoration: BoxDecoration(
+              color: ProviderTheme.primaryColor, // Matches #060644 (Primary)
+              borderRadius: BorderRadius.circular(30),
+            ),
+            child: IconButton(
+              icon: Icon(
+                Icons.send,
+                color: ProviderTheme.onPrimaryTextColor, // Matches #FFFFFF (On Primary Text)
+                size: screenWidth * 0.06,
+              ),
+              onPressed: () async {
+                if (_messageController.text.trim().isNotEmpty) {
+                  try {
+                    await _chatService.sendMessage(
+                      senderId: widget.userId,
+                      receiverId: widget.receiverId,
+                      senderEmail: widget.senderEmail,
+                      receiverEmail: widget.receiverEmail,
+                      message: _messageController.text.trim(),
+                    );
+                    _messageController.clear();
+                    _scrollToBottom();
+                  } catch (e) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Failed to send message: $e')),
+                    );
+                  }
                 }
-              }
-            },
+              },
+            ),
           ),
         ],
       ),

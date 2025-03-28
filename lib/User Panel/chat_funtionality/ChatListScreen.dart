@@ -36,33 +36,48 @@ class _ChatListScreenState extends State<ChatListScreen> {
     if (currentUserEmail == null || currentUserId == null) {
       return Scaffold(
         appBar: AppBar(
-          title: Text('Messages',
-              style: TextStyle(
-                  color: AppTheme.primaryColorCustom,
-                  fontSize: screenWidth * 0.05)),
-          backgroundColor: AppTheme.secondaryColorCustom,
+          title: Text(
+            'Messages',
+            style: TextStyle(
+              color: ProviderTheme.primaryColor, // Matches #060644 (Primary)
+              fontSize: screenWidth * 0.05,
+            ),
+          ),
+          backgroundColor: ProviderTheme.surfaceColor, // Matches #FFFFFF (Surface)
           elevation: 1,
-          iconTheme: IconThemeData(color: AppTheme.primaryColorCustom),
+          iconTheme: IconThemeData(
+            color: ProviderTheme.primaryColor, // Matches #060644 (Primary)
+          ),
         ),
         body: Center(
-          child: Text('Please log in to view your chats.',
-              style: TextStyle(fontSize: screenWidth * 0.04)),
+          child: Text(
+            'Please log in to view your chats.',
+            style: TextStyle(
+              fontSize: screenWidth * 0.04,
+              color: ProviderTheme.primaryTextColor, // Matches #060644 (Primary Text)
+            ),
+          ),
         ),
-        backgroundColor: AppTheme.secondaryColorCustom, // Changed to white
+        backgroundColor: ProviderTheme.surfaceColor, // Matches #FFFFFF (Surface)
       );
     }
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Messages',
-            style: TextStyle(
-                color: AppTheme.primaryColorCustom,
-                fontSize: screenWidth * 0.05)),
-        backgroundColor: AppTheme.secondaryColorCustom,
+        title: Text(
+          'Messages',
+          style: TextStyle(
+            color: ProviderTheme.primaryColor, // Matches #060644 (Primary)
+            fontSize: screenWidth * 0.05,
+          ),
+        ),
+        backgroundColor: ProviderTheme.surfaceColor, // Matches #FFFFFF (Surface)
         elevation: 1,
-        iconTheme: IconThemeData(color: AppTheme.primaryColorCustom),
+        iconTheme: IconThemeData(
+          color: ProviderTheme.primaryColor, // Matches #060644 (Primary)
+        ),
       ),
-      backgroundColor: AppTheme.secondaryColorCustom, // Changed to white
+      backgroundColor: ProviderTheme.surfaceColor, // Matches #FFFFFF (Surface)
       body: StreamBuilder<QuerySnapshot>(
         stream: _firestore
             .collection('user_chatroom')
@@ -71,18 +86,32 @@ class _ChatListScreenState extends State<ChatListScreen> {
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return Center(
-                child: CircularProgressIndicator(
-                    color: AppTheme.primaryColorCustom));
+              child: CircularProgressIndicator(
+                color: ProviderTheme.primaryColor, // Matches #060644 (Primary)
+              ),
+            );
           }
           if (snapshot.hasError) {
             return Center(
-                child: Text('Error: ${snapshot.error}',
-                    style: TextStyle(fontSize: screenWidth * 0.04)));
+              child: Text(
+                'Error: ${snapshot.error}',
+                style: TextStyle(
+                  fontSize: screenWidth * 0.04,
+                  color: ProviderTheme.errorTextColor, // Matches #D32F2F (Error Text)
+                ),
+              ),
+            );
           }
           if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
             return Center(
-                child: Text('No chats found.',
-                    style: TextStyle(fontSize: screenWidth * 0.04)));
+              child: Text(
+                'No chats found.',
+                style: TextStyle(
+                  fontSize: screenWidth * 0.04,
+                  color: ProviderTheme.primaryTextColor, // Matches #060644 (Primary Text)
+                ),
+              ),
+            );
           }
 
           final Set<String> uniqueProviderEmails = {};
@@ -177,13 +206,13 @@ class _ChatListScreenState extends State<ChatListScreen> {
         margin: EdgeInsets.symmetric(vertical: screenHeight * 0.01),
         padding: EdgeInsets.all(screenWidth * 0.04),
         decoration: BoxDecoration(
-          color: AppTheme.secondaryColorCustom,
+          color: ProviderTheme.surfaceColor, // Matches #FFFFFF (Surface)
           borderRadius: BorderRadius.circular(12),
-          boxShadow: const [
+          boxShadow: [
             BoxShadow(
-              color: Colors.black12,
+              color: ProviderTheme.shadowColor.withOpacity(0.1), // Matches #000000 with opacity
               blurRadius: 4,
-              offset: Offset(0, 2),
+              offset: const Offset(0, 2),
             ),
           ],
         ),
@@ -202,14 +231,18 @@ class _ChatListScreenState extends State<ChatListScreen> {
                   Text(
                     providerName,
                     style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: screenWidth * 0.04),
+                      fontWeight: FontWeight.bold,
+                      fontSize: screenWidth * 0.04,
+                      color: ProviderTheme.primaryTextColor, // Matches #060644 (Primary Text)
+                    ),
                   ),
                   SizedBox(height: screenHeight * 0.005),
                   Text(
                     lastMessage,
                     style: TextStyle(
-                        color: AppTheme.greyLight, fontSize: screenWidth * 0.035),
+                      color: ProviderTheme.secondaryTextColor, // Matches #6B7280 (Secondary Text)
+                      fontSize: screenWidth * 0.035,
+                    ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -221,21 +254,24 @@ class _ChatListScreenState extends State<ChatListScreen> {
                 Text(
                   time,
                   style: TextStyle(
-                      color: AppTheme.greyLight, fontSize: screenWidth * 0.03),
+                    color: ProviderTheme.secondaryTextColor, // Matches #6B7280 (Secondary Text)
+                    fontSize: screenWidth * 0.03,
+                  ),
                 ),
                 if (unreadCount > 0)
                   Container(
                     margin: EdgeInsets.only(top: screenHeight * 0.01),
                     padding: EdgeInsets.all(screenWidth * 0.015),
                     decoration: BoxDecoration(
-                      color: AppTheme.primaryColorCustom,
+                      color: ProviderTheme.primaryColor, // Matches #060644 (Primary)
                       shape: BoxShape.circle,
                     ),
                     child: Text(
                       unreadCount.toString(),
                       style: TextStyle(
-                          color: AppTheme.secondaryColorCustom,
-                          fontSize: screenWidth * 0.03),
+                        color: ProviderTheme.onPrimaryTextColor, // Matches #FFFFFF (On Primary Text)
+                        fontSize: screenWidth * 0.03,
+                      ),
                     ),
                   ),
               ],

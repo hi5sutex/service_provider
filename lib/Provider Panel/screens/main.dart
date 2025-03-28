@@ -113,41 +113,72 @@ class _MainState extends State<Main> with SingleTickerProviderStateMixin {
         switchInCurve: Curves.easeInOut,
         child: _pages[_selectedIndex],
       ),
-      bottomNavigationBar: BottomNavigationBar(
-        backgroundColor: Colors.white,
-        type: BottomNavigationBarType.fixed,
-        showUnselectedLabels: false,
-        showSelectedLabels: true,
-        items: [
-          _buildBottomNavItem(
-            icon: Icons.home_outlined,
-            selectedIcon: Icons.home,
-            label: 'Home',
-            index: 0,
+      bottomNavigationBar: Container(
+        decoration: BoxDecoration(
+          color: Colors.white, // Background color for the nav bar
+          borderRadius: const BorderRadius.only(
+            topLeft: Radius.circular(20),
+            topRight: Radius.circular(20),
           ),
-          _buildBottomNavItem(
-            icon: Icons.event_note_outlined,
-            selectedIcon: Icons.event_note,
-            label: 'Booking',
-            index: 1,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.1),
+              blurRadius: 10,
+              offset: const Offset(0, -2),
+            ),
+          ],
+        ),
+        child: ClipRRect(
+          borderRadius: const BorderRadius.only(
+            topLeft: Radius.circular(20),
+            topRight: Radius.circular(20),
           ),
-          _buildBottomNavItem(
-            icon: Icons.chat_outlined,
-            selectedIcon: Icons.chat,
-            label: 'Chat',
-            index: 2,
+          child: BottomNavigationBar(
+            backgroundColor: Colors.transparent, // Transparent to use Container's color
+            elevation: 0, // Remove default shadow since we use custom shadow
+            type: BottomNavigationBarType.fixed,
+            showUnselectedLabels: true, // Always show labels for clarity
+            showSelectedLabels: true,
+            items: [
+              _buildBottomNavItem(
+                icon: Icons.home_outlined,
+                selectedIcon: Icons.home,
+                label: 'Home',
+                index: 0,
+              ),
+              _buildBottomNavItem(
+                icon: Icons.event_note_outlined,
+                selectedIcon: Icons.event_note,
+                label: 'Booking',
+                index: 1,
+              ),
+              _buildBottomNavItem(
+                icon: Icons.chat_outlined,
+                selectedIcon: Icons.chat,
+                label: 'Chat',
+                index: 2,
+              ),
+              _buildBottomNavItem(
+                icon: Icons.account_circle_outlined,
+                selectedIcon: Icons.account_circle,
+                label: 'Account',
+                index: 3,
+              ),
+            ],
+            currentIndex: _selectedIndex,
+            selectedItemColor: const Color(0xFF060644), // Dark navy blue for selected
+            unselectedItemColor: Colors.grey.shade600, // Softer grey for unselected
+            onTap: _onItemTapped,
+            selectedLabelStyle: const TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 12,
+            ),
+            unselectedLabelStyle: const TextStyle(
+              fontWeight: FontWeight.normal,
+              fontSize: 12,
+            ),
           ),
-          _buildBottomNavItem(
-            icon: Icons.account_circle_outlined,
-            selectedIcon: Icons.account_circle,
-            label: 'Account',
-            index: 3,
-          ),
-        ],
-        currentIndex: _selectedIndex,
-        selectedItemColor: const Color(0xFF060644),
-        unselectedItemColor: Colors.grey,
-        onTap: _onItemTapped,
+        ),
       ),
     );
   }
@@ -158,16 +189,17 @@ class _MainState extends State<Main> with SingleTickerProviderStateMixin {
     required String label,
     required int index,
   }) {
+    final isSelected = _selectedIndex == index;
     return BottomNavigationBarItem(
       icon: AnimatedSwitcher(
         duration: const Duration(milliseconds: 200),
         child: Icon(
-          _selectedIndex == index ? selectedIcon : icon,
-          key: ValueKey(_selectedIndex == index),
-          size: _selectedIndex == index ? 22 : 24,
+          isSelected ? selectedIcon : icon,
+          key: ValueKey(isSelected),
+          size: isSelected ? 26 : 20, // Reduced unselected size to 20
         ),
       ),
-      label: _selectedIndex == index ? label : '',
+      label: label,
     );
   }
 }

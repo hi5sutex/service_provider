@@ -99,16 +99,19 @@ class _RegistrationPageState extends State<RegistrationPage> {
 
     return Scaffold(
       resizeToAvoidBottomInset: true, // Allow resizing when keyboard appears
-      backgroundColor: AppTheme.secondaryColorCustom, // White
+      backgroundColor: ProviderTheme.surfaceColor, // Matches #FFFFFF (Surface)
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         systemOverlayStyle: SystemUiOverlayStyle(
-          statusBarColor: AppTheme.secondaryColorCustom, // White status bar
+          statusBarColor: ProviderTheme.surfaceColor, // Matches #FFFFFF (Surface)
           statusBarIconBrightness: Brightness.dark,
         ),
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: AppTheme.primaryColorCustom),
+          icon: Icon(
+            Icons.arrow_back,
+            color: ProviderTheme.primaryColor, // Matches #060644 (Primary)
+          ),
           onPressed: () {
             Navigator.pushReplacement(
               context,
@@ -129,7 +132,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
               child: Text(
                 "Login",
                 style: TextStyle(
-                  color: AppTheme.primaryColorCustom,
+                  color: ProviderTheme.primaryColor, // Matches #060644 (Primary)
                   fontSize: screenWidth * 0.045,
                 ),
               ),
@@ -137,7 +140,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
           ),
         ],
         flexibleSpace: Container(
-          color: AppTheme.secondaryColorCustom,
+          color: ProviderTheme.surfaceColor, // Matches #FFFFFF (Surface)
         ),
       ),
       body: SingleChildScrollView( // Wrap entire body in SingleChildScrollView
@@ -152,7 +155,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
                   child: Text(
                     'Sign Up',
                     style: TextStyle(
-                      color: AppTheme.primaryColorCustom,
+                      color: ProviderTheme.primaryColor, // Matches #060644 (Primary)
                       fontSize: screenWidth * 0.1,
                       fontWeight: FontWeight.bold,
                     ),
@@ -165,7 +168,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
                 minHeight: screenHeight * 0.85, // Ensure enough height for content
               ),
               decoration: BoxDecoration(
-                color: AppTheme.primaryColorCustom,
+                color: ProviderTheme.primaryColor, // Matches #060644 (Primary)
                 borderRadius: const BorderRadius.only(
                   topLeft: Radius.circular(30.0),
                   topRight: Radius.circular(30.0),
@@ -260,7 +263,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
                       child: isLoading
                           ? Center(
                         child: CircularProgressIndicator(
-                          color: AppTheme.secondaryColorCustom,
+                          color: ProviderTheme.onPrimaryTextColor, // Matches #FFFFFF (On Primary Text)
                         ),
                       )
                           : ElevatedButton(
@@ -270,10 +273,10 @@ class _RegistrationPageState extends State<RegistrationPage> {
                             Size(double.infinity, screenHeight * 0.07),
                           ),
                           backgroundColor: MaterialStateProperty.all(
-                            AppTheme.secondaryColorCustom,
+                            ProviderTheme.surfaceColor, // Matches #FFFFFF (Surface)
                           ),
                           foregroundColor: MaterialStateProperty.all(
-                            AppTheme.primaryColorCustom,
+                            ProviderTheme.primaryColor, // Matches #060644 (Primary)
                           ),
                         ),
                         child: Text(
@@ -307,42 +310,55 @@ class _RegistrationPageState extends State<RegistrationPage> {
       controller: controller,
       obscureText: isPassword && _isObscure,
       style: TextStyle(
-        color: AppTheme.primaryColorCustom,
+        color: ProviderTheme.onPrimaryTextColor, // Matches #FFFFFF (On Primary Text)
         fontSize: MediaQuery.of(context).size.width * 0.04,
       ),
       validator: validator,
       decoration: InputDecoration(
         hintText: hintText,
-        hintStyle: TextStyle(color: AppTheme.primaryColorCustom),
+        hintStyle: TextStyle(
+          color: ProviderTheme.onPrimaryTextColor.withOpacity(0.7), // Matches #FFFFFF with opacity
+        ),
         filled: true,
-        fillColor: Colors.grey[300],
-        errorStyle: const TextStyle(color: Colors.red),
+        fillColor: ProviderTheme.dividerColor, // Matches #D1D9E1 (Divider)
+        errorStyle: TextStyle(
+          color: ProviderTheme.errorTextColor, // Matches #D32F2F (Error Text)
+        ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(23),
           borderSide: BorderSide(
             color: controller.text.isNotEmpty
-                ? Colors.green
-                : AppTheme.primaryColorCustom,
+                ? ProviderTheme.successColor // Matches #388E3C (Success Text)
+                : ProviderTheme.onPrimaryTextColor, // Matches #FFFFFF (On Primary Text)
             width: 1.5,
           ),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(23),
-          borderSide: const BorderSide(color: Colors.green, width: 2),
+          borderSide: BorderSide(
+            color: ProviderTheme.successColor, // Matches #388E3C (Success Text)
+            width: 2,
+          ),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(23),
-          borderSide: const BorderSide(color: Colors.red, width: 1.5),
+          borderSide: BorderSide(
+            color: ProviderTheme.errorTextColor, // Matches #D32F2F (Error Text)
+            width: 1.5,
+          ),
         ),
         focusedErrorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(23),
-          borderSide: const BorderSide(color: Colors.red, width: 2),
+          borderSide: BorderSide(
+            color: ProviderTheme.errorTextColor, // Matches #D32F2F (Error Text)
+            width: 2,
+          ),
         ),
         suffixIcon: isPassword
             ? IconButton(
           icon: Icon(
             _isObscure ? Icons.visibility : Icons.visibility_off,
-            color: AppTheme.primaryColorCustom,
+            color: ProviderTheme.onPrimaryTextColor, // Matches #FFFFFF (On Primary Text)
           ),
           onPressed: () {
             setState(() {
@@ -367,7 +383,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
         child: Text(
           text,
           style: TextStyle(
-            color: AppTheme.secondaryColorCustom,
+            color: ProviderTheme.onPrimaryTextColor, // Matches #FFFFFF (On Primary Text)
             fontSize: MediaQuery.of(context).size.width * 0.04,
           ),
         ),

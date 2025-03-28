@@ -116,17 +116,20 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
     final screenHeight = MediaQuery.of(context).size.height;
 
     return Scaffold(
-      backgroundColor: AppTheme.secondaryColorCustom, // White background
       appBar: AppBar(
         title: Text(
           serviceData?['name'] ?? 'Service Details',
-          style: TextStyle(color: AppTheme.secondaryColorCustom),
+          style: TextStyle(
+            color: ProviderTheme.onPrimaryTextColor,
+          ),
         ),
-        backgroundColor: AppTheme.primaryColorCustom,
-        foregroundColor: AppTheme.secondaryColorCustom,
       ),
       body: serviceData == null
-          ? Center(child: CircularProgressIndicator(color: AppTheme.primaryColorCustom))
+          ? Center(
+        child: CircularProgressIndicator(
+          color: ProviderTheme.primaryColor,
+        ),
+      )
           : SingleChildScrollView(
         child: Padding(
           padding: EdgeInsets.all(screenWidth * 0.04),
@@ -140,7 +143,7 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
                   borderRadius: BorderRadius.circular(screenWidth * 0.04),
                 ),
                 elevation: 4,
-                color: AppTheme.secondaryColorCustom, // White card
+                color: ProviderTheme.surfaceColor,
                 child: Padding(
                   padding: EdgeInsets.all(screenWidth * 0.04),
                   child: Column(
@@ -151,13 +154,16 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: screenWidth * 0.06,
+                          color: ProviderTheme.primaryTextColor,
                         ),
                       ),
                       SizedBox(height: screenHeight * 0.01),
                       Text(
                         'Category: ${serviceData!['category'] ?? 'N/A'}',
                         style: TextStyle(
-                            color: Colors.grey[700], fontSize: screenWidth * 0.04),
+                          color: ProviderTheme.secondaryTextColor,
+                          fontSize: screenWidth * 0.04,
+                        ),
                       ),
                       SizedBox(height: screenHeight * 0.02),
                       Text(
@@ -165,13 +171,16 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: screenWidth * 0.05,
-                          color: AppTheme.primaryColorCustom,
+                          color: ProviderTheme.primaryColor,
                         ),
                       ),
                       SizedBox(height: screenHeight * 0.02),
                       Text(
                         serviceData!['description'] ?? 'No description available',
-                        style: TextStyle(fontSize: screenWidth * 0.04),
+                        style: TextStyle(
+                          fontSize: screenWidth * 0.04,
+                          color: ProviderTheme.primaryTextColor,
+                        ),
                       ),
                     ],
                   ),
@@ -184,7 +193,7 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
                     borderRadius: BorderRadius.circular(screenWidth * 0.04),
                   ),
                   elevation: 4,
-                  color: AppTheme.secondaryColorCustom, // White card
+                  color: ProviderTheme.surfaceColor,
                   child: Padding(
                     padding: EdgeInsets.all(screenWidth * 0.04),
                     child: Column(
@@ -195,6 +204,7 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
                           style: TextStyle(
                             fontSize: screenWidth * 0.05,
                             fontWeight: FontWeight.bold,
+                            color: ProviderTheme.primaryTextColor,
                           ),
                         ),
                         SizedBox(height: screenHeight * 0.01),
@@ -203,9 +213,19 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
                             padding: EdgeInsets.symmetric(vertical: screenHeight * 0.005),
                             child: Row(
                               children: [
-                                Icon(Icons.check_circle, color: AppTheme.providerGreen),
+                                Icon(
+                                  Icons.check_circle,
+                                  color: ProviderTheme.successColor,
+                                ),
                                 SizedBox(width: screenWidth * 0.02),
-                                Expanded(child: Text(item.toString())),
+                                Expanded(
+                                  child: Text(
+                                    item.toString(),
+                                    style: TextStyle(
+                                      color: ProviderTheme.primaryTextColor,
+                                    ),
+                                  ),
+                                ),
                               ],
                             ),
                           ),
@@ -221,7 +241,7 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
                     borderRadius: BorderRadius.circular(screenWidth * 0.04),
                   ),
                   elevation: 4,
-                  color: AppTheme.secondaryColorCustom, // White card
+                  color: ProviderTheme.surfaceColor,
                   child: Padding(
                     padding: EdgeInsets.all(screenWidth * 0.04),
                     child: Column(
@@ -232,6 +252,7 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
                           style: TextStyle(
                             fontSize: screenWidth * 0.05,
                             fontWeight: FontWeight.bold,
+                            color: ProviderTheme.primaryTextColor,
                           ),
                         ),
                         SizedBox(height: screenHeight * 0.01),
@@ -240,9 +261,19 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
                             padding: EdgeInsets.symmetric(vertical: screenHeight * 0.005),
                             child: Row(
                               children: [
-                                Icon(Icons.arrow_right, color: Colors.blue),
+                                Icon(
+                                  Icons.arrow_right,
+                                  color: ProviderTheme.primaryColor,
+                                ),
                                 SizedBox(width: screenWidth * 0.02),
-                                Expanded(child: Text(item.toString())),
+                                Expanded(
+                                  child: Text(
+                                    item.toString(),
+                                    style: TextStyle(
+                                      color: ProviderTheme.primaryTextColor,
+                                    ),
+                                  ),
+                                ),
                               ],
                             ),
                           ),
@@ -257,7 +288,7 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
                   borderRadius: BorderRadius.circular(screenWidth * 0.04),
                 ),
                 elevation: 4,
-                color: AppTheme.secondaryColorCustom, // White card
+                color: ProviderTheme.surfaceColor,
                 child: Padding(
                   padding: EdgeInsets.all(screenWidth * 0.04),
                   child: Column(
@@ -268,23 +299,63 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
                         style: TextStyle(
                           fontSize: screenWidth * 0.05,
                           fontWeight: FontWeight.bold,
+                          color: ProviderTheme.primaryTextColor,
                         ),
                       ),
                       SizedBox(height: screenHeight * 0.02),
                       ListTile(
-                        leading: Icon(Icons.access_time, color: Colors.blue),
-                        title: Text('Flexible Scheduling'),
-                        subtitle: Text('Book at your convenient time'),
+                        leading: Icon(
+                          Icons.access_time,
+                          color: ProviderTheme.primaryColor,
+                        ),
+                        title: Text(
+                          'Flexible Scheduling',
+                          style: TextStyle(
+                            color: ProviderTheme.primaryTextColor,
+                          ),
+                        ),
+                        subtitle: Text(
+                          'Book at your convenient time',
+                          style: TextStyle(
+                            color: ProviderTheme.secondaryTextColor,
+                          ),
+                        ),
                       ),
                       ListTile(
-                        leading: Icon(Icons.verified_user, color: Colors.blue),
-                        title: Text('Verified Providers'),
-                        subtitle: Text('All providers are verified and trusted'),
+                        leading: Icon(
+                          Icons.verified_user,
+                          color: ProviderTheme.primaryColor,
+                        ),
+                        title: Text(
+                          'Verified Providers',
+                          style: TextStyle(
+                            color: ProviderTheme.primaryTextColor,
+                          ),
+                        ),
+                        subtitle: Text(
+                          'All providers are verified and trusted',
+                          style: TextStyle(
+                            color: ProviderTheme.secondaryTextColor,
+                          ),
+                        ),
                       ),
                       ListTile(
-                        leading: Icon(Icons.thumb_up, color: Colors.blue),
-                        title: Text('Satisfaction Guaranteed'),
-                        subtitle: Text('Quality service or money back'),
+                        leading: Icon(
+                          Icons.thumb_up,
+                          color: ProviderTheme.primaryColor,
+                        ),
+                        title: Text(
+                          'Satisfaction Guaranteed',
+                          style: TextStyle(
+                            color: ProviderTheme.primaryTextColor,
+                          ),
+                        ),
+                        subtitle: Text(
+                          'Quality service or money back',
+                          style: TextStyle(
+                            color: ProviderTheme.secondaryTextColor,
+                          ),
+                        ),
                       ),
                     ],
                   ),
@@ -297,7 +368,7 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
                     borderRadius: BorderRadius.circular(screenWidth * 0.04),
                   ),
                   elevation: 4,
-                  color: AppTheme.secondaryColorCustom, // White card
+                  color: ProviderTheme.surfaceColor,
                   child: Padding(
                     padding: EdgeInsets.all(screenWidth * 0.04),
                     child: Column(
@@ -308,18 +379,44 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
                           style: TextStyle(
                             fontSize: screenWidth * 0.05,
                             fontWeight: FontWeight.bold,
+                            color: ProviderTheme.primaryTextColor,
                           ),
                         ),
                         SizedBox(height: screenHeight * 0.02),
                         ListTile(
-                          leading: CircleAvatar(child: Icon(Icons.person)),
-                          title: Text(providerData!['name'] ?? 'N/A'),
+                          leading: CircleAvatar(
+                            child: Icon(
+                              Icons.person,
+                              color: ProviderTheme.primaryColor,
+                            ),
+                          ),
+                          title: Text(
+                            providerData!['name'] ?? 'N/A',
+                            style: TextStyle(
+                              color: ProviderTheme.primaryTextColor,
+                            ),
+                          ),
                           subtitle: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(providerData!['phone'] ?? 'N/A'),
-                              Text(providerData!['email'] ?? 'N/A'),
-                              Text(providerData!['address']?['string'] ?? 'N/A'),
+                              Text(
+                                providerData!['phone'] ?? 'N/A',
+                                style: TextStyle(
+                                  color: ProviderTheme.secondaryTextColor,
+                                ),
+                              ),
+                              Text(
+                                providerData!['email'] ?? 'N/A',
+                                style: TextStyle(
+                                  color: ProviderTheme.secondaryTextColor,
+                                ),
+                              ),
+                              Text(
+                                providerData!['address']?['string'] ?? 'N/A',
+                                style: TextStyle(
+                                  color: ProviderTheme.secondaryTextColor,
+                                ),
+                              ),
                             ],
                           ),
                         ),
@@ -328,14 +425,17 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
                           width: double.infinity,
                           child: ElevatedButton(
                             onPressed: () => _navigateToChat(context),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: AppTheme.primaryColorCustom,
-                              foregroundColor: AppTheme.secondaryColorCustom,
-                              padding: EdgeInsets.symmetric(
+                            style: Theme.of(context).elevatedButtonTheme.style?.copyWith(
+                              padding: MaterialStateProperty.all(
+                                EdgeInsets.symmetric(
                                   horizontal: screenWidth * 0.04,
-                                  vertical: screenHeight * 0.015),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(screenWidth * 0.03),
+                                  vertical: screenHeight * 0.015,
+                                ),
+                              ),
+                              shape: MaterialStateProperty.all(
+                                RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(screenWidth * 0.03),
+                                ),
                               ),
                             ),
                             child: Text('Message Provider'),
@@ -349,14 +449,27 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
               Center(
                 child: ElevatedButton(
                   onPressed: _showBookingSheet,
-                  child: Text('Book Now',
-                      style: TextStyle(color: AppTheme.secondaryColorCustom)),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Color(0xFF6A9AFF),
-                    padding: EdgeInsets.symmetric(
-                        horizontal: screenWidth * 0.06, vertical: screenHeight * 0.015),
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(screenWidth * 0.03)),
+                  style: Theme.of(context).elevatedButtonTheme.style?.copyWith(
+                    backgroundColor: MaterialStateProperty.all(
+                      ProviderTheme.secondaryColor,
+                    ),
+                    padding: MaterialStateProperty.all(
+                      EdgeInsets.symmetric(
+                        horizontal: screenWidth * 0.06,
+                        vertical: screenHeight * 0.015,
+                      ),
+                    ),
+                    shape: MaterialStateProperty.all(
+                      RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(screenWidth * 0.03),
+                      ),
+                    ),
+                  ),
+                  child: Text(
+                    'Book Now',
+                    style: TextStyle(
+                      color: ProviderTheme.onPrimaryTextColor,
+                    ),
                   ),
                 ),
               ),
@@ -377,11 +490,15 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
       return Container(
         height: screenHeight * 0.25,
         decoration: BoxDecoration(
-          color: Colors.grey[300],
+          color: ProviderTheme.dividerColor,
           borderRadius: BorderRadius.circular(screenWidth * 0.04),
         ),
         child: Center(
-          child: Icon(Icons.image, size: screenWidth * 0.2, color: Colors.grey),
+          child: Icon(
+            Icons.image,
+            size: screenWidth * 0.2,
+            color: ProviderTheme.disabledTextColor,
+          ),
         ),
       );
     }
@@ -405,8 +522,12 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
                   images[index],
                   fit: BoxFit.cover,
                   errorBuilder: (context, error, stackTrace) => Container(
-                    color: Colors.grey[300],
-                    child: Icon(Icons.image, size: screenWidth * 0.2, color: Colors.grey),
+                    color: ProviderTheme.dividerColor,
+                    child: Icon(
+                      Icons.image,
+                      size: screenWidth * 0.2,
+                      color: ProviderTheme.disabledTextColor,
+                    ),
                   ),
                 ),
               );
@@ -422,7 +543,9 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
               width: _currentPage == index ? screenWidth * 0.02 : screenWidth * 0.012,
               height: _currentPage == index ? screenWidth * 0.02 : screenWidth * 0.012,
               decoration: BoxDecoration(
-                color: _currentPage == index ? Colors.blue : Colors.grey,
+                color: _currentPage == index
+                    ? ProviderTheme.primaryColor
+                    : ProviderTheme.disabledTextColor,
                 shape: BoxShape.circle,
               ),
             );
@@ -486,7 +609,7 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
               height: screenHeight * 0.65,
               padding: EdgeInsets.all(screenWidth * 0.05),
               decoration: BoxDecoration(
-                color: AppTheme.secondaryColorCustom, // White bottom sheet
+                color: ProviderTheme.surfaceColor,
                 borderRadius: BorderRadius.vertical(top: Radius.circular(screenWidth * 0.05)),
               ),
               child: Column(
@@ -495,17 +618,28 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
                   Text(
                     'Choose Appointment Time',
                     style: TextStyle(
-                        fontSize: screenWidth * 0.05,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black),
+                      fontSize: screenWidth * 0.05,
+                      fontWeight: FontWeight.bold,
+                      color: ProviderTheme.primaryTextColor,
+                    ),
                   ),
                   SizedBox(height: screenHeight * 0.006),
-                  Text('Service will take approximately 45 minutes',
-                      style: TextStyle(color: Colors.grey, fontSize: screenWidth * 0.035)),
+                  Text(
+                    'Service will take approximately 45 minutes',
+                    style: TextStyle(
+                      color: ProviderTheme.secondaryTextColor,
+                      fontSize: screenWidth * 0.035,
+                    ),
+                  ),
                   SizedBox(height: screenHeight * 0.025),
-                  Text('Select a Date',
-                      style: TextStyle(
-                          fontSize: screenWidth * 0.04, fontWeight: FontWeight.bold)),
+                  Text(
+                    'Select a Date',
+                    style: TextStyle(
+                      fontSize: screenWidth * 0.04,
+                      fontWeight: FontWeight.bold,
+                      color: ProviderTheme.primaryTextColor,
+                    ),
+                  ),
                   SizedBox(height: screenHeight * 0.01),
                   SingleChildScrollView(
                     scrollDirection: Axis.horizontal,
@@ -525,23 +659,26 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
                           child: Container(
                             margin: EdgeInsets.symmetric(horizontal: screenWidth * 0.015),
                             padding: EdgeInsets.symmetric(
-                                vertical: screenHeight * 0.012,
-                                horizontal: screenWidth * 0.035),
+                              vertical: screenHeight * 0.012,
+                              horizontal: screenWidth * 0.035,
+                            ),
                             decoration: BoxDecoration(
                               border: Border.all(
-                                  color: isSelected
-                                      ? Colors.deepPurple
-                                      : Colors.grey.shade300),
+                                color: isSelected
+                                    ? ProviderTheme.primaryColor
+                                    : ProviderTheme.dividerColor,
+                              ),
                               borderRadius: BorderRadius.circular(screenWidth * 0.03),
                               color: isSelected
-                                  ? Colors.deepPurple[100]
-                                  : Colors.grey.shade100,
+                                  ? ProviderTheme.primaryColor.withOpacity(0.1)
+                                  : ProviderTheme.dividerColor,
                               boxShadow: [
                                 if (isSelected)
                                   BoxShadow(
-                                      color: Colors.deepPurple.shade100,
-                                      blurRadius: 5,
-                                      spreadRadius: 1)
+                                    color: ProviderTheme.primaryColor.withOpacity(0.1),
+                                    blurRadius: 5,
+                                    spreadRadius: 1,
+                                  ),
                               ],
                             ),
                             child: Column(
@@ -559,8 +696,9 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
                                   style: TextStyle(
                                     fontSize: screenWidth * 0.035,
                                     fontWeight: FontWeight.bold,
-                                    color:
-                                    isSelected ? Colors.deepPurple : Colors.black,
+                                    color: isSelected
+                                        ? ProviderTheme.primaryColor
+                                        : ProviderTheme.primaryTextColor,
                                   ),
                                 ),
                                 Text(
@@ -568,8 +706,9 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
                                   style: TextStyle(
                                     fontSize: screenWidth * 0.04,
                                     fontWeight: FontWeight.bold,
-                                    color:
-                                    isSelected ? Colors.deepPurple : Colors.black,
+                                    color: isSelected
+                                        ? ProviderTheme.primaryColor
+                                        : ProviderTheme.primaryTextColor,
                                   ),
                                 ),
                               ],
@@ -580,16 +719,26 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
                     ),
                   ),
                   SizedBox(height: screenHeight * 0.025),
-                  Text('Select Time Slot',
-                      style: TextStyle(
-                          fontSize: screenWidth * 0.04, fontWeight: FontWeight.bold)),
+                  Text(
+                    'Select Time Slot',
+                    style: TextStyle(
+                      fontSize: screenWidth * 0.04,
+                      fontWeight: FontWeight.bold,
+                      color: ProviderTheme.primaryTextColor,
+                    ),
+                  ),
                   SizedBox(height: screenHeight * 0.01),
                   Expanded(
                     child: selectedDate == null
                         ? Center(
-                        child: Text("Select a date first",
-                            style: TextStyle(
-                                color: Colors.grey, fontSize: screenWidth * 0.04)))
+                      child: Text(
+                        "Select a date first",
+                        style: TextStyle(
+                          color: ProviderTheme.secondaryTextColor,
+                          fontSize: screenWidth * 0.04,
+                        ),
+                      ),
+                    )
                         : GridView.builder(
                       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                         crossAxisCount: 3,
@@ -609,22 +758,26 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
                           child: Container(
                             alignment: Alignment.center,
                             padding: EdgeInsets.symmetric(
-                                vertical: screenHeight * 0.012,
-                                horizontal: screenWidth * 0.02),
+                              vertical: screenHeight * 0.012,
+                              horizontal: screenWidth * 0.02,
+                            ),
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(screenWidth * 0.025),
-                              color:
-                              isSelected ? Colors.deepPurple[100] : Colors.white,
+                              color: isSelected
+                                  ? ProviderTheme.primaryColor.withOpacity(0.1)
+                                  : ProviderTheme.surfaceColor,
                               border: Border.all(
-                                  color: isSelected
-                                      ? Colors.deepPurple
-                                      : Colors.grey.shade300),
+                                color: isSelected
+                                    ? ProviderTheme.primaryColor
+                                    : ProviderTheme.dividerColor,
+                              ),
                               boxShadow: isSelected
                                   ? [
                                 BoxShadow(
-                                    color: Colors.deepPurple.shade100,
-                                    blurRadius: 5,
-                                    spreadRadius: 1)
+                                  color: ProviderTheme.primaryColor.withOpacity(0.1),
+                                  blurRadius: 5,
+                                  spreadRadius: 1,
+                                ),
                               ]
                                   : [],
                             ),
@@ -632,8 +785,8 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
                               timeSlot,
                               style: TextStyle(
                                 color: isSelected
-                                    ? Colors.deepPurple[900]
-                                    : Colors.black,
+                                    ? ProviderTheme.primaryColor
+                                    : ProviderTheme.primaryTextColor,
                                 fontWeight: FontWeight.w500,
                                 fontSize: screenWidth * 0.035,
                               ),
@@ -661,22 +814,33 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
                       );
                     }
                         : null,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: selectedDate != null && selectedTime != null
-                          ? Colors.deepPurple
-                          : Colors.grey[400],
-                      padding: EdgeInsets.symmetric(vertical: screenHeight * 0.017),
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(screenWidth * 0.03)),
-                      elevation: 5,
+                    style: Theme.of(context).elevatedButtonTheme.style?.copyWith(
+                      backgroundColor: MaterialStateProperty.resolveWith<Color>(
+                            (states) {
+                          if (states.contains(MaterialState.disabled)) {
+                            return ProviderTheme.disabledButtonColor;
+                          }
+                          return ProviderTheme.defaultButtonColor;
+                        },
+                      ),
+                      padding: MaterialStateProperty.all(
+                        EdgeInsets.symmetric(vertical: screenHeight * 0.017),
+                      ),
+                      shape: MaterialStateProperty.all(
+                        RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(screenWidth * 0.03),
+                        ),
+                      ),
+                      elevation: MaterialStateProperty.all(5),
                     ),
                     child: Center(
                       child: Text(
                         'Confirm Booking',
                         style: TextStyle(
-                            fontSize: screenWidth * 0.04,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white),
+                          fontSize: screenWidth * 0.04,
+                          fontWeight: FontWeight.bold,
+                          color: ProviderTheme.onPrimaryTextColor,
+                        ),
                       ),
                     ),
                   ),

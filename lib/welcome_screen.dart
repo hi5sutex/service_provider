@@ -13,13 +13,13 @@ class WelcomeScreen extends StatelessWidget {
     final theme = Theme.of(context);
 
     return Scaffold(
-      backgroundColor: AppTheme.primaryColorCustom,
+      backgroundColor: ProviderTheme.primaryColor, // Matches #060644 (Primary)
       body: Stack(
         children: [
           Align(
             alignment: Alignment.topCenter,
             child: Container(
-              color: AppTheme.primaryColorCustom,
+              color: ProviderTheme.primaryColor, // Matches #060644 (Primary)
               height: screenHeight * 0.65,
               width: double.infinity,
               child: Center(
@@ -37,7 +37,7 @@ class WelcomeScreen extends StatelessWidget {
                       'Quick Expert',
                       style: theme.textTheme.displayLarge?.copyWith(
                         fontSize: screenWidth * 0.08,
-                        color: AppTheme.secondaryColorCustom,
+                        color: ProviderTheme.onPrimaryTextColor, // Matches #FFFFFF (On Primary Text)
                       ),
                     ),
                   ],
@@ -51,7 +51,7 @@ class WelcomeScreen extends StatelessWidget {
               height: screenHeight * 0.35,
               width: double.infinity,
               decoration: BoxDecoration(
-                color: AppTheme.secondaryColorCustom,
+                color: ProviderTheme.surfaceColor, // Matches #FFFFFF (Surface)
                 borderRadius: const BorderRadius.only(
                   topLeft: Radius.circular(30.0),
                   topRight: Radius.circular(30.0),
@@ -71,7 +71,7 @@ class WelcomeScreen extends StatelessWidget {
                       'Welcome',
                       style: theme.textTheme.displayLarge?.copyWith(
                         fontSize: screenWidth * 0.09,
-                        color: AppTheme.primaryColorCustom,
+                        color: ProviderTheme.primaryTextColor, // Matches #060644 (Primary Text)
                       ),
                     ),
                     SizedBox(height: screenHeight * 0.02),
@@ -79,7 +79,7 @@ class WelcomeScreen extends StatelessWidget {
                       'Welcome to Quick Expert! Log in to start offering your services and make an impact!',
                       style: theme.textTheme.bodyMedium?.copyWith(
                         fontSize: screenWidth * 0.045,
-                        color: Colors.grey,
+                        color: ProviderTheme.secondaryTextColor, // Matches #6B7280 (Secondary Text)
                       ),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,

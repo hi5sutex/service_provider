@@ -60,25 +60,48 @@ class _SubcategoriesPageState extends State<SubcategoriesPage> {
     final screenHeight = MediaQuery.of(context).size.height;
 
     return Scaffold(
-      backgroundColor: AppTheme.secondaryColorCustom, // White background
+      // Background color is set by ProviderTheme.scaffoldBackgroundColor (#F5F7FA)
       appBar: AppBar(
-        title: const Text('Subcategories'),
-        backgroundColor: AppTheme.primaryColorCustom, // Assuming dark blue for AppBar
-        foregroundColor: AppTheme.secondaryColorCustom, // White text/icons
+        // Background color is set by ProviderTheme.appBarTheme (Primary #060644)
+        title: const Text(
+          'Subcategories',
+          style: TextStyle(
+            color: ProviderTheme.onPrimaryTextColor, // Matches #FFFFFF (On Primary Text)
+          ),
+        ),
+        // foregroundColor is set by ProviderTheme.appBarTheme.foregroundColor
       ),
       body: FutureBuilder<List<Map<String, dynamic>>>(
         future: _subcategoriesFuture,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(child: CircularProgressIndicator(color: AppTheme.primaryColorCustom));
+            return Center(
+              child: CircularProgressIndicator(
+                color: ProviderTheme.primaryColor, // Matches #060644 (Primary)
+              ),
+            );
           }
           if (snapshot.hasError) {
-            return Center(child: Text('Error: ${snapshot.error}', style: TextStyle(color: Colors.black)));
+            return Center(
+              child: Text(
+                'Error: ${snapshot.error}',
+                style: TextStyle(
+                  color: ProviderTheme.primaryTextColor, // Matches #060644 (Primary Text)
+                ),
+              ),
+            );
           }
 
           final subcategories = snapshot.data ?? [];
           if (subcategories.isEmpty) {
-            return Center(child: Text('No subcategories found.', style: TextStyle(color: Colors.black)));
+            return Center(
+              child: Text(
+                'No subcategories found.',
+                style: TextStyle(
+                  color: ProviderTheme.primaryTextColor, // Matches #060644 (Primary Text)
+                ),
+              ),
+            );
           }
 
           return GridView.builder(
@@ -109,7 +132,7 @@ class _SubcategoriesPageState extends State<SubcategoriesPage> {
                     borderRadius: BorderRadius.circular(screenWidth * 0.03),
                   ),
                   elevation: 4.0,
-                  color: AppTheme.secondaryColorCustom, // White card background
+                  color: ProviderTheme.surfaceColor, // Matches #FFFFFF (Surface)
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
@@ -131,7 +154,10 @@ class _SubcategoriesPageState extends State<SubcategoriesPage> {
                             loadingBuilder: (context, child, progress) {
                               if (progress == null) return child;
                               return Center(
-                                  child: CircularProgressIndicator(color: AppTheme.primaryColorCustom));
+                                child: CircularProgressIndicator(
+                                  color: ProviderTheme.primaryColor, // Matches #060644 (Primary)
+                                ),
+                              );
                             },
                           ),
                         ),
@@ -143,10 +169,10 @@ class _SubcategoriesPageState extends State<SubcategoriesPage> {
                           child: Center(
                             child: Text(
                               name,
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontWeight: FontWeight.bold,
                                 fontSize: 14.0,
-                                color: Colors.black,
+                                color: ProviderTheme.primaryTextColor, // Matches #060644 (Primary Text)
                               ),
                               textAlign: TextAlign.center,
                               maxLines: 2,

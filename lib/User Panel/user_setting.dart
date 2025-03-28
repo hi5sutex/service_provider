@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:service_provider/theme.dart';
 
 class SettingsPage extends StatefulWidget {
   @override
@@ -14,11 +15,21 @@ class _SettingsPageState extends State<SettingsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: ProviderTheme.surfaceColor, // Matches #FFFFFF (Surface)
       appBar: AppBar(
-        title: Text('Settings'),
+        backgroundColor: ProviderTheme.primaryColor, // Matches #060644 (Primary)
+        title: Text(
+          'Settings',
+          style: TextStyle(
+            color: ProviderTheme.onPrimaryTextColor, // Matches #FFFFFF (On Primary Text)
+          ),
+        ),
         actions: [
           IconButton(
-            icon: Icon(Icons.search),
+            icon: Icon(
+              Icons.search,
+              color: ProviderTheme.onPrimaryTextColor, // Matches #FFFFFF (On Primary Text)
+            ),
             onPressed: () {},
           ),
         ],
@@ -85,9 +96,7 @@ class _SettingsPageState extends State<SettingsPage> {
             _buildSettingCard(
               icon: Icons.help_outline,
               title: 'Help Center',
-              onTap: () {
-
-              },
+              onTap: () {},
             ),
             _buildSettingCard(
               icon: Icons.description,
@@ -101,13 +110,14 @@ class _SettingsPageState extends State<SettingsPage> {
                 onPressed: () {},
                 style: ElevatedButton.styleFrom(
                   padding: EdgeInsets.symmetric(horizontal: 32, vertical: 12),
-                  backgroundColor: Color(0xFF060644),
+                  backgroundColor: ProviderTheme.primaryColor, // Matches #060644 (Primary)
                 ),
                 child: Text(
                   'Save Changes',
-                  style: TextStyle(fontSize: 16,
-                  color: Colors.white,
-                  )
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: ProviderTheme.onPrimaryTextColor, // Matches #FFFFFF (On Primary Text)
+                  ),
                 ),
               ),
             ),
@@ -128,6 +138,7 @@ class _SettingsPageState extends State<SettingsPage> {
         style: TextStyle(
           fontSize: 18.0,
           fontWeight: FontWeight.bold,
+          color: ProviderTheme.primaryTextColor, // Matches #060644 (Primary Text)
         ),
       ),
     );
@@ -143,21 +154,39 @@ class _SettingsPageState extends State<SettingsPage> {
     Function(bool)? onChanged,
   }) {
     return Card(
+      color: ProviderTheme.surfaceColor, // Matches #FFFFFF (Surface)
       margin: EdgeInsets.symmetric(vertical: 8.0),
       child: ListTile(
-        leading: Icon(icon, color: Colors.grey),
-        title: Text(title),
+        leading: Icon(
+          icon,
+          color: ProviderTheme.secondaryTextColor, // Matches #6B7280 (Secondary Text)
+        ),
+        title: Text(
+          title,
+          style: TextStyle(
+            color: ProviderTheme.primaryTextColor, // Matches #060644 (Primary Text)
+          ),
+        ),
         trailing: toggle != null
             ? Switch(
           value: toggleValue ?? false,
           onChanged: onChanged,
+          activeColor: ProviderTheme.primaryColor, // Matches #060644 (Primary)
         )
             : value != null
             ? Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text(value, style: TextStyle(color: Colors.grey)),
-            Icon(Icons.chevron_right, color: Colors.grey),
+            Text(
+              value,
+              style: TextStyle(
+                color: ProviderTheme.secondaryTextColor, // Matches #6B7280 (Secondary Text)
+              ),
+            ),
+            Icon(
+              Icons.chevron_right,
+              color: ProviderTheme.secondaryTextColor, // Matches #6B7280 (Secondary Text)
+            ),
           ],
         )
             : null,
@@ -168,11 +197,19 @@ class _SettingsPageState extends State<SettingsPage> {
 
   Widget _buildLogoutCard() {
     return Card(
-      color: Colors.red[50],
+      color: ProviderTheme.errorTextColor.withOpacity(0.1), // Light red shade
       margin: EdgeInsets.symmetric(vertical: 8.0),
       child: ListTile(
-        leading: Icon(Icons.logout, color: Colors.red),
-        title: Text('Logout', style: TextStyle(color: Colors.red)),
+        leading: Icon(
+          Icons.logout,
+          color: ProviderTheme.errorTextColor, // Matches #D32F2F (Error Text)
+        ),
+        title: Text(
+          'Logout',
+          style: TextStyle(
+            color: ProviderTheme.errorTextColor, // Matches #D32F2F (Error Text)
+          ),
+        ),
         onTap: () {},
       ),
     );

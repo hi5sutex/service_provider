@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
+import 'package:service_provider/CustomSnackBar.dart'; // Import your CustomSnackBar
 
 class NotificationPage extends StatefulWidget {
   @override
@@ -40,7 +41,7 @@ class _NotificationPageState extends State<NotificationPage> {
         .toList());
   }
 
-  // Clear all notifications
+  // Clear all notifications and show custom SnackBar
   Future<void> clearAllNotifications() async {
     final batch = FirebaseFirestore.instance.batch();
     final notificationsSnapshot = await FirebaseFirestore.instance
@@ -58,7 +59,16 @@ class _NotificationPageState extends State<NotificationPage> {
 
     await batch.commit();
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('All notifications cleared')),
+      SnackBar(
+        content: const CustomSnackBar(
+          message: 'All Notifications cleared',
+          type: 'success', // Green background for success
+        ),
+        behavior: SnackBarBehavior.floating,
+        backgroundColor: Colors.transparent, // Let CustomSnackBar handle background
+        elevation: 0,
+        duration: const Duration(seconds: 2),
+      ),
     );
   }
 
@@ -182,7 +192,8 @@ class _NotificationPageState extends State<NotificationPage> {
                   actions: [
                     TextButton(
                       onPressed: () => Navigator.pop(context),
-                      child: Text('Cancel', style: TextStyle(color: Colors.black87)),
+                      child:
+                      Text('Cancel', style: TextStyle(color: Colors.black87)),
                     ),
                     TextButton(
                       onPressed: () {
@@ -221,8 +232,10 @@ class _NotificationPageState extends State<NotificationPage> {
                       });
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: isSelected ? Colors.white : Color(0xFF060644),
-                      foregroundColor: isSelected ? Color(0xFF060644) : Colors.white,
+                      backgroundColor:
+                      isSelected ? Colors.white : Color(0xFF060644),
+                      foregroundColor:
+                      isSelected ? Color(0xFF060644) : Colors.white,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
