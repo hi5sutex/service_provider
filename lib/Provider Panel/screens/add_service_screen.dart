@@ -5,7 +5,8 @@ import 'package:image_picker/image_picker.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:service_provider/Provider%20Panel/provider_theme.dart';
 import 'package:service_provider/notification_service.dart';
 
 class AddServiceScreen extends StatefulWidget {
@@ -23,6 +24,13 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
   late final TextEditingController _whatsIncludedController;
   late final TextEditingController _responsibilitiesController;
 
+  // Focus nodes for auto-navigation
+  late final FocusNode _nameFocusNode;
+  late final FocusNode _descriptionFocusNode;
+  late final FocusNode _priceFocusNode;
+  late final FocusNode _whatsIncludedFocusNode;
+  late final FocusNode _responsibilitiesFocusNode;
+
   String? selectedCategory;
   String? selectedSubcategory;
   List<String> subcategories = [];
@@ -33,10 +41,6 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
   List<String> responsibilitiesList = [];
   List<String> categories = [];
 
-  // Define colors
-  static const Color primaryColor = Color(0xFF060644);
-  static const Color secondaryColor = Colors.white;
-
   @override
   void initState() {
     super.initState();
@@ -45,6 +49,14 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
     _priceController = TextEditingController();
     _whatsIncludedController = TextEditingController();
     _responsibilitiesController = TextEditingController();
+
+    // Initialize focus nodes
+    _nameFocusNode = FocusNode();
+    _descriptionFocusNode = FocusNode();
+    _priceFocusNode = FocusNode();
+    _whatsIncludedFocusNode = FocusNode();
+    _responsibilitiesFocusNode = FocusNode();
+
     fetchCategories();
   }
 
@@ -55,6 +67,14 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
     _priceController.dispose();
     _whatsIncludedController.dispose();
     _responsibilitiesController.dispose();
+
+    // Dispose focus nodes
+    _nameFocusNode.dispose();
+    _descriptionFocusNode.dispose();
+    _priceFocusNode.dispose();
+    _whatsIncludedFocusNode.dispose();
+    _responsibilitiesFocusNode.dispose();
+
     super.dispose();
   }
 
@@ -77,6 +97,7 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
   }
 
   Future<void> fetchSubcategories(String categoryName) async {
+
     try {
       QuerySnapshot snapshot = await FirebaseFirestore.instance
           .collection('categories')
@@ -178,7 +199,11 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
   Future<void> submitService() async {
     if (!_formKey.currentState!.validate() || selectedCategory == null || selectedSubcategory == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please fill all required fields')),
+        SnackBar(
+          content: Text(
+            'Fill all the details plz.',
+          ),
+        ),
       );
       return;
     }
@@ -222,21 +247,34 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
             'serviceId': serviceRef.id,
           },
         );
+
+        // Show custom SnackBar to provider
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                'Service "${_nameController.text.trim()}" submitted successfully! Awaiting admin approval.',
+              ),
+            ),
+          );
+        }
       } else {
         debugPrint('No admin found to notify');
       }
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Service submitted for approval')),
-        );
         Navigator.pop(context);
       }
     } catch (e) {
       debugPrint('Error submitting service: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Failed to submit service')),
+          SnackBar(
+            content: const Text('Failed to submit service'),
+            backgroundColor: ProviderTheme.errorTextColor,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+          ),
         );
       }
     } finally {
@@ -249,17 +287,16 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
   // Helper method for section headers
   Widget _buildSectionHeader(String title, IconData icon) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.only(bottom: 20),
       child: Row(
         children: [
-          Icon(icon, color: primaryColor),
+          FaIcon(icon, color: ProviderTheme.primaryColor, size: 20),
           const SizedBox(width: 8),
           Text(
             title,
-            style: const TextStyle(
+            style: Theme.of(context).textTheme.titleLarge?.copyWith(
+              color: ProviderTheme.primaryTextColor,
               fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: primaryColor,
             ),
           ),
         ],
@@ -269,33 +306,39 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
 
   // Enhanced dynamic list widget
   Widget _buildDynamicList(
-      String label, String hint, List<String> itemsList, TextEditingController controller) {
+      String label, String hint, List<String> itemsList, TextEditingController controller, FocusNode focusNode) {
     return Card(
       elevation: 2,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(12),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
               label,
-              style: const TextStyle(
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                color: ProviderTheme.primaryTextColor,
                 fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: primaryColor,
               ),
             ),
             const SizedBox(height: 8),
             Wrap(
               spacing: 8,
-              runSpacing: 8,
+              runSpacing: 4,
               children: itemsList
                   .map(
                     (item) => Chip(
-                  label: Text(item, style: const TextStyle(color: secondaryColor)),
-                  backgroundColor: primaryColor,
-                  deleteIcon: const Icon(Icons.close, color: secondaryColor),
+                  label: Text(
+                    item,
+                    style: const TextStyle(color: ProviderTheme.onPrimaryTextColor),
+                  ),
+                  backgroundColor: ProviderTheme.secondaryColor.withAlpha(200),
+                  deleteIcon: const FaIcon(
+                    FontAwesomeIcons.xmark,
+                    color: ProviderTheme.onPrimaryTextColor,
+                    size: 16,
+                  ),
                   onDeleted: () => setState(() => itemsList.remove(item)),
                 ),
               )
@@ -304,28 +347,45 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
             const SizedBox(height: 8),
             TextFormField(
               controller: controller,
+              focusNode: focusNode,
               decoration: InputDecoration(
                 hintText: hint,
-                hintStyle: const TextStyle(color: Colors.grey),
+                hintStyle: const TextStyle(color: ProviderTheme.disabledTextColor),
                 filled: true,
-                fillColor: Colors.grey[100],
+                fillColor: ProviderTheme.cardHighlightColor,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8),
                   borderSide: BorderSide.none,
                 ),
                 suffixIcon: IconButton(
-                  icon: const Icon(Icons.add, color: primaryColor),
+                  icon: const FaIcon(
+                    FontAwesomeIcons.plus,
+                    color: ProviderTheme.primaryColor,
+                    size: 20,
+                  ),
                   onPressed: () {
                     final text = controller.text.trim();
                     if (text.isNotEmpty && !itemsList.contains(text)) {
                       setState(() {
                         itemsList.add(text);
-                        controller.clear(); // Clear input after adding
+                        controller.clear();
                       });
                     }
                   },
                 ),
               ),
+              onFieldSubmitted: (value) {
+                final text = value.trim();
+                if (text.isNotEmpty && !itemsList.contains(text)) {
+                  setState(() {
+                    itemsList.add(text);
+                    controller.clear();
+                  });
+                }
+                if (controller == _whatsIncludedController) {
+                  FocusScope.of(context).requestFocus(_responsibilitiesFocusNode);
+                }
+              },
             ),
           ],
         ),
@@ -335,277 +395,292 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.grey[100],
-      appBar: AppBar(
-        backgroundColor: primaryColor,
-        title: const Text('Add New Service', style: TextStyle(color: secondaryColor)),
-        elevation: 0,
-        iconTheme: const IconThemeData(color: secondaryColor),
-      ),
-      body: Stack(
-        children: [
-          SingleChildScrollView(
-            padding: const EdgeInsets.all(20),
-            child: Form(
-              key: _formKey,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Service Details Section
-                  Card(
-                    elevation: 2,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                    child: Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          _buildSectionHeader('Service Details', Icons.build),
-                          TextFormField(
-                            controller: _nameController,
-                            decoration: InputDecoration(
-                              labelText: 'Service Name',
-                              hintText: 'e.g., Home Cleaning, AC Repair',
-                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                              focusedBorder: OutlineInputBorder(
-                                borderSide: const BorderSide(color: primaryColor),
-                                borderRadius: BorderRadius.circular(8),
+
+    return MaterialApp(
+      theme: ProviderTheme.themeData,
+      home: Scaffold(
+        backgroundColor: ProviderTheme.backgroundColor,
+        appBar: AppBar(
+          flexibleSpace: Container(
+            decoration: const BoxDecoration(
+              gradient: ProviderTheme.primaryGradient,
+            ),
+          ),
+          leading: Padding(
+            padding: const EdgeInsets.only(left: 16.0),
+            child: IconButton(
+              icon: const Icon(
+                Icons.arrow_back,
+                color: ProviderTheme.surfaceColor,
+                size: 28,
+              ),
+              onPressed: () {
+                Navigator.pop(context); // Navigate back when pressed
+              },
+            ),
+          ),
+          title: const Text('Add New Service'),
+          centerTitle: false,
+          elevation: 4,
+          shadowColor: ProviderTheme.shadowColor.withOpacity(0.4),
+        ),
+        body: Stack(
+          children: [
+            SingleChildScrollView(
+              padding: const EdgeInsets.all(16),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Service Details Section
+                    Card(
+                      elevation: 2,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      child: Padding(
+                        padding: const EdgeInsets.all(12),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            _buildSectionHeader('Service Details', FontAwesomeIcons.screwdriverWrench),
+                            TextFormField(
+                              controller: _nameController,
+                              focusNode: _nameFocusNode,
+                              decoration: const InputDecoration(
+                                labelText: 'Service Name',
+                                hintText: 'e.g., Home Cleaning, AC Repair',
                               ),
+                              validator: (value) =>
+                              value?.trim().isEmpty ?? true ? 'Please enter a service name' : null,
+                              onFieldSubmitted: (value) {
+                                FocusScope.of(context).requestFocus(_descriptionFocusNode);
+                              },
                             ),
-                            validator: (value) =>
-                            value?.trim().isEmpty ?? true ? 'Please enter a service name' : null,
-                          ),
-                          const SizedBox(height: 16),
-                          TextFormField(
-                            controller: _descriptionController,
-                            decoration: InputDecoration(
-                              labelText: 'Description',
-                              hintText: 'e.g., Includes dusting, mopping, sanitization',
-                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                              focusedBorder: OutlineInputBorder(
-                                borderSide: const BorderSide(color: primaryColor),
-                                borderRadius: BorderRadius.circular(8),
+                            const SizedBox(height: 12),
+                            TextFormField(
+                              controller: _descriptionController,
+                              focusNode: _descriptionFocusNode,
+                              decoration: const InputDecoration(
+                                labelText: 'Description',
+                                hintText: 'e.g., Includes dusting, mopping, sanitization',
                               ),
+                              maxLines: 3,
+                              validator: (value) =>
+                              value?.trim().isEmpty ?? true ? 'Please enter a description' : null,
+                              onFieldSubmitted: (value) {
+                                FocusScope.of(context).requestFocus(_priceFocusNode);
+                              },
                             ),
-                            maxLines: 3,
-                            validator: (value) =>
-                            value?.trim().isEmpty ?? true ? 'Please enter a description' : null,
-                          ),
-                          const SizedBox(height: 16),
-                          TextFormField(
-                            controller: _priceController,
-                            keyboardType: TextInputType.number,
-                            decoration: InputDecoration(
-                              labelText: 'Price',
-                              hintText: 'Enter service price',
-                              prefixText: '\$ ', // Currency prefix for professionalism
-                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                              focusedBorder: OutlineInputBorder(
-                                borderSide: const BorderSide(color: primaryColor),
-                                borderRadius: BorderRadius.circular(8),
+                            const SizedBox(height: 12),
+                            TextFormField(
+                              controller: _priceController,
+                              focusNode: _priceFocusNode,
+                              keyboardType: TextInputType.number,
+                              decoration: const InputDecoration(
+                                labelText: 'Price',
+                                hintText: 'Enter service price',
+                                prefixText: '₹ ',
                               ),
+                              validator: (value) {
+                                if (value?.trim().isEmpty ?? true) return 'Please enter a price';
+                                if (double.tryParse(value!) == null) return 'Please enter a valid number';
+                                return null;
+                              },
+                              onFieldSubmitted: (value) {
+                                FocusScope.of(context).nextFocus();
+                              },
                             ),
-                            validator: (value) {
-                              if (value?.trim().isEmpty ?? true) return 'Please enter a price';
-                              if (double.tryParse(value!) == null) return 'Please enter a valid number';
-                              return null;
-                            },
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 20),
+                    const SizedBox(height: 16),
 
-                  // Category & Subcategory Section
-                  Card(
-                    elevation: 2,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                    child: Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          _buildSectionHeader('Category & Subcategory', Icons.category),
-                          DropdownButtonFormField<String>(
-                            value: selectedCategory,
-                            decoration: InputDecoration(
-                              labelText: 'Category',
-                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                              focusedBorder: OutlineInputBorder(
-                                borderSide: const BorderSide(color: primaryColor),
-                                borderRadius: BorderRadius.circular(8),
+                    // Category & Subcategory Section
+                    Card(
+                      elevation: 2,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      child: Padding(
+                        padding: const EdgeInsets.all(12),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            _buildSectionHeader('Category & Subcategory', FontAwesomeIcons.list),
+                            DropdownButtonFormField<String>(
+                              value: selectedCategory,
+                              decoration: const InputDecoration(
+                                labelText: 'Category',
                               ),
+                              items: categories
+                                  .map((category) => DropdownMenuItem(
+                                value: category,
+                                child: Text(category),
+                              ))
+                                  .toList(),
+                              onChanged: (value) {
+                                setState(() {
+                                  selectedCategory = value;
+                                  selectedSubcategory = null;
+                                  fetchSubcategories(value!);
+                                });
+                              },
+                              validator: (value) => value == null ? 'Please select a category' : null,
                             ),
-                            items: categories
-                                .map((category) => DropdownMenuItem(
-                              value: category,
-                              child: Text(category),
-                            ))
-                                .toList(),
-                            onChanged: (value) {
-                              setState(() {
-                                selectedCategory = value;
-                                selectedSubcategory = null;
-                                fetchSubcategories(value!);
-                              });
-                            },
-                            validator: (value) => value == null ? 'Please select a category' : null,
-                          ),
-                          const SizedBox(height: 16),
-                          DropdownButtonFormField<String>(
-                            value: selectedSubcategory,
-                            decoration: InputDecoration(
-                              labelText: 'Subcategory',
-                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                              focusedBorder: OutlineInputBorder(
-                                borderSide: const BorderSide(color: primaryColor),
-                                borderRadius: BorderRadius.circular(8),
+                            const SizedBox(height: 12),
+                            DropdownButtonFormField<String>(
+                              value: selectedSubcategory,
+                              decoration: const InputDecoration(
+                                labelText: 'Subcategory',
                               ),
+                              items: subcategories
+                                  .map((subcategory) => DropdownMenuItem(
+                                value: subcategory,
+                                child: Text(subcategory),
+                              ))
+                                  .toList(),
+                              onChanged: (value) => setState(() => selectedSubcategory = value),
+                              validator: (value) => value == null ? 'Please select a subcategory' : null,
                             ),
-                            items: subcategories
-                                .map((subcategory) => DropdownMenuItem(
-                              value: subcategory,
-                              child: Text(subcategory),
-                            ))
-                                .toList(),
-                            onChanged: (value) => setState(() => selectedSubcategory = value),
-                            validator: (value) => value == null ? 'Please select a subcategory' : null,
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 20),
+                    const SizedBox(height: 16),
 
-                  // What's Included Section
-                  _buildDynamicList(
-                    'What\'s Included',
-                    'e.g., Free consultation, Cleaning tools',
-                    whatsIncludedList,
-                    _whatsIncludedController,
-                  ),
-                  const SizedBox(height: 20),
+                    // What's Included Section
+                    _buildDynamicList(
+                      'What\'s Included',
+                      'e.g., Free consultation, Cleaning tools',
+                      whatsIncludedList,
+                      _whatsIncludedController,
+                      _whatsIncludedFocusNode,
+                    ),
+                    const SizedBox(height: 16),
 
-                  // Responsibilities Section
-                  _buildDynamicList(
-                    'Responsibilities',
-                    'e.g., Arrive on time, Complete tasks',
-                    responsibilitiesList,
-                    _responsibilitiesController,
-                  ),
-                  const SizedBox(height: 20),
+                    // Responsibilities Section
+                    _buildDynamicList(
+                      'Responsibilities',
+                      'e.g., Arrive on time, Complete tasks',
+                      responsibilitiesList,
+                      _responsibilitiesController,
+                      _responsibilitiesFocusNode,
+                    ),
+                    const SizedBox(height: 16),
 
-                  // Images Section
-                  Card(
-                    elevation: 2,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                    child: Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          _buildSectionHeader('Images', Icons.image),
-                          Text(
-                            '${selectedImages.length}/5 images selected',
-                            style: const TextStyle(color: primaryColor),
-                          ),
-                          const SizedBox(height: 12),
-                          Wrap(
-                            spacing: 10,
-                            runSpacing: 10,
-                            children: selectedImages
-                                .map(
-                                  (image) => Stack(
-                                children: [
-                                  ClipRRect(
-                                    borderRadius: BorderRadius.circular(8),
-                                    child: Image.file(
-                                      image,
-                                      height: 100,
-                                      width: 100,
-                                      fit: BoxFit.cover,
+                    // Images Section
+                    Card(
+                      elevation: 2,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      child: Padding(
+                        padding: const EdgeInsets.all(12),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            _buildSectionHeader('Images', FontAwesomeIcons.images),
+                            Text(
+                              '${selectedImages.length}/5 images selected',
+                              style: const TextStyle(color: ProviderTheme.secondaryTextColor),
+                            ),
+                            const SizedBox(height: 8),
+                            Wrap(
+                              spacing: 8,
+                              runSpacing: 8,
+                              children: selectedImages
+                                  .map(
+                                    (image) => Stack(
+                                  children: [
+                                    ClipRRect(
+                                      borderRadius: BorderRadius.circular(8),
+                                      child: Image.file(
+                                        image,
+                                        height: 80,
+                                        width: 80,
+                                        fit: BoxFit.cover,
+                                      ),
                                     ),
-                                  ),
-                                  Positioned(
-                                    top: 4,
-                                    right: 4,
-                                    child: GestureDetector(
-                                      onTap: () => setState(() => selectedImages.remove(image)),
-                                      child: Container(
-                                        padding: const EdgeInsets.all(4),
-                                        decoration: const BoxDecoration(
-                                          color: Colors.red,
-                                          shape: BoxShape.circle,
-                                        ),
-                                        child: const Icon(
-                                          Icons.close,
-                                          color: secondaryColor,
-                                          size: 16,
+                                    Positioned(
+                                      top: 4,
+                                      right: 4,
+                                      child: GestureDetector(
+                                        onTap: () => setState(() => selectedImages.remove(image)),
+                                        child: Container(
+                                          padding: const EdgeInsets.all(4),
+                                          decoration: const BoxDecoration(
+                                            color: ProviderTheme.canceledColor,
+                                            shape: BoxShape.circle,
+                                          ),
+                                          child: const FaIcon(
+                                            FontAwesomeIcons.xmark,
+                                            color: ProviderTheme.onPrimaryTextColor,
+                                            size: 16,
+                                          ),
                                         ),
                                       ),
                                     ),
-                                  ),
-                                ],
-                              ),
-                            )
-                                .toList(),
-                          ),
-                          const SizedBox(height: 12),
-                          ElevatedButton.icon(
-                            onPressed: selectImages,
-                            icon: const Icon(Icons.add_photo_alternate, size: 20),
-                            label: const Text('Add Images'),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: primaryColor,
-                              foregroundColor: secondaryColor,
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                                  ],
+                                ),
+                              )
+                                  .toList(),
                             ),
-                          ),
-                        ],
+                            const SizedBox(height: 8),
+                            ElevatedButton.icon(
+                              onPressed: selectImages,
+                              icon: FaIcon(FontAwesomeIcons.image, size: 20, color: ProviderTheme.onPrimaryTextColor.withOpacity(0.7),),
+                              label: const Text('Add Images'),
+                              style: ElevatedButton.styleFrom(
+                                  backgroundColor: ProviderTheme.primaryColor.withOpacity(0.4), // Lighter color
+                                  foregroundColor: ProviderTheme.onPrimaryTextColor.withOpacity(0.8),
+                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                elevation: 2,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 20),
+                    const SizedBox(height: 16),
 
-                  // Submission Note
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 20),
-                    child: Text(
-                      'Your service will be reviewed by our team before being published.',
-                      style: TextStyle(color: Colors.grey[600], fontStyle: FontStyle.italic),
-                    ),
-                  ),
-
-                  // Submit Button
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: isLoading ? null : submitService,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: primaryColor,
-                        foregroundColor: secondaryColor,
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                    // Submission Note
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 12),
+                      child: Text(
+                        'Your service will be reviewed by our team before being published.',
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          fontStyle: FontStyle.italic,
+                        ),
                       ),
-                      child: isLoading
-                          ? const CircularProgressIndicator(color: secondaryColor)
-                          : const Text('Submit Service', style: TextStyle(fontSize: 16)),
                     ),
-                  ),
-                  const SizedBox(height: 20), // Extra space at the bottom
-                ],
+
+                    // Submit Button
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: isLoading ? null : submitService,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: ProviderTheme.primaryColor.withOpacity(0.5), // Lighter color
+                          foregroundColor: ProviderTheme.onPrimaryTextColor,
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                          elevation: 2,
+                        ),
+                        child: isLoading
+                            ? const CircularProgressIndicator(color: ProviderTheme.primaryTextColor)
+                            : const Text('Submit Service'),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                  ],
+                ),
               ),
             ),
-          ),
-          if (isLoading)
-            Container(
-              color: Colors.black26,
-              child: const Center(child: CircularProgressIndicator(color: primaryColor)),
-            ),
-        ],
+            if (isLoading)
+              Container(
+                color: Colors.black26,
+                child: const Center(child: CircularProgressIndicator()),
+              ),
+          ],
+        ),
       ),
     );
   }

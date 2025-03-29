@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
+import 'package:service_provider/Provider%20Panel/provider_theme.dart';
 import 'package:shimmer/shimmer.dart';
 import 'booking_details_sheet.dart';
 
 class BookingCard extends StatelessWidget {
   final Map<String, dynamic> booking;
 
-  const BookingCard({required this.booking});
+  const BookingCard({required this.booking, Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -23,18 +24,86 @@ class BookingCard extends StatelessWidget {
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return Shimmer.fromColors(
-            baseColor: Colors.grey[300]!,
-            highlightColor: Colors.grey[100]!,
+            baseColor: ProviderTheme.dividerColor,
+            highlightColor: ProviderTheme.cardHighlightColor,
             child: Card(
-              margin: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+              margin: const EdgeInsets.symmetric(vertical: 10, horizontal: 16), // Slightly larger margin
               elevation: 4,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-              child: Container(height: 120),
+              shape: ProviderTheme.themeData.cardTheme.shape,
+              child: Container(
+                height: 200, // Increased height for shimmer effect
+                padding: const EdgeInsets.all(12.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Container(
+                          width: 56,
+                          height: 56,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: ProviderTheme.dividerColor,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Container(
+                                width: double.infinity,
+                                height: 20,
+                                color: ProviderTheme.dividerColor,
+                              ),
+                              const SizedBox(height: 6),
+                              Container(
+                                width: 100,
+                                height: 14,
+                                color: ProviderTheme.dividerColor,
+                              ),
+                            ],
+                          ),
+                        ),
+                        Container(
+                          width: 80,
+                          height: 32,
+                          color: ProviderTheme.dividerColor,
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    Container(
+                      width: 150,
+                      height: 16,
+                      color: ProviderTheme.dividerColor,
+                    ),
+                    const SizedBox(height: 12),
+                    Divider(height: 20, thickness: 1, color: ProviderTheme.dividerColor),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Container(width: 100, height: 14, color: ProviderTheme.dividerColor),
+                            const SizedBox(height: 4),
+                            Container(width: 80, height: 14, color: ProviderTheme.dividerColor),
+                            const SizedBox(height: 4),
+                            Container(width: 120, height: 14, color: ProviderTheme.dividerColor),
+                          ],
+                        ),
+                        Container(width: 60, height: 16, color: ProviderTheme.dividerColor),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
             ),
           );
         }
         if (!snapshot.hasData || snapshot.data == null) {
-          return SizedBox();
+          return const SizedBox.shrink();
         }
 
         final data = snapshot.data as Map<String, dynamic>;
@@ -42,10 +111,12 @@ class BookingCard extends StatelessWidget {
         final serviceData = data['serviceData'];
 
         return Card(
-          margin: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+          margin: const EdgeInsets.symmetric(vertical: 10, horizontal: 16), // Consistent with shimmer
           elevation: 4,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          child: Padding(
+          shape: ProviderTheme.themeData.cardTheme.shape,
+          color: ProviderTheme.surfaceColor,
+          child: Container(
+            constraints: const BoxConstraints(minHeight: 180), // Match shimmer height
             padding: const EdgeInsets.all(12.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -53,15 +124,27 @@ class BookingCard extends StatelessWidget {
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    CircleAvatar(backgroundImage: NetworkImage(userData['profileImage'] ?? ''), radius: 28),
-                    SizedBox(width: 12),
+                    CircleAvatar(
+                      backgroundImage: NetworkImage(userData['profileImage'] ?? ''),
+                      radius: 28,
+                      backgroundColor: ProviderTheme.dividerColor,
+                    ),
+                    const SizedBox(width: 12),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(userData['name'] ?? 'User Name', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                          SizedBox(height: 2),
-                          Text(booking['location']['local'] ?? 'Location', style: TextStyle(color: Colors.grey[600]), maxLines: 2, overflow: TextOverflow.ellipsis),
+                          Text(
+                            userData['name'] ?? 'User Name',
+                            style: ProviderTheme.themeData.textTheme.titleLarge,
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            booking['location']['local'] ?? 'Location',
+                            style: ProviderTheme.themeData.textTheme.bodyMedium,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
                         ],
                       ),
                     ),
@@ -69,45 +152,50 @@ class BookingCard extends StatelessWidget {
                       height: 32,
                       child: ElevatedButton(
                         onPressed: () => showBookingDetailsBottomSheet(context, booking),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Color(0xFF060644),
-                          padding: EdgeInsets.symmetric(horizontal: 8),
-                          textStyle: TextStyle(fontSize: 12),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+                        style: ProviderTheme.themeData.elevatedButtonTheme.style?.copyWith(
+                          padding: MaterialStateProperty.all(const EdgeInsets.symmetric(horizontal: 8)),
+                          textStyle: MaterialStateProperty.all(const TextStyle(fontSize: 12)),
                         ),
-                        child: Text('View Details', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                        child: const Text('View Details'),
                       ),
                     ),
                   ],
                 ),
-                SizedBox(height: 12),
-                if (serviceData != null) Text(serviceData['name'] ?? 'Service Name', style: TextStyle(fontSize: 14, color: Colors.grey[700])),
-                Divider(height: 20, thickness: 1),
+                const SizedBox(height: 12),
+                if (serviceData != null)
+                  Text(
+                    serviceData['name'] ?? 'Service Name',
+                    style: ProviderTheme.themeData.textTheme.bodyLarge?.copyWith(
+                      color: ProviderTheme.secondaryTextColor,
+                    ),
+                  ),
+                Divider(height: 20, thickness: 1, color: ProviderTheme.dividerColor),
                 Padding(
-                  padding: EdgeInsets.only(right: 16),
+                  padding: const EdgeInsets.only(right: 16),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('Date: ${dateFormat.format(serviceDate)}', style: TextStyle(color: Colors.grey[700])),
-                          Text('Time: ${timeFormat.format(serviceDate)}', style: TextStyle(color: Colors.grey[700])),
-                          Text('Payment: ₹${booking['paymentAmount']} (${booking['paymentMode']})', style: TextStyle(color: Colors.grey[700])),
+                          Text(
+                            'Date: ${dateFormat.format(serviceDate)}',
+                            style: ProviderTheme.themeData.textTheme.bodyMedium,
+                          ),
+                          Text(
+                            'Time: ${timeFormat.format(serviceDate)}',
+                            style: ProviderTheme.themeData.textTheme.bodyMedium,
+                          ),
+                          Text(
+                            'Payment: ₹${booking['paymentAmount']} (${booking['paymentMode']})',
+                            style: ProviderTheme.themeData.textTheme.bodyMedium,
+                          ),
                         ],
                       ),
                       Text(
                         booking['status'],
                         style: TextStyle(
-                          color: booking['status'] == 'Pending'
-                              ? Colors.orange
-                              : booking['status'] == 'Confirmed'
-                              ? Colors.blueGrey
-                              : booking['status'] == 'Ongoing'
-                              ? Colors.purple // Updated for Ongoing
-                              : booking['status'] == 'Completed'
-                              ? Colors.green
-                              : Colors.red,
+                          color: _getStatusColor(booking['status']),
                           fontWeight: FontWeight.bold,
                         ),
                       ),
@@ -117,7 +205,13 @@ class BookingCard extends StatelessWidget {
                 if (booking['status'] == 'Cancelled' && booking['cancelReason'] != null)
                   Padding(
                     padding: const EdgeInsets.only(top: 8.0),
-                    child: Text('Reason: ${booking['cancelReason']}', style: TextStyle(color: Colors.red[700], fontStyle: FontStyle.italic)),
+                    child: Text(
+                      'Reason: ${booking['cancelReason']}',
+                      style: ProviderTheme.themeData.textTheme.bodyMedium?.copyWith(
+                        color: ProviderTheme.errorTextColor,
+                        fontStyle: FontStyle.italic,
+                      ),
+                    ),
                   ),
               ],
             ),
@@ -125,5 +219,22 @@ class BookingCard extends StatelessWidget {
         );
       },
     );
+  }
+
+  Color _getStatusColor(String status) {
+    switch (status) {
+      case 'Pending':
+        return ProviderTheme.pendingColor;
+      case 'Confirmed':
+        return ProviderTheme.confirmedColor;
+      case 'Ongoing':
+        return ProviderTheme.ongoingColor;
+      case 'Completed':
+        return ProviderTheme.completedColor;
+      case 'Cancelled':
+        return ProviderTheme.canceledColor;
+      default:
+        return ProviderTheme.secondaryTextColor;
+    }
   }
 }

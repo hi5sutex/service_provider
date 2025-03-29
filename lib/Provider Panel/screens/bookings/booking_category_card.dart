@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:service_provider/Provider%20Panel/provider_theme.dart';
 
 class BookingCategoryCard extends StatelessWidget {
   final String category;
@@ -13,15 +14,19 @@ class BookingCategoryCard extends StatelessWidget {
     required this.icon,
     required this.color,
     required this.onTap,
-  });
+    Key? key,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+    final shape = ProviderTheme.themeData.cardTheme.shape as RoundedRectangleBorder?;
+
     return GestureDetector(
       onTap: onTap,
       child: Card(
         elevation: 6,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        shape: shape,
+        color: ProviderTheme.cardHighlightColor,
         child: Container(
           decoration: BoxDecoration(
             gradient: LinearGradient(
@@ -29,22 +34,26 @@ class BookingCategoryCard extends StatelessWidget {
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: shape?.borderRadius ?? BorderRadius.circular(12),
           ),
-          padding: EdgeInsets.all(16),
+          padding: const EdgeInsets.all(16),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Icon(icon, size: 40, color: color),
-              SizedBox(height: 12),
+              const SizedBox(height: 12),
               Text(
                 category,
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87),
+                style: ProviderTheme.themeData.textTheme.titleLarge?.copyWith(
+                  color: ProviderTheme.primaryTextColor,
+                ),
               ),
-              SizedBox(height: 8),
+              const SizedBox(height: 8),
               Text(
                 count.toString(),
-                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: color),
+                style: ProviderTheme.themeData.textTheme.displayMedium?.copyWith(
+                  color: color,
+                ),
               ),
             ],
           ),

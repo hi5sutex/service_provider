@@ -2,8 +2,14 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:service_provider/Provider%20Panel/provider_theme.dart';
+import 'package:service_provider/Provider%20Panel/CustomSnackBar.dart';
+import 'package:shimmer/shimmer.dart';
 
 class NotificationPage extends StatefulWidget {
+  const NotificationPage({Key? key}) : super(key: key);
+
   @override
   _NotificationPageState createState() => _NotificationPageState();
 }
@@ -14,9 +20,9 @@ class _NotificationPageState extends State<NotificationPage> {
 
   // Filter options with icons
   final List<Map<String, dynamic>> _filterOptions = [
-    {'label': 'All', 'icon': Icons.all_inclusive},
-    {'label': 'New Booking Request', 'icon': Icons.bookmark_added},
-    {'label': 'Report', 'icon': Icons.report},
+    {'label': 'All', 'icon': FontAwesomeIcons.list},
+    {'label': 'New Booking Request', 'icon': FontAwesomeIcons.bookmark},
+    {'label': 'Report', 'icon': FontAwesomeIcons.triangleExclamation},
   ];
 
   // Stream to fetch notifications based on filter
@@ -29,7 +35,7 @@ class _NotificationPageState extends State<NotificationPage> {
     if (_selectedFilter == 'New Booking Request') {
       query = query.where('status', isEqualTo: 'Pending');
     } else if (_selectedFilter == 'Report') {
-      query = query.where('status', isEqualTo: 'Reported'); // Example condition
+      query = query.where('status', isEqualTo: 'Reported');
     }
 
     return query.snapshots().map((snapshot) => snapshot.docs
@@ -57,9 +63,19 @@ class _NotificationPageState extends State<NotificationPage> {
     }
 
     await batch.commit();
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('All notifications cleared')),
-    );
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const CustomSnackBar(
+            message: 'All notifications cleared',
+          ),
+          behavior: SnackBarBehavior.floating,
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          duration: const Duration(seconds: 3),
+        ),
+      );
+    }
   }
 
   Widget notificationCard(Map<String, dynamic> booking) {
@@ -83,12 +99,7 @@ class _NotificationPageState extends State<NotificationPage> {
       }),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return Card(
-            margin: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-            child: ListTile(
-              title: Text('Loading...', style: TextStyle(color: Colors.black87)),
-            ),
-          );
+          return _buildNotificationShimmer();
         }
 
         final data = snapshot.data ?? {};
@@ -100,47 +111,104 @@ class _NotificationPageState extends State<NotificationPage> {
           title = 'Report Notification';
         }
 
-        return Card(
-          margin: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-          elevation: 2,
-          color: Colors.white,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: ListTile(
-            leading: CircleAvatar(
-              backgroundImage: NetworkImage(userData['profileImage'] ?? ''),
-              radius: 24,
-              backgroundColor: Colors.grey[300],
+        return Container(
+          margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+          decoration: BoxDecoration(
+            color: ProviderTheme.surfaceColor,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: ProviderTheme.dividerColor.withOpacity(0.5),
+              width: 1,
             ),
-            title: Text(
-              title,
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 16,
-                color: Colors.black87,
+            boxShadow: [
+              BoxShadow(
+                color: ProviderTheme.shadowColor.withOpacity(0.1),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
               ),
-            ),
-            subtitle: Column(
+            ],
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(12.0),
+            child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                SizedBox(height: 4),
-                Text('Service: ${serviceData['name'] ?? 'Unknown Service'}',
-                    style: TextStyle(color: Colors.black54)),
-                Text('From: ${userData['name'] ?? 'Unknown User'}',
-                    style: TextStyle(color: Colors.black54)),
-                Text('Date: ${dateFormat.format(serviceDate)}',
-                    style: TextStyle(color: Colors.black54)),
-                Text('Amount: ₹${booking['paymentAmount'] ?? '0'}',
-                    style: TextStyle(color: Colors.black54)),
+                CircleAvatar(
+                  backgroundImage: userData['profileImage'] != null
+                      ? NetworkImage(userData['profileImage'])
+                      : null,
+                  radius: 24,
+                  backgroundColor: ProviderTheme.cardHighlightColor,
+                  child: userData['profileImage'] == null
+                      ? const FaIcon(
+                    FontAwesomeIcons.user,
+                    color: ProviderTheme.secondaryTextColor,
+                    size: 24,
+                  )
+                      : null,
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            title,
+                            style: ProviderTheme.themeData.textTheme.titleLarge?.copyWith(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: ProviderTheme.primaryTextColor,
+                            ),
+                          ),
+                          FaIcon(
+                            booking['status'] == 'Pending'
+                                ? FontAwesomeIcons.bookmark
+                                : FontAwesomeIcons.triangleExclamation,
+                            color: ProviderTheme.primaryColor,
+                            size: 20,
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Service: ${serviceData['name'] ?? 'Unknown Service'}',
+                        style: ProviderTheme.themeData.textTheme.bodyMedium?.copyWith(
+                          color: ProviderTheme.secondaryTextColor,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'From: ${userData['name'] ?? 'Unknown User'}',
+                        style: ProviderTheme.themeData.textTheme.bodyMedium?.copyWith(
+                          color: ProviderTheme.secondaryTextColor,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Date: ${dateFormat.format(serviceDate)}',
+                        style: ProviderTheme.themeData.textTheme.bodyMedium?.copyWith(
+                          color: ProviderTheme.secondaryTextColor,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Amount: ₹${booking['paymentAmount']?.toString() ?? '0'}',
+                        style: ProviderTheme.themeData.textTheme.bodyMedium?.copyWith(
+                          color: ProviderTheme.successColor,
+                          fontWeight: FontWeight.w600,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ),
+                ),
               ],
-            ),
-            trailing: Icon(
-              booking['status'] == 'Pending'
-                  ? Icons.bookmark_added
-                  : Icons.report,
-              color: Color(0xFF060644),
-              size: 20,
             ),
           ),
         );
@@ -148,49 +216,161 @@ class _NotificationPageState extends State<NotificationPage> {
     );
   }
 
+  Widget _buildNotificationShimmer() {
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+      child: Shimmer.fromColors(
+        baseColor: ProviderTheme.dividerColor,
+        highlightColor: ProviderTheme.backgroundColor,
+        child: Container(
+          height: 120, // Matches the approximate height of the notification card
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: ProviderTheme.dividerColor.withOpacity(0.5),
+              width: 1,
+            ),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(12.0),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  width: 48,
+                  height: 48,
+                  decoration: const BoxDecoration(
+                    color: Colors.white,
+                    shape: BoxShape.circle,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Container(
+                            width: 150,
+                            height: 16,
+                            color: Colors.white,
+                          ),
+                          Container(
+                            width: 20,
+                            height: 20,
+                            color: Colors.white,
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      Container(
+                        width: 200,
+                        height: 14,
+                        color: Colors.white,
+                      ),
+                      const SizedBox(height: 8),
+                      Container(
+                        width: 150,
+                        height: 14,
+                        color: Colors.white,
+                      ),
+                      const SizedBox(height: 8),
+                      Container(
+                        width: 120,
+                        height: 14,
+                        color: Colors.white,
+                      ),
+                      const SizedBox(height: 8),
+                      Container(
+                        width: 100,
+                        height: 14,
+                        color: Colors.white,
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color(0xFF060644), // Primary color as background
+      backgroundColor: ProviderTheme.backgroundColor,
       appBar: AppBar(
-        backgroundColor: Color(0xFF060644),
-        elevation: 0,
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back_ios, color: Colors.white),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: Text(
-          'Notifications',
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 24,
-            fontWeight: FontWeight.bold,
+        flexibleSpace: Container(
+          decoration: const BoxDecoration(
+            gradient: ProviderTheme.primaryGradient,
           ),
         ),
+        leading: Padding(
+          padding: const EdgeInsets.only(left: 16.0),
+          child: IconButton(
+            icon: const Icon(
+              Icons.arrow_back,
+              color: ProviderTheme.onPrimaryTextColor,
+              size: 28,
+            ),
+            onPressed: () => Navigator.pop(context),
+          ),
+        ),
+        title: const Text(
+          'Notifications',
+          style: TextStyle(color: ProviderTheme.onPrimaryTextColor),
+        ),
+        centerTitle: false,
+        elevation: ProviderTheme.themeData.appBarTheme.elevation,
+        shadowColor: ProviderTheme.shadowColor.withOpacity(0.4),
         actions: [
           TextButton(
             onPressed: () {
               showDialog(
                 context: context,
                 builder: (context) => AlertDialog(
-                  backgroundColor: Colors.white,
-                  title: Text('Clear All Notifications',
-                      style: TextStyle(color: Color(0xFF060644))),
+                  backgroundColor: ProviderTheme.surfaceColor,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  title: Text(
+                    'Clear All Notifications',
+                    style: ProviderTheme.themeData.textTheme.titleLarge?.copyWith(
+                      color: ProviderTheme.primaryTextColor,
+                    ),
+                  ),
                   content: Text(
-                      'Are you sure you want to clear all notifications?',
-                      style: TextStyle(color: Colors.black87)),
+                    'Are you sure you want to clear all notifications?',
+                    style: ProviderTheme.themeData.textTheme.bodyMedium?.copyWith(
+                      color: ProviderTheme.secondaryTextColor,
+                    ),
+                  ),
                   actions: [
                     TextButton(
                       onPressed: () => Navigator.pop(context),
-                      child: Text('Cancel', style: TextStyle(color: Colors.black87)),
+                      child: Text(
+                        'Cancel',
+                        style: ProviderTheme.themeData.textTheme.bodyMedium?.copyWith(
+                          color: ProviderTheme.secondaryTextColor,
+                        ),
+                      ),
                     ),
                     TextButton(
                       onPressed: () {
                         clearAllNotifications();
                         Navigator.pop(context);
                       },
-                      child: Text('Clear All',
-                          style: TextStyle(color: Color(0xFF060644))),
+                      child: Text(
+                        'Clear All',
+                        style: ProviderTheme.themeData.textTheme.bodyMedium?.copyWith(
+                          color: ProviderTheme.primaryColor,
+                        ),
+                      ),
                     ),
                   ],
                 ),
@@ -198,7 +378,10 @@ class _NotificationPageState extends State<NotificationPage> {
             },
             child: Text(
               'Clear All',
-              style: TextStyle(color: Colors.white, fontSize: 16),
+              style: ProviderTheme.themeData.textTheme.bodyMedium?.copyWith(
+                color: ProviderTheme.onPrimaryTextColor,
+                fontWeight: FontWeight.bold,
+              ),
             ),
           ),
         ],
@@ -206,58 +389,70 @@ class _NotificationPageState extends State<NotificationPage> {
       body: Column(
         children: [
           // Filter chips/buttons
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: Row(
-              children: _filterOptions.map((filter) {
-                bool isSelected = _selectedFilter == filter['label'];
-                return Padding(
-                  padding: EdgeInsets.only(right: 8),
-                  child: ElevatedButton(
-                    onPressed: () {
-                      setState(() {
-                        _selectedFilter = filter['label'];
-                      });
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: isSelected ? Colors.white : Color(0xFF060644),
-                      foregroundColor: isSelected ? Color(0xFF060644) : Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+          Container(
+            color: ProviderTheme.primaryColor,
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              child: Row(
+                children: _filterOptions.map((filter) {
+                  bool isSelected = _selectedFilter == filter['label'];
+                  return Padding(
+                    padding: const EdgeInsets.only(right: 8),
+                    child: ElevatedButton(
+                      onPressed: () {
+                        setState(() {
+                          _selectedFilter = filter['label'];
+                        });
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: isSelected
+                            ? ProviderTheme.completedColor // Use completedColor instead of accentColor
+                            : ProviderTheme.surfaceColor,
+                        foregroundColor: isSelected
+                            ? ProviderTheme.onPrimaryTextColor
+                            : ProviderTheme.primaryTextColor,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                        elevation: 2,
                       ),
-                      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                      elevation: 2,
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          filter['icon'],
-                          size: 18,
-                          color: isSelected ? Color(0xFF060644) : Colors.white,
-                        ),
-                        SizedBox(width: 8),
-                        Text(
-                          filter['label'],
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.bold,
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          FaIcon(
+                            filter['icon'],
+                            size: 18,
+                            color: isSelected
+                                ? ProviderTheme.onPrimaryTextColor
+                                : ProviderTheme.primaryTextColor,
                           ),
-                        ),
-                      ],
+                          const SizedBox(width: 8),
+                          Text(
+                            filter['label'],
+                            style: ProviderTheme.themeData.textTheme.bodyMedium?.copyWith(
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                              color: isSelected
+                                  ? ProviderTheme.onPrimaryTextColor
+                                  : ProviderTheme.primaryTextColor,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                );
-              }).toList(),
+                  );
+                }).toList(),
+              ),
             ),
           ),
           // Notification list
           Expanded(
             child: Container(
               decoration: BoxDecoration(
-                color: Colors.white, // Secondary color for the content area
-                borderRadius: BorderRadius.only(
+                color: ProviderTheme.backgroundColor,
+                borderRadius: const BorderRadius.only(
                   topLeft: Radius.circular(20),
                   topRight: Radius.circular(20),
                 ),
@@ -266,8 +461,10 @@ class _NotificationPageState extends State<NotificationPage> {
                 stream: fetchNotifications(),
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
-                    return Center(
-                      child: CircularProgressIndicator(color: Color(0xFF060644)),
+                    return ListView.builder(
+                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      itemCount: 5, // Simulate 5 shimmer cards
+                      itemBuilder: (context, index) => _buildNotificationShimmer(),
                     );
                   }
 
@@ -276,12 +473,18 @@ class _NotificationPageState extends State<NotificationPage> {
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(Icons.notifications_none,
-                              size: 64, color: Colors.grey),
-                          SizedBox(height: 16),
+                          FaIcon(
+                            FontAwesomeIcons.bellSlash,
+                            size: 64,
+                            color: ProviderTheme.secondaryTextColor,
+                          ),
+                          const SizedBox(height: 16),
                           Text(
                             'No new notifications',
-                            style: TextStyle(fontSize: 18, color: Colors.black54),
+                            style: ProviderTheme.themeData.textTheme.bodyLarge?.copyWith(
+                              fontSize: 18,
+                              color: ProviderTheme.secondaryTextColor,
+                            ),
                           ),
                         ],
                       ),
@@ -289,7 +492,7 @@ class _NotificationPageState extends State<NotificationPage> {
                   }
 
                   return ListView.builder(
-                    padding: EdgeInsets.symmetric(vertical: 8, horizontal: 3),
+                    padding: const EdgeInsets.symmetric(vertical: 8),
                     itemCount: snapshot.data!.length,
                     itemBuilder: (context, index) {
                       return notificationCard(snapshot.data![index]);

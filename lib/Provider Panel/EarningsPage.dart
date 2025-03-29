@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:pie_chart/pie_chart.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:intl/intl.dart';
+import 'package:service_provider/Provider%20Panel/provider_theme.dart';
 
 class EarningsPage extends StatefulWidget {
   @override
@@ -11,9 +12,9 @@ class EarningsPage extends StatefulWidget {
 }
 
 class _EarningsPageState extends State<EarningsPage> {
-  String _selectedFilter = 'All'; // Default filter
+  String _selectedFilter = 'Pending'; // Default filter
   final List<Map<String, dynamic>> filterOptions = [
-    {'label': 'All', 'icon': Icons.all_inclusive},
+    // {'label': 'All', 'icon': Icons.all_inclusive},
     {'label': 'Pending', 'icon': Icons.pending_actions},
     {'label': 'Completed', 'icon': Icons.check_circle},
   ];
@@ -28,26 +29,22 @@ class _EarningsPageState extends State<EarningsPage> {
     {'label': 'All Time', 'icon': Icons.access_time},
   ];
 
-  final Color primaryColor = Color(0xFF060644);
-  final Color secondaryColor = Colors.white;
-  final Color accentColor =
-      Color(0xFF4355B9); // A slightly lighter shade for accents
   final currencyFormat = NumberFormat.currency(locale: 'en_IN', symbol: '₹');
 
   // Define a list of colors for services - using a more professional color palette
   final List<Color> colorList = [
-    Color(0xFF060644), // Primary color
-    Color(0xFF1976D2), // Blue
-    Color(0xFF388E3C), // Green
-    Color(0xFFF57C00), // Orange
-    Color(0xFF7B1FA2), // Purple
-    Color(0xFF0097A7), // Teal
-    Color(0xFFC2185B), // Pink
+    ProviderTheme.primaryColor,
+    ProviderTheme.secondaryColor,
+    ProviderTheme.accentColor,
+    ProviderTheme.successColor,
+    ProviderTheme.warningColor,
+    ProviderTheme.errorTextColor,
+    ProviderTheme.ongoingColor,
+    ProviderTheme.completedColor,
+    ProviderTheme.canceledColor,
     Color(0xFF455A64), // Blue Grey
     Color(0xFF5D4037), // Brown
     Color(0xFF00796B), // Dark Teal
-    Color(0xFF3949AB), // Indigo
-    Color(0xFF6D4C41), // Dark Brown
   ];
 
   @override
@@ -55,41 +52,50 @@ class _EarningsPageState extends State<EarningsPage> {
     final User? user = FirebaseAuth.instance.currentUser;
     if (user == null) {
       return Scaffold(
-        body: Center(child: Text('Please log in to view earnings')),
+        backgroundColor: ProviderTheme.backgroundColor,
+        body: Center(
+          child: Text(
+            'Please log in to view earnings',
+            style: ProviderTheme.themeData.textTheme.bodyLarge,
+          ),
+        ),
       );
     }
     final String providerId = user.uid;
 
     return Scaffold(
-      backgroundColor: Colors.grey[50],
+      backgroundColor: ProviderTheme.backgroundColor,
       appBar: AppBar(
         title: Text(
           'Earnings Dashboard',
-          style: TextStyle(color: secondaryColor, fontWeight: FontWeight.bold),
+          style: ProviderTheme.themeData.appBarTheme.titleTextStyle,
+
         ),
-        backgroundColor: primaryColor,
-        elevation: 0,
-        actions: [
-          IconButton(
-            icon: Icon(Icons.refresh, color: secondaryColor),
-            onPressed: () {
-              setState(() {});
-            },
+        flexibleSpace: Container(
+          decoration: const BoxDecoration(
+            gradient: ProviderTheme.primaryGradient,
           ),
+        ),
+        elevation: ProviderTheme.themeData.appBarTheme.elevation,
+        actions: [
+          // IconButton(
+          //   icon: Icon(Icons.refresh, color: ProviderTheme.onPrimaryTextColor),
+          //   onPressed: () {
+          //     setState(() {});
+          //   },
+          // ),
           IconButton(
-            icon: Icon(Icons.help_outline, color: secondaryColor),
+            icon: Icon(Icons.help_outline, color: ProviderTheme.onPrimaryTextColor),
+            padding: EdgeInsets.only(right: 8),
             onPressed: () {
-              // Show help dialog or info
               showDialog(
                 context: context,
                 builder: (context) => AlertDialog(
-                  title: Text('Earnings Help',
-                      style: TextStyle(color: primaryColor)),
-                  content: Text(
-                      'This dashboard shows your earnings summary and transaction history.'),
+                  title: Text('Earnings Help', style: ProviderTheme.themeData.textTheme.titleLarge),
+                  content: Text('This dashboard shows your earnings summary and transaction history.'),
                   actions: [
                     TextButton(
-                      child: Text('OK', style: TextStyle(color: primaryColor)),
+                      child: Text('OK', style: TextStyle(color: ProviderTheme.primaryColor)),
                       onPressed: () => Navigator.of(context).pop(),
                     ),
                   ],
@@ -99,36 +105,37 @@ class _EarningsPageState extends State<EarningsPage> {
           ),
         ],
       ),
-      // Making the whole page scrollable
       body: SingleChildScrollView(
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Header with date range and summary
             Container(
-              decoration: BoxDecoration(
-                color: primaryColor,
+              decoration: const BoxDecoration(
+                gradient: ProviderTheme.primaryGradient,
                 borderRadius: BorderRadius.only(
                   bottomLeft: Radius.circular(30),
                   bottomRight: Radius.circular(30),
                 ),
               ),
-              padding: EdgeInsets.fromLTRB(20, 0, 20, 30),
+              padding: const EdgeInsets.fromLTRB(20, 0, 20, 30),
               child: Column(
                 children: [
+                  const SizedBox(height: 10),
                   // Period filter in header
                   _buildFilterMenu(
                     context: context,
                     currentValue: _selectedPeriod,
                     options: periodOptions,
-                    iconColor: secondaryColor,
-                    textColor: secondaryColor,
+                    iconColor: ProviderTheme.onPrimaryTextColor,
+                    textColor: ProviderTheme.onPrimaryTextColor,
                     onChanged: (value) {
                       setState(() {
                         _selectedPeriod = value;
                       });
                     },
                   ),
-                  SizedBox(height: 10),
+                  const SizedBox(height: 20),
 
                   // Summary cards
                   StreamBuilder<QuerySnapshot>(
@@ -148,29 +155,22 @@ class _EarningsPageState extends State<EarningsPage> {
                       // Calculate totals
                       double totalEarnings = 0.0;
                       double completedEarnings = 0.0;
-                      int totalBookings = snapshot.data!.docs.length;
 
                       for (var doc in snapshot.data!.docs) {
                         final data = doc.data() as Map<String, dynamic>;
-                        final amount =
-                            (data['serviceAmount'] as num?)?.toDouble() ?? 0.0;
+                        final amount = (data['serviceAmount'] as num?)?.toDouble() ?? 0.0;
                         totalEarnings += amount;
                         if (data['earningStatus'] == 'Completed') {
                           completedEarnings += amount;
                         }
                       }
 
-                      double pendingEarnings =
-                          totalEarnings - completedEarnings;
-                      double avgEarning = totalBookings > 0
-                          ? totalEarnings / totalBookings
-                          : 0.0;
+                      double pendingEarnings = totalEarnings - completedEarnings;
 
                       return _buildSummaryCards(
                         totalEarnings: totalEarnings,
                         completedEarnings: completedEarnings,
                         pendingEarnings: pendingEarnings,
-                        avgEarning: avgEarning,
                       );
                     },
                   ),
@@ -180,25 +180,25 @@ class _EarningsPageState extends State<EarningsPage> {
 
             // Main Content Area
             Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 20.0),
+              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 20.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // Statistics Section
                   _buildSectionHeader('Earnings Overview'),
-                  SizedBox(height: 16),
+                  const SizedBox(height: 16),
 
                   // Pie Chart container
                   Container(
-                    padding: EdgeInsets.all(16.0),
+                    padding: const EdgeInsets.all(16.0),
                     decoration: BoxDecoration(
-                      color: secondaryColor,
+                      color: ProviderTheme.surfaceColor,
                       borderRadius: BorderRadius.circular(16),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.05),
+                          color: ProviderTheme.shadowColor,
                           blurRadius: 10,
-                          offset: Offset(0, 4),
+                          offset: const Offset(0, 4),
                         ),
                       ],
                     ),
@@ -210,36 +210,30 @@ class _EarningsPageState extends State<EarningsPage> {
                           children: [
                             Text(
                               'Earnings by Service',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                color: primaryColor,
-                              ),
+                              style: ProviderTheme.themeData.textTheme.titleLarge?.copyWith(fontSize: 16),
                             ),
-                            Icon(Icons.pie_chart, color: primaryColor),
+                            Icon(Icons.pie_chart, color: ProviderTheme.primaryColor),
                           ],
                         ),
-                        SizedBox(height: 16),
-                        _buildPieChart(providerId),
+                        const SizedBox(height: 16),
+                        _buildPieChartWithDetails(providerId),
                       ],
                     ),
                   ),
 
-                  SizedBox(height: 24),
+                  const SizedBox(height: 24),
 
                   // Transactions Section
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      _buildSectionHeader('Recent Transactions'),
-
-                      // Status filter menu
+                      _buildSectionHeader('Transactions'),
                       _buildFilterMenu(
                         context: context,
                         currentValue: _selectedFilter,
                         options: filterOptions,
-                        iconColor: primaryColor,
-                        textColor: primaryColor,
+                        iconColor: ProviderTheme.primaryColor,
+                        textColor: ProviderTheme.primaryTextColor,
                         onChanged: (value) {
                           setState(() {
                             _selectedFilter = value;
@@ -248,7 +242,7 @@ class _EarningsPageState extends State<EarningsPage> {
                       ),
                     ],
                   ),
-                  SizedBox(height: 16),
+                  const SizedBox(height: 16),
 
                   // Transactions list
                   _buildTransactionsList(providerId),
@@ -256,7 +250,7 @@ class _EarningsPageState extends State<EarningsPage> {
               ),
             ),
 
-            SizedBox(height: 24),
+            const SizedBox(height: 24),
           ],
         ),
       ),
@@ -274,9 +268,9 @@ class _EarningsPageState extends State<EarningsPage> {
     return PopupMenuButton<String>(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       onSelected: onChanged,
-      offset: Offset(0, 50),
+      offset: const Offset(0, 50),
       child: Container(
-        padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(30),
           border: Border.all(
@@ -292,12 +286,12 @@ class _EarningsPageState extends State<EarningsPage> {
               color: iconColor,
               size: 18,
             ),
-            SizedBox(width: 8),
+            const SizedBox(width: 8),
             Text(
               currentValue,
               style: TextStyle(color: textColor, fontWeight: FontWeight.w500),
             ),
-            SizedBox(width: 8),
+            const SizedBox(width: 8),
             Icon(
               Icons.arrow_drop_down,
               color: iconColor,
@@ -311,8 +305,8 @@ class _EarningsPageState extends State<EarningsPage> {
             value: option['label'],
             child: Row(
               children: [
-                Icon(option['icon'], color: primaryColor, size: 20),
-                SizedBox(width: 10),
+                Icon(option['icon'], color: ProviderTheme.primaryColor, size: 20),
+                const SizedBox(width: 10),
                 Text(option['label']),
               ],
             ),
@@ -334,11 +328,7 @@ class _EarningsPageState extends State<EarningsPage> {
   Widget _buildSectionHeader(String title) {
     return Text(
       title,
-      style: TextStyle(
-        fontSize: 18,
-        fontWeight: FontWeight.bold,
-        color: primaryColor,
-      ),
+      style: ProviderTheme.themeData.textTheme.titleLarge?.copyWith(fontSize: 18),
     );
   }
 
@@ -346,16 +336,13 @@ class _EarningsPageState extends State<EarningsPage> {
     return Column(
       children: [
         _buildMainEarningsCard(0.0),
-        SizedBox(height: 20),
+        const SizedBox(height: 20),
         Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            _buildMetricCard(
-                'Completed', 0.0, Icons.check_circle, Colors.green),
-            SizedBox(width: 10),
-            _buildMetricCard(
-                'Pending', 0.0, Icons.pending_actions, Colors.orange),
-            SizedBox(width: 10),
-            _buildMetricCard('Average', 0.0, Icons.trending_up, accentColor),
+            _buildMetricCard('Completed', 0.0, Icons.check_circle, ProviderTheme.successColor),
+            const SizedBox(width: 10),
+            _buildMetricCard('Pending', 0.0, Icons.pending_actions, ProviderTheme.warningColor),
           ],
         ),
       ],
@@ -366,22 +353,17 @@ class _EarningsPageState extends State<EarningsPage> {
     required double totalEarnings,
     required double completedEarnings,
     required double pendingEarnings,
-    required double avgEarning,
   }) {
     return Column(
       children: [
         _buildMainEarningsCard(totalEarnings),
-        SizedBox(height: 20),
+        const SizedBox(height: 20),
         Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            _buildMetricCard('Completed', completedEarnings, Icons.check_circle,
-                Colors.green),
-            SizedBox(width: 10),
-            _buildMetricCard('Pending', pendingEarnings, Icons.pending_actions,
-                Colors.orange),
-            SizedBox(width: 10),
-            _buildMetricCard(
-                'Average', avgEarning, Icons.trending_up, accentColor),
+            _buildMetricCard('Completed', completedEarnings, Icons.check_circle, ProviderTheme.successColor),
+            const SizedBox(width: 10),
+            _buildMetricCard('Pending', pendingEarnings, Icons.pending_actions, ProviderTheme.warningColor),
           ],
         ),
       ],
@@ -391,15 +373,15 @@ class _EarningsPageState extends State<EarningsPage> {
   Widget _buildMainEarningsCard(double amount) {
     return Container(
       width: double.infinity,
-      padding: EdgeInsets.symmetric(vertical: 20, horizontal: 24),
+      padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 24),
       decoration: BoxDecoration(
-        color: secondaryColor,
+        color: ProviderTheme.surfaceColor,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: ProviderTheme.shadowColor,
             blurRadius: 20,
-            offset: Offset(0, 10),
+            offset: const Offset(0, 10),
           ),
         ],
       ),
@@ -407,33 +389,29 @@ class _EarningsPageState extends State<EarningsPage> {
         children: [
           Text(
             'Total Earnings',
-            style: TextStyle(
-              fontSize: 16,
-              color: primaryColor.withOpacity(0.7),
+            style: ProviderTheme.themeData.textTheme.bodyLarge?.copyWith(
+              color: ProviderTheme.primaryTextColor.withOpacity(0.7),
               fontWeight: FontWeight.w500,
             ),
           ),
-          SizedBox(height: 8),
+          const SizedBox(height: 8),
           Text(
             currencyFormat.format(amount),
-            style: TextStyle(
-              fontSize: 32,
-              fontWeight: FontWeight.bold,
-              color: primaryColor,
+            style: ProviderTheme.themeData.textTheme.displayMedium?.copyWith(
+              color: ProviderTheme.primaryColor,
             ),
           ),
-          SizedBox(height: 6),
+          const SizedBox(height: 6),
           Container(
-            padding: EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
             decoration: BoxDecoration(
-              color: primaryColor.withOpacity(0.1),
+              color: ProviderTheme.primaryColor.withOpacity(0.1),
               borderRadius: BorderRadius.circular(20),
             ),
             child: Text(
               _selectedPeriod,
-              style: TextStyle(
-                fontSize: 12,
-                color: primaryColor,
+              style: ProviderTheme.themeData.textTheme.bodyMedium?.copyWith(
+                color: ProviderTheme.primaryColor,
                 fontWeight: FontWeight.w500,
               ),
             ),
@@ -443,19 +421,18 @@ class _EarningsPageState extends State<EarningsPage> {
     );
   }
 
-  Widget _buildMetricCard(
-      String title, double amount, IconData icon, Color color) {
+  Widget _buildMetricCard(String title, double amount, IconData icon, Color color) {
     return Expanded(
       child: Container(
-        padding: EdgeInsets.symmetric(vertical: 12, horizontal: 10),
+        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 10),
         decoration: BoxDecoration(
-          color: secondaryColor,
+          color: ProviderTheme.surfaceColor,
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.05),
+              color: ProviderTheme.shadowColor,
               blurRadius: 10,
-              offset: Offset(0, 4),
+              offset: const Offset(0, 4),
             ),
           ],
         ),
@@ -469,24 +446,22 @@ class _EarningsPageState extends State<EarningsPage> {
                   size: 16,
                   color: color,
                 ),
-                SizedBox(width: 5),
+                const SizedBox(width: 5),
                 Text(
                   title,
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: primaryColor.withOpacity(0.7),
+                  style: ProviderTheme.themeData.textTheme.bodyMedium?.copyWith(
+                    color: ProviderTheme.primaryTextColor.withOpacity(0.7),
                     fontWeight: FontWeight.w500,
                   ),
                 ),
               ],
             ),
-            SizedBox(height: 8),
+            const SizedBox(height: 8),
             Text(
               currencyFormat.format(amount),
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
+              style: ProviderTheme.themeData.textTheme.bodyLarge?.copyWith(
                 color: color,
+                fontWeight: FontWeight.bold,
               ),
             ),
           ],
@@ -495,7 +470,7 @@ class _EarningsPageState extends State<EarningsPage> {
     );
   }
 
-  Widget _buildPieChart(String providerId) {
+  Widget _buildPieChartWithDetails(String providerId) {
     return StreamBuilder<QuerySnapshot>(
       stream: FirebaseFirestore.instance
           .collection('earnings')
@@ -508,7 +483,7 @@ class _EarningsPageState extends State<EarningsPage> {
         }
         if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
           return Container(
-            height: 250,
+            height: 300,
             alignment: Alignment.center,
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -516,15 +491,12 @@ class _EarningsPageState extends State<EarningsPage> {
                 Icon(
                   Icons.pie_chart,
                   size: 48,
-                  color: Colors.grey[400],
+                  color: ProviderTheme.secondaryTextColor,
                 ),
-                SizedBox(height: 16),
+                const SizedBox(height: 16),
                 Text(
                   'No earnings data available',
-                  style: TextStyle(
-                    color: Colors.grey[600],
-                    fontSize: 16,
-                  ),
+                  style: ProviderTheme.themeData.textTheme.bodyMedium,
                 ),
               ],
             ),
@@ -532,13 +504,14 @@ class _EarningsPageState extends State<EarningsPage> {
         }
 
         Map<String, double> serviceEarnings = {};
+        double totalEarnings = 0.0;
         List<Future<void>> futures = [];
 
         for (var doc in snapshot.data!.docs) {
           final data = doc.data() as Map<String, dynamic>;
           final String bookingId = doc.id;
-          final double amount =
-              (data['serviceAmount'] as num?)?.toDouble() ?? 0.0;
+          final double amount = (data['serviceAmount'] as num?)?.toDouble() ?? 0.0;
+          totalEarnings += amount;
 
           futures.add(
             FirebaseFirestore.instance
@@ -547,8 +520,7 @@ class _EarningsPageState extends State<EarningsPage> {
                 .get()
                 .then((bookingSnapshot) {
               if (bookingSnapshot.exists) {
-                final bookingData =
-                    bookingSnapshot.data() as Map<String, dynamic>?;
+                final bookingData = bookingSnapshot.data() as Map<String, dynamic>?;
                 final String serviceId = bookingData?['serviceId'] ?? 'Unknown';
                 return FirebaseFirestore.instance
                     .collection('services')
@@ -556,12 +528,9 @@ class _EarningsPageState extends State<EarningsPage> {
                     .get()
                     .then((serviceSnapshot) {
                   if (serviceSnapshot.exists) {
-                    final serviceData =
-                        serviceSnapshot.data() as Map<String, dynamic>?;
-                    String serviceName =
-                        serviceData?['name'] ?? 'Unknown Service';
-                    serviceEarnings[serviceName] =
-                        (serviceEarnings[serviceName] ?? 0.0) + amount;
+                    final serviceData = serviceSnapshot.data() as Map<String, dynamic>?;
+                    String serviceName = serviceData?['name'] ?? 'Unknown Service';
+                    serviceEarnings[serviceName] = (serviceEarnings[serviceName] ?? 0.0) + amount;
                   }
                 });
               }
@@ -579,56 +548,106 @@ class _EarningsPageState extends State<EarningsPage> {
               return _buildChartShimmer();
             }
             if (serviceEarnings.isEmpty) {
-              return Center(child: Text('No service data available'));
+              return Container(
+                height: 300,
+                alignment: Alignment.center,
+                child: Text(
+                  'No service data available',
+                  style: ProviderTheme.themeData.textTheme.bodyMedium,
+                ),
+              );
             }
 
-            // Dynamically assign colors to services
+            // Sort services by earnings in descending order
+            List<MapEntry<String, double>> sortedServiceEarnings = serviceEarnings.entries.toList()
+              ..sort((a, b) => b.value.compareTo(a.value));
+
+            // Rebuild serviceEarnings and serviceNames in sorted order
+            Map<String, double> sortedServiceEarningsMap = Map.fromEntries(sortedServiceEarnings);
+            List<String> serviceNames = sortedServiceEarnings.map((entry) => entry.key).toList();
+
+            // Dynamically assign colors to services in sorted order
             List<Color> assignedColors = [];
-            List<String> serviceNames = serviceEarnings.keys.toList();
             for (int i = 0; i < serviceNames.length; i++) {
               assignedColors.add(colorList[i % colorList.length]);
             }
 
-            return Container(
-              height: 300,
-              padding: EdgeInsets.symmetric(vertical: 16),
-              child: PieChart(
-                dataMap: serviceEarnings,
-                animationDuration: Duration(milliseconds: 800),
-                chartLegendSpacing: 32,
-                colorList: assignedColors,
-                chartType: ChartType.ring,
-                centerText: "Services",
-                legendOptions: LegendOptions(
-                  showLegends: true,
-                  legendPosition: LegendPosition.bottom,
-                  showLegendsInRow: false,
-                  legendTextStyle: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w500,
+            // Calculate percentages
+            Map<String, double> servicePercentages = {};
+            sortedServiceEarningsMap.forEach((service, amount) {
+              servicePercentages[service] = (amount / totalEarnings) * 100;
+            });
+
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  height: 280, // Adjusted height for chart
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  child: PieChart(
+                    dataMap: sortedServiceEarningsMap, // Use sorted map for the chart
+                    animationDuration: const Duration(milliseconds: 800),
+                    colorList: assignedColors,
+                    chartType: ChartType.ring,
+                    centerText: "Services",
+                    legendOptions: LegendOptions(
+                      showLegends: false,
+                    ),
+                    chartValuesOptions: const ChartValuesOptions(
+                      showChartValues: false, // Hide percentages in chart
+                      showChartValuesInPercentage: false,
+                    ),
+                    ringStrokeWidth: 30,
+                    chartRadius: MediaQuery.of(context).size.width / 1.7,
+                    gradientList: serviceNames.map((service) {
+                      final index = serviceNames.indexOf(service);
+                      final color = assignedColors[index % assignedColors.length];
+                      return [
+                        color,
+                        color.withOpacity(0.8),
+                      ];
+                    }).toList(),
                   ),
                 ),
-                chartValuesOptions: ChartValuesOptions(
-                  showChartValuesInPercentage: true,
-                  showChartValuesOutside: true,
-                  decimalPlaces: 1,
-                  chartValueStyle: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black87,
-                  ),
-                ),
-                ringStrokeWidth: 25,
-                chartRadius: MediaQuery.of(context).size.width / 2.5,
-                gradientList: serviceNames.map((service) {
-                  final index = serviceNames.indexOf(service);
+                const SizedBox(height: 16),
+                // Service details with percentages only, in sorted order
+                ...serviceNames.asMap().entries.map((entry) {
+                  final index = entry.key;
+                  final service = entry.value;
+                  final percentage = servicePercentages[service] ?? 0.0;
                   final color = assignedColors[index % assignedColors.length];
-                  return [
-                    color,
-                    color.withOpacity(0.8),
-                  ];
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 4.0),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 12,
+                          height: 12,
+                          decoration: BoxDecoration(
+                            color: color,
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            service,
+                            style: ProviderTheme.themeData.textTheme.bodyMedium,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          '(${percentage.toStringAsFixed(1)}%)',
+                          style: ProviderTheme.themeData.textTheme.bodyMedium?.copyWith(
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
                 }).toList(),
-              ),
+              ],
             );
           },
         );
@@ -637,23 +656,29 @@ class _EarningsPageState extends State<EarningsPage> {
   }
 
   Widget _buildTransactionsList(String providerId) {
+    Stream<QuerySnapshot> stream;
+    if (_selectedFilter == 'All') {
+      stream = FirebaseFirestore.instance
+          .collection('earnings')
+          .doc(providerId)
+          .collection('records')
+          .where('earningStatus', whereIn: ['Pending', 'Completed'])
+          .orderBy('paymentAt', descending: true)
+          .limit(10)
+          .snapshots();
+    } else {
+      stream = FirebaseFirestore.instance
+          .collection('earnings')
+          .doc(providerId)
+          .collection('records')
+          .where('earningStatus', isEqualTo: _selectedFilter)
+          .orderBy('paymentAt', descending: true)
+          .limit(10)
+          .snapshots();
+    }
+
     return StreamBuilder<QuerySnapshot>(
-      stream: _selectedFilter == 'All'
-          ? FirebaseFirestore.instance
-              .collection('earnings')
-              .doc(providerId)
-              .collection('records')
-              .orderBy('paymentAt', descending: true)
-              .limit(10)
-              .snapshots()
-          : FirebaseFirestore.instance
-              .collection('earnings')
-              .doc(providerId)
-              .collection('records')
-              .where('earningStatus', isEqualTo: _selectedFilter)
-              .orderBy('paymentAt', descending: true)
-              .limit(10)
-              .snapshots(),
+      stream: stream,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return _buildTransactionShimmer();
@@ -662,7 +687,7 @@ class _EarningsPageState extends State<EarningsPage> {
           return Center(
             child: Text(
               'Error: ${snapshot.error}',
-              style: TextStyle(color: Colors.red),
+              style: const TextStyle(color: Colors.red),
             ),
           );
         }
@@ -676,15 +701,12 @@ class _EarningsPageState extends State<EarningsPage> {
                 Icon(
                   Icons.receipt_long,
                   size: 48,
-                  color: Colors.grey[400],
+                  color: ProviderTheme.secondaryTextColor,
                 ),
-                SizedBox(height: 16),
+                const SizedBox(height: 16),
                 Text(
                   'No earnings found for $_selectedFilter',
-                  style: TextStyle(
-                    color: Colors.grey[600],
-                    fontSize: 16,
-                  ),
+                  style: ProviderTheme.themeData.textTheme.bodyMedium,
                 ),
               ],
             ),
@@ -693,19 +715,17 @@ class _EarningsPageState extends State<EarningsPage> {
 
         return ListView.builder(
           shrinkWrap: true,
-          physics: NeverScrollableScrollPhysics(),
+          physics: const NeverScrollableScrollPhysics(),
           itemCount: snapshot.data!.docs.length,
           itemBuilder: (context, index) {
-            final earningData =
-                snapshot.data!.docs[index].data() as Map<String, dynamic>;
+            final earningData = snapshot.data!.docs[index].data() as Map<String, dynamic>;
             final String bookingId = snapshot.data!.docs[index].id;
 
             return EarningsCard(
               earningData: earningData,
               bookingId: bookingId,
               currencyFormat: currencyFormat,
-              primaryColor: primaryColor,
-              secondaryColor: secondaryColor,
+              onViewDetails: () => _showDetailsBottomSheet(context, earningData, bookingId),
             );
           },
         );
@@ -713,7 +733,78 @@ class _EarningsPageState extends State<EarningsPage> {
     );
   }
 
-  // Shimmer loading effects
+  void _showDetailsBottomSheet(BuildContext context, Map<String, dynamic> earningData, String bookingId) {
+    final double serviceAmount = (earningData['serviceAmount'] as num?)?.toDouble() ?? 0.0;
+    final double taxAmount = (earningData['taxAmount'] as num?)?.toDouble() ?? 0.0;
+    final double platformFee = (earningData['platformFee'] as num?)?.toDouble() ?? 0.0;
+    final double paymentAmount = (earningData['paymentAmount'] as num?)?.toDouble() ?? 0.0;
+    final String earningStatus = earningData['earningStatus'] ?? 'Unknown';
+    final Timestamp? paymentAt = earningData['paymentAt'] as Timestamp?;
+    final String paymentDate = paymentAt != null
+        ? "${paymentAt.toDate().day} ${_getMonthName(paymentAt.toDate().month)} ${paymentAt.toDate().year}"
+        : 'Unknown Date';
+    final String paymentTime = paymentAt != null ? _formatTime(paymentAt.toDate()) : '';
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: ProviderTheme.surfaceColor,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) => Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(
+              child: Text(
+                'Transaction Details',
+                style: ProviderTheme.themeData.textTheme.titleLarge,
+              ),
+            ),
+            const SizedBox(height: 16),
+            _buildAmountRow('Booking ID', bookingId, isLabel: true),
+            const SizedBox(height: 8),
+            _buildAmountRow('Pay by User', currencyFormat.format(paymentAmount)),
+            _buildAmountRow('Tax (11%)', currencyFormat.format(taxAmount)),
+            _buildAmountRow('Platform Fee', currencyFormat.format(platformFee)),
+            const Divider(height: 20),
+            _buildAmountRow('Received Amount', currencyFormat.format(serviceAmount), isTotal: true),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                Icon(
+                  Icons.calendar_today,
+                  size: 14,
+                  color: ProviderTheme.secondaryTextColor,
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  paymentDate,
+                  style: ProviderTheme.themeData.textTheme.bodyMedium,
+                ),
+                const Spacer(),
+                Text(
+                  paymentTime,
+                  style: ProviderTheme.themeData.textTheme.bodyMedium,
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Center(
+              child: ElevatedButton(
+                onPressed: () => Navigator.of(context).pop(),
+                style: ProviderTheme.themeData.elevatedButtonTheme.style,
+                child: const Text('Close'),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildSummaryShimmer() {
     return Shimmer.fromColors(
       baseColor: Colors.white.withOpacity(0.2),
@@ -722,20 +813,21 @@ class _EarningsPageState extends State<EarningsPage> {
         children: [
           Container(
             width: double.infinity,
-            height: 100,
+            height: 120,
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(16),
             ),
           ),
-          SizedBox(height: 20),
+          const SizedBox(height: 20),
           Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: List.generate(
-              3,
-              (index) => Expanded(
+              2,
+                  (index) => Expanded(
                 child: Container(
-                  margin: EdgeInsets.only(right: index < 2 ? 10 : 0),
-                  height: 70,
+                  margin: EdgeInsets.only(right: index < 1 ? 10 : 0),
+                  height: 80,
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(16),
@@ -751,39 +843,27 @@ class _EarningsPageState extends State<EarningsPage> {
 
   Widget _buildChartShimmer() {
     return Shimmer.fromColors(
-      baseColor: Colors.grey[300]!,
-      highlightColor: Colors.grey[100]!,
+      baseColor: ProviderTheme.dividerColor,
+      highlightColor: ProviderTheme.backgroundColor,
       child: Container(
-        height: 300,
+        height: 350,
         width: double.infinity,
         child: Column(
           children: [
             Container(
-              width: 200,
-              height: 200,
-              decoration: BoxDecoration(
+              width: 220,
+              height: 220,
+              decoration: const BoxDecoration(
                 color: Colors.white,
                 shape: BoxShape.circle,
               ),
             ),
-            SizedBox(height: 20),
-            Container(
-              height: 10,
-              width: 100,
-              color: Colors.white,
-            ),
-            SizedBox(height: 10),
-            Container(
-              height: 10,
-              width: 150,
-              color: Colors.white,
-            ),
-            SizedBox(height: 10),
-            Container(
-              height: 10,
-              width: 120,
-              color: Colors.white,
-            ),
+            const SizedBox(height: 20),
+            Container(height: 10, width: 100, color: Colors.white),
+            const SizedBox(height: 10),
+            Container(height: 10, width: 150, color: Colors.white),
+            const SizedBox(height: 10),
+            Container(height: 10, width: 120, color: Colors.white),
           ],
         ),
       ),
@@ -792,14 +872,14 @@ class _EarningsPageState extends State<EarningsPage> {
 
   Widget _buildTransactionShimmer() {
     return Shimmer.fromColors(
-      baseColor: Colors.grey[300]!,
-      highlightColor: Colors.grey[100]!,
+      baseColor: ProviderTheme.dividerColor,
+      highlightColor: ProviderTheme.backgroundColor,
       child: Column(
         children: List.generate(
           5,
-          (index) => Container(
-            margin: EdgeInsets.symmetric(vertical: 8),
-            height: 120,
+              (index) => Container(
+            margin: const EdgeInsets.symmetric(vertical: 8),
+            height: 100,
             width: double.infinity,
             decoration: BoxDecoration(
               color: Colors.white,
@@ -807,252 +887,6 @@ class _EarningsPageState extends State<EarningsPage> {
             ),
           ),
         ),
-      ),
-    );
-  }
-}
-
-class EarningsCard extends StatelessWidget {
-  final Map<String, dynamic> earningData;
-  final String bookingId;
-  final NumberFormat currencyFormat;
-  final Color primaryColor;
-  final Color secondaryColor;
-
-  const EarningsCard({
-    required this.earningData,
-    required this.bookingId,
-    required this.currencyFormat,
-    required this.primaryColor,
-    required this.secondaryColor,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return FutureBuilder<DocumentSnapshot>(
-      future: FirebaseFirestore.instance
-          .collection('bookings')
-          .doc(bookingId)
-          .get(),
-      builder: (context, snapshot) {
-        String serviceName = 'Loading...';
-        if (snapshot.connectionState == ConnectionState.done &&
-            snapshot.hasData) {
-          final bookingData = snapshot.data!.data() as Map<String, dynamic>?;
-          final String serviceId = bookingData?['serviceId'] ?? 'Unknown';
-          return FutureBuilder<DocumentSnapshot>(
-            future: FirebaseFirestore.instance
-                .collection('services')
-                .doc(serviceId)
-                .get(),
-            builder: (context, serviceSnapshot) {
-              if (serviceSnapshot.connectionState == ConnectionState.done &&
-                  serviceSnapshot.hasData) {
-                final serviceData =
-                    serviceSnapshot.data!.data() as Map<String, dynamic>?;
-                serviceName = serviceData?['name'] ?? 'Unknown Service';
-              }
-              return _buildCard(context, serviceName);
-            },
-          );
-        }
-        return _buildCard(context, serviceName);
-      },
-    );
-  }
-
-  Widget _buildCard(BuildContext context, String serviceName) {
-    final double serviceAmount =
-        (earningData['serviceAmount'] as num?)?.toDouble() ?? 0.0;
-    final double taxAmount =
-        (earningData['taxAmount'] as num?)?.toDouble() ?? 0.0;
-    final double platformFee =
-        (earningData['platformFee'] as num?)?.toDouble() ?? 0.0;
-    final double paymentAmount =
-        (earningData['paymentAmount'] as num?)?.toDouble() ?? 0.0;
-    final String earningStatus = earningData['earningStatus'] ?? 'Unknown';
-    final Timestamp? paymentAt = earningData['paymentAt'] as Timestamp?;
-    final String paymentDate = paymentAt != null
-        ? "${paymentAt.toDate().day} ${_getMonthName(paymentAt.toDate().month)} ${paymentAt.toDate().year}"
-        : 'Unknown Date';
-    final String paymentTime =
-        paymentAt != null ? _formatTime(paymentAt.toDate()) : '';
-
-    // Get status color
-    Color statusColor =
-        earningStatus == 'Completed' ? Colors.green : Colors.orange;
-
-    return Container(
-      margin: EdgeInsets.only(bottom: 16),
-      decoration: BoxDecoration(
-        color: secondaryColor,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        children: [
-          // Header
-          Container(
-            padding: EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: primaryColor.withOpacity(0.03),
-              borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(16),
-                topRight: Radius.circular(16),
-              ),
-            ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        serviceName,
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: primaryColor,
-                        ),
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      SizedBox(height: 4),
-                      Text(
-                        'ID: $bookingId',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: Colors.grey[600],
-                        ),
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ],
-                  ),
-                ),
-                Container(
-                  padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: statusColor.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(
-                      color: statusColor,
-                      width: 1,
-                    ),
-                  ),
-                  child: Text(
-                    earningStatus,
-                    style: TextStyle(
-                      color: statusColor,
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          // Body
-          Padding(
-            padding: EdgeInsets.all(16),
-            child: Column(
-              children: [
-                _buildAmountRow('Pay by User', paymentAmount),
-                _buildAmountRow('Tax (11%)', taxAmount),
-                _buildAmountRow('Platform Fee', platformFee),
-                Divider(height: 20),
-                _buildAmountRow(
-                  'Received Amount',
-                  serviceAmount,
-                  isTotal: true,
-                  valueColor: primaryColor,
-                ),
-
-                SizedBox(height: 10),
-
-                // Date information
-                Row(
-                  children: [
-                    Icon(
-                      Icons.calendar_today,
-                      size: 14,
-                      color: Colors.grey[600],
-                    ),
-                    SizedBox(width: 8),
-                    Text(
-                      paymentDate,
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Colors.grey[600],
-                      ),
-                    ),
-                    Spacer(),
-                    Text(
-                      paymentTime,
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Colors.grey[600],
-                      ),
-                    ),
-                  ],
-                ),
-
-                SizedBox(height: 10),
-
-                // View Details button
-                Align(
-                  alignment: Alignment.centerRight,
-                  child: InkWell(
-                    onTap: () {
-                      // Navigate to a detailed view or show more details
-                    },
-                    child: Text(
-                      'View Details',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: primaryColor,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildAmountRow(String label, double amount,
-      {bool isTotal = false, Color? valueColor}) {
-    return Padding(
-      padding: EdgeInsets.symmetric(vertical: 4),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 14,
-              color: isTotal ? primaryColor : Colors.grey[600],
-              fontWeight: isTotal ? FontWeight.bold : FontWeight.normal,
-            ),
-          ),
-          Text(
-            currencyFormat.format(amount),
-            style: TextStyle(
-              fontSize: 14,
-              color: valueColor ?? Colors.black87,
-              fontWeight: isTotal ? FontWeight.bold : FontWeight.normal,
-            ),
-          ),
-        ],
       ),
     );
   }
@@ -1080,9 +914,201 @@ class EarningsCard extends StatelessWidget {
   }
 }
 
-// Math utility for substring min
-class Math {
-  static int min(int a, int b) {
-    return a < b ? a : b;
+class EarningsCard extends StatelessWidget {
+  final Map<String, dynamic> earningData;
+  final String bookingId;
+  final NumberFormat currencyFormat;
+  final VoidCallback onViewDetails;
+
+  const EarningsCard({
+    required this.earningData,
+    required this.bookingId,
+    required this.currencyFormat,
+    required this.onViewDetails,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<DocumentSnapshot>(
+      future: FirebaseFirestore.instance.collection('bookings').doc(bookingId).get(),
+      builder: (context, snapshot) {
+        String serviceName = 'Loading...';
+        if (snapshot.connectionState == ConnectionState.done && snapshot.hasData) {
+          final bookingData = snapshot.data!.data() as Map<String, dynamic>?;
+          final String serviceId = bookingData?['serviceId'] ?? 'Unknown';
+          return FutureBuilder<DocumentSnapshot>(
+            future: FirebaseFirestore.instance.collection('services').doc(serviceId).get(),
+            builder: (context, serviceSnapshot) {
+              if (serviceSnapshot.connectionState == ConnectionState.done && serviceSnapshot.hasData) {
+                final serviceData = serviceSnapshot.data!.data() as Map<String, dynamic>?;
+                serviceName = serviceData?['name'] ?? 'Unknown Service';
+              }
+              return _buildCard(context, serviceName);
+            },
+          );
+        }
+        return _buildCard(context, serviceName);
+      },
+    );
   }
+
+  Widget _buildCard(BuildContext context, String serviceName) {
+    final double serviceAmount = (earningData['serviceAmount'] as num?)?.toDouble() ?? 0.0;
+    final String earningStatus = earningData['earningStatus'] ?? 'Unknown';
+    final Timestamp? paymentAt = earningData['paymentAt'] as Timestamp?;
+    final String paymentDate = paymentAt != null
+        ? "${paymentAt.toDate().day} ${_getMonthName(paymentAt.toDate().month)} ${paymentAt.toDate().year}"
+        : 'Unknown Date';
+
+    Color statusColor = earningStatus == 'Completed' ? ProviderTheme.successColor : ProviderTheme.warningColor;
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      decoration: BoxDecoration(
+        color: ProviderTheme.surfaceColor,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: ProviderTheme.shadowColor,
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        serviceName,
+                        style: ProviderTheme.themeData.textTheme.titleLarge?.copyWith(fontSize: 16),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'ID: $bookingId',
+                        style: ProviderTheme.themeData.textTheme.bodyMedium,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ),
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: statusColor.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                      color: statusColor,
+                      width: 1,
+                    ),
+                  ),
+                  child: Text(
+                    earningStatus,
+                    style: TextStyle(
+                      color: statusColor,
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Received Amount',
+                  style: ProviderTheme.themeData.textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold),
+                ),
+                Text(
+                  currencyFormat.format(serviceAmount),
+                  style: ProviderTheme.themeData.textTheme.bodyLarge?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: ProviderTheme.primaryColor,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                Icon(
+                  Icons.calendar_today,
+                  size: 14,
+                  color: ProviderTheme.secondaryTextColor,
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  paymentDate,
+                  style: ProviderTheme.themeData.textTheme.bodyMedium,
+                ),
+                const Spacer(),
+                GestureDetector(
+                  onTap: onViewDetails,
+                  child: Text(
+                    'View Details',
+                    style: ProviderTheme.themeData.textTheme.bodyMedium?.copyWith(
+                      color: ProviderTheme.primaryColor,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  String _getMonthName(int month) {
+    const months = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec'
+    ];
+    return months[month - 1];
+  }
+}
+
+Widget _buildAmountRow(String label, String value, {bool isTotal = false, bool isLabel = false}) {
+  return Padding(
+    padding: const EdgeInsets.symmetric(vertical: 4),
+    child: Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          label,
+          style: ProviderTheme.themeData.textTheme.bodyMedium?.copyWith(
+            fontWeight: isTotal ? FontWeight.bold : FontWeight.normal,
+            color: isLabel ? ProviderTheme.secondaryTextColor : null,
+          ),
+        ),
+        Text(
+          value,
+          style: ProviderTheme.themeData.textTheme.bodyMedium?.copyWith(
+            fontWeight: isTotal ? FontWeight.bold : FontWeight.normal,
+            color: isTotal ? ProviderTheme.primaryColor : ProviderTheme.primaryTextColor,
+          ),
+        ),
+      ],
+    ),
+  );
 }

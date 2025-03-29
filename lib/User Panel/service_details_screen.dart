@@ -103,7 +103,7 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
             receiverId: serviceData!['createdBy'], // Provider's UID
             senderEmail: currentUser.email!,      // Current user's email
             receiverEmail: providerData!['email'],
-            providerName: providerData!['name'],// Provider's email
+            receiverName: providerData!['name'],// Provider's email
           ),
         ),
       );

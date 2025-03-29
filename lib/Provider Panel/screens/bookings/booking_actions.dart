@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:service_provider/Provider%20Panel/provider_theme.dart';
 import 'package:service_provider/Provider%20Panel/screens/live_tracking.dart';
+
 
 class BookingActionButtons extends StatelessWidget {
   final Map<String, dynamic> booking;
 
-  const BookingActionButtons({required this.booking});
+  const BookingActionButtons({required this.booking, Key? key}) : super(key: key);
 
   Future<void> _cancelBooking(BuildContext context, String bookingId, String reason) async {
     await FirebaseFirestore.instance.collection('bookings').doc(bookingId).update({
@@ -38,27 +40,51 @@ class BookingActionButtons extends StatelessWidget {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text('Cancel Booking'),
+          title: Text(
+            'Cancel Booking',
+            style: ProviderTheme.themeData.textTheme.titleLarge,
+          ),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Text('Are you sure you want to cancel this booking?'),
+              Text(
+                'Are you sure you want to cancel this booking?',
+                style: ProviderTheme.themeData.textTheme.bodyLarge,
+              ),
               const SizedBox(height: 16),
               TextField(
                 controller: reasonController,
-                decoration: const InputDecoration(labelText: 'Reason for cancellation', border: OutlineInputBorder()),
+                decoration: InputDecoration(
+                  labelText: 'Reason for cancellation',
+                  border: ProviderTheme.themeData.inputDecorationTheme.border,
+                  focusedBorder: ProviderTheme.themeData.inputDecorationTheme.focusedBorder,
+                  labelStyle: ProviderTheme.themeData.inputDecorationTheme.labelStyle,
+                ),
                 maxLines: 3,
               ),
             ],
           ),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(context), child: const Text('No')),
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text(
+                'No',
+                style: ProviderTheme.themeData.textTheme.labelLarge?.copyWith(
+                  color: ProviderTheme.secondaryTextColor,
+                ),
+              ),
+            ),
             TextButton(
               onPressed: () {
                 Navigator.pop(context);
                 _cancelBooking(context, booking['bId'], reasonController.text);
               },
-              child: const Text('Yes, Cancel', style: TextStyle(color: Colors.red)),
+              child: Text(
+                'Yes, Cancel',
+                style: ProviderTheme.themeData.textTheme.labelLarge?.copyWith(
+                  color: ProviderTheme.errorTextColor,
+                ),
+              ),
             ),
           ],
         );
@@ -76,29 +102,26 @@ class BookingActionButtons extends StatelessWidget {
           if (booking['status'] == 'Pending' || booking['status'] == 'Confirmed' || booking['status'] == 'Ongoing')
             Expanded(
               child: OutlinedButton(
-                onPressed: () {
-                  _showCancelConfirmationDialog(context); // Show cancel dialog without popping immediately
-                },
-                style: OutlinedButton.styleFrom(
-                  side: const BorderSide(color: Colors.red),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                  padding: const EdgeInsets.symmetric(vertical: 12),
+                onPressed: () => _showCancelConfirmationDialog(context),
+                style: ProviderTheme.themeData.outlinedButtonTheme.style?.copyWith(
+                  side: MaterialStateProperty.all(const BorderSide(color: ProviderTheme.canceledColor)),
+                  foregroundColor: MaterialStateProperty.all(ProviderTheme.canceledColor),
                 ),
-                child: const Text('Cancel Order', style: TextStyle(color: Colors.red)),
+                child: const Text('Cancel'),
               ),
             ),
-          if (booking['status'] == 'Pending' || booking['status'] == 'Confirmed' || booking['status'] == 'Ongoing') const SizedBox(width: 16),
+          if (booking['status'] == 'Pending' || booking['status'] == 'Confirmed' || booking['status'] == 'Ongoing')
+            const SizedBox(width: 16),
           Expanded(
             child: ElevatedButton(
               onPressed: () {
                 if (booking['status'] == 'Pending') {
                   _confirmBooking(context, booking['bId']);
-                  Navigator.pop(context); // Close bottom sheet after action
+                  Navigator.pop(context);
                 } else if (booking['status'] == 'Confirmed') {
                   _startService(context, booking['bId']);
-                  Navigator.pop(context); // Close bottom sheet after action
+                  Navigator.pop(context);
                 } else if (booking['status'] == 'Ongoing') {
-                  // Navigate to LiveTrackingPage without popping immediately
                   Navigator.push(
                     context,
                     MaterialPageRoute(
@@ -107,23 +130,18 @@ class BookingActionButtons extends StatelessWidget {
                         bookingData: booking,
                       ),
                     ),
-                  ).then((_) => Navigator.pop(context)); // Close bottom sheet after returning
+                  ).then((_) => Navigator.pop(context));
                 }
               },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF060644),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                padding: const EdgeInsets.symmetric(vertical: 12),
-              ),
+              style: ProviderTheme.themeData.elevatedButtonTheme.style,
               child: Text(
                 booking['status'] == 'Pending'
-                    ? 'Confirm Booking'
+                    ? 'Confirm'
                     : booking['status'] == 'Confirmed'
                     ? 'Start Service'
                     : booking['status'] == 'Ongoing'
                     ? 'Start Tracking'
                     : 'Close',
-                style: const TextStyle(color: Colors.white),
               ),
             ),
           ),

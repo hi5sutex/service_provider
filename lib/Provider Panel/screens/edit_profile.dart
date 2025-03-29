@@ -4,6 +4,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:service_provider/Provider%20Panel/provider_theme.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 class EditProfile extends StatefulWidget {
   @override
@@ -13,14 +15,12 @@ class EditProfile extends StatefulWidget {
 class _EditProfileState extends State<EditProfile> {
   final String providerId = FirebaseAuth.instance.currentUser?.uid ?? '';
 
-  // Controllers for text fields
   TextEditingController nameController = TextEditingController();
   TextEditingController phoneController = TextEditingController();
   TextEditingController bioController = TextEditingController();
   TextEditingController addressController = TextEditingController();
   String email = "";
-  String profileImageUrl =
-      "https://avatar.iran.liara.run/public"; // Default profile image
+  String profileImageUrl = "https://avatar.iran.liara.run/public";
   bool isLoading = true;
 
   double? _latitude;
@@ -46,8 +46,7 @@ class _EditProfileState extends State<EditProfile> {
         bioController.text = providerData['bio'] ?? '';
         addressController.text = providerData['address']?['string'] ?? '';
         email = providerData['email'] ?? '';
-        profileImageUrl = providerData['profileImage'] ??
-            "https://avatar.iran.liara.run/public";
+        profileImageUrl = providerData['profileImage'] ?? profileImageUrl;
         isLoading = false;
       });
     } catch (e) {
@@ -75,6 +74,7 @@ class _EditProfileState extends State<EditProfile> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("Profile updated successfully!")),
       );
+      Navigator.pop(context);
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("Error updating profile: $e")),
@@ -97,8 +97,7 @@ class _EditProfileState extends State<EditProfile> {
         return;
       }
 
-      Position position = await Geolocator.getCurrentPosition(
-          desiredAccuracy: LocationAccuracy.high);
+      Position position = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
       _latitude = position.latitude;
       _longitude = position.longitude;
 
@@ -117,33 +116,8 @@ class _EditProfileState extends State<EditProfile> {
     }
   }
 
-  // Future<String> _getHumanReadableAddress(double lat, double long) async {
-  //   const String apiKey = "YOUR_GOOGLE_GEOCODING_API_KEY"; // Replace with your key
-  //   final Uri url = Uri.parse(
-  //       "https://maps.googleapis.com/maps/api/geocode/json?latlng=$lat,$long&key=$apiKey");
-  //
-  //   try {
-  //     final response = await http.get(url);
-  //
-  //     if (response.statusCode == 200) {
-  //       Map<String, dynamic> data = jsonDecode(response.body);
-  //
-  //       if (data['status'] == "OK" && data['results'].isNotEmpty) {
-  //         return data['results'][0]['formatted_address'];
-  //       } else {
-  //         return "Unknown Location";
-  //       }
-  //     } else {
-  //       return "Error Fetching Address";
-  //     }
-  //   } catch (e) {
-  //     return "Error Fetching Address: $e";
-  //   }
-  // }
-
   Future<String> _getHumanReadableAddress(double lat, double lon) async {
-    final Uri url = Uri.parse(
-        "https://nominatim.openstreetmap.org/reverse?format=json&lat=$lat&lon=$lon");
+    final Uri url = Uri.parse("https://nominatim.openstreetmap.org/reverse?format=json&lat=$lat&lon=$lon");
 
     try {
       final response = await http.get(url);
@@ -156,12 +130,9 @@ class _EditProfileState extends State<EditProfile> {
     } catch (e) {
       return "Error: $e";
     }
-    return "";
   }
 
-
   Future<void> _selectProfileImage() async {
-    // Fetch default profile images from Firebase
     var profileImagesDoc = await FirebaseFirestore.instance.collection('profileImages').get();
     var defaultImages = profileImagesDoc.docs.map((doc) => doc.data()['url']).toList();
 
@@ -169,9 +140,17 @@ class _EditProfileState extends State<EditProfile> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: Text("Select Profile Image"),
+          backgroundColor: ProviderTheme.surfaceColor,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          title: Text(
+            "Select Profile Image",
+            style: Theme.of(context).textTheme.titleLarge!.copyWith(
+              color: ProviderTheme.primaryTextColor,
+            ),
+          ),
           content: Container(
             height: 300,
+            width: double.maxFinite,
             child: GridView.builder(
               gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 3,
@@ -187,9 +166,12 @@ class _EditProfileState extends State<EditProfile> {
                     });
                     Navigator.pop(context);
                   },
-                  child: Image.network(
-                    defaultImages[index],
-                    fit: BoxFit.cover,
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    child: Image.network(
+                      defaultImages[index],
+                      fit: BoxFit.cover,
+                    ),
                   ),
                 );
               },
@@ -203,111 +185,280 @@ class _EditProfileState extends State<EditProfile> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Edit Profile'),
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back),
-          onPressed: () => Navigator.pop(context),
-        ),
-      ),
-      body: isLoading
-          ? Center(child: CircularProgressIndicator())
-          : SingleChildScrollView(
-        padding: EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Profile Image
-            Center(
-              child: GestureDetector(
-                onTap: _selectProfileImage,
-                child: CircleAvatar(
-                  radius: 50,
-                  backgroundImage: NetworkImage(profileImageUrl),
+      backgroundColor: ProviderTheme.backgroundColor,
+      body: CustomScrollView(
+        slivers: [
+          SliverAppBar(
+            expandedHeight: 250.0,
+            floating: false,
+            pinned: true,
+            leading: IconButton(
+              icon: Icon(Icons.arrow_back, color: ProviderTheme.onPrimaryTextColor),
+              onPressed: () => Navigator.pop(context),
+            ),
+            title: Text(
+              'Edit Profile',
+              style: Theme.of(context).textTheme.titleLarge!.copyWith(
+                color: ProviderTheme.onPrimaryTextColor,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            flexibleSpace: FlexibleSpaceBar(
+              background: Container(
+                decoration: BoxDecoration(
+                  gradient: ProviderTheme.primaryGradient,
                 ),
-              ),
-            ),
-            SizedBox(height: 20),
-
-            // Full Name
-            TextField(
-              controller: nameController,
-              decoration: InputDecoration(
-                labelText: "Full Name",
-                border: OutlineInputBorder(),
-              ),
-            ),
-            SizedBox(height: 20),
-
-            // Email (Non-editable)
-            TextField(
-              controller: TextEditingController(text: email),
-              readOnly: true,
-              decoration: InputDecoration(
-                labelText: "Email (Uneditable)",
-                border: OutlineInputBorder(),
-              ),
-            ),
-            SizedBox(height: 20),
-
-            // Phone
-            TextField(
-              controller: phoneController,
-              decoration: InputDecoration(
-                labelText: "Phone",
-                border: OutlineInputBorder(),
-              ),
-            ),
-            SizedBox(height: 20),
-
-            // Bio
-            TextField(
-              controller: bioController,
-              decoration: InputDecoration(
-                labelText: "Bio",
-                border: OutlineInputBorder(),
-              ),
-            ),
-            SizedBox(height: 20),
-
-            // Address with Location Icon
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: addressController,
-                    decoration: InputDecoration(
-                      labelText: "Address (Area, City, State)",
-                      border: OutlineInputBorder(),
+                child: Stack(
+                  children: [
+                    Positioned(
+                      bottom: -50,
+                      left: -50,
+                      child: Container(
+                        width: 200,
+                        height: 200,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: ProviderTheme.secondaryColor.withOpacity(0.1),
+                        ),
+                      ),
                     ),
-                  ),
+                    Positioned(
+                      top: -50,
+                      right: -50,
+                      child: Container(
+                        width: 200,
+                        height: 200,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: ProviderTheme.secondaryColor.withOpacity(0.1),
+                        ),
+                      ),
+                    ),
+                    Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          SizedBox(height: 70),
+                          GestureDetector(
+                            onTap: _selectProfileImage,
+                            child: Stack(
+                              alignment: Alignment.center,
+                              children: [
+                                Container(
+                                  width: 110,
+                                  height: 110,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    gradient: LinearGradient(
+                                      colors: [
+                                        ProviderTheme.primaryColor,
+                                        ProviderTheme.secondaryColor,
+                                      ],
+                                      begin: Alignment.topLeft,
+                                      end: Alignment.bottomRight,
+                                    ),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: ProviderTheme.secondaryColor.withOpacity(0.3),
+                                        blurRadius: 8,
+                                        offset: Offset(0, 4),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                CircleAvatar(
+                                  radius: 50,
+                                  backgroundImage: CachedNetworkImageProvider(profileImageUrl),
+                                ),
+                                Positioned(
+                                  bottom: 0,
+                                  right: 0,
+                                  child: Container(
+                                    padding: EdgeInsets.all(6),
+                                    decoration: BoxDecoration(
+                                      color: ProviderTheme.secondaryColor,
+                                      shape: BoxShape.circle,
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: ProviderTheme.secondaryColor.withOpacity(0.3),
+                                          blurRadius: 6,
+                                          offset: Offset(0, 2),
+                                        ),
+                                      ],
+                                    ),
+                                    child: Icon(
+                                      Icons.camera_alt,
+                                      color: ProviderTheme.onPrimaryTextColor,
+                                      size: 20,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          SizedBox(height: 16),
+                          Text(
+                            nameController.text.isEmpty ? 'Your Name' : nameController.text,
+                            style: Theme.of(context).textTheme.displayMedium!.copyWith(
+                              color: ProviderTheme.onPrimaryTextColor,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          SizedBox(height: 8),
+                          Text(
+                            email.isEmpty ? 'example@example.com' : email,
+                            style: Theme.of(context).textTheme.bodyLarge!.copyWith(
+                              color: ProviderTheme.onPrimaryTextColor.withOpacity(0.9),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
-                SizedBox(width: 8),
-                Container(
-                  decoration: BoxDecoration(
-                    color: Color(0xFF060644),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: IconButton(
-                    icon: Icon(Icons.location_on, color: Colors.white),
-                    onPressed: _getCurrentLocation,
-                  ),
-                ),
-              ],
-            ),
-            SizedBox(height: 20),
-
-            // Save Changes Button
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: _updateProfile,
-                child: Text("Save Changes"),
               ),
             ),
-          ],
+            backgroundColor: ProviderTheme.primaryColor,
+            elevation: 4,
+          ),
+          SliverToBoxAdapter(
+            child: isLoading
+                ? Padding(
+              padding: EdgeInsets.all(16),
+              child: Center(child: CircularProgressIndicator(color: ProviderTheme.secondaryColor)),
+            )
+                : Padding(
+              padding: EdgeInsets.all(16.0),
+              child: Container(
+                width: double.infinity,
+                padding: EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: ProviderTheme.surfaceColor,
+                  borderRadius: BorderRadius.circular(20),
+                  boxShadow: [
+                    BoxShadow(
+                      color: ProviderTheme.shadowColor.withOpacity(0.3),
+                      blurRadius: 12,
+                      offset: Offset(0, 6),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildTextField(
+                      controller: nameController,
+                      label: "Full Name",
+                      icon: Icons.person,
+                    ),
+                    SizedBox(height: 16),
+                    _buildTextField(
+                      controller: phoneController,
+                      label: "Phone",
+                      icon: Icons.phone,
+                    ),
+                    SizedBox(height: 16),
+                    _buildTextField(
+                      controller: bioController,
+                      label: "Bio",
+                      icon: Icons.info,
+                    ),
+                    SizedBox(height: 16),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Expanded(
+                          child: _buildTextField(
+                            controller: addressController,
+                            label: "Address (Area, City, State)",
+                            icon: Icons.location_city,
+                          ),
+                        ),
+                        SizedBox(width: 12),
+                        GestureDetector(
+                          onTap: _getCurrentLocation,
+                          child: Container(
+                            padding: EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: ProviderTheme.secondaryColor,
+                              borderRadius: BorderRadius.circular(12),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: ProviderTheme.secondaryColor.withOpacity(0.3),
+                                  blurRadius: 6,
+                                  offset: Offset(0, 2),
+                                ),
+                              ],
+                            ),
+                            child: Icon(
+                              Icons.location_on,
+                              color: ProviderTheme.onPrimaryTextColor,
+                              size: 28,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: 24),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: _updateProfile,
+                        style: ElevatedButton.styleFrom(
+                          padding: EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          elevation: 4,
+                          backgroundColor: ProviderTheme.defaultButtonColor,
+                          foregroundColor: ProviderTheme.onPrimaryTextColor,
+                        ),
+                        child: Text(
+                          "Save Changes",
+                          style: Theme.of(context).textTheme.labelLarge!.copyWith(
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTextField({
+    required TextEditingController controller,
+    required String label,
+    required IconData icon,
+    bool readOnly = false,
+  }) {
+    return TextField(
+      controller: controller,
+      readOnly: readOnly,
+      decoration: InputDecoration(
+        labelText: label,
+        prefixIcon: Icon(icon, color: ProviderTheme.secondaryColor),
+        filled: true,
+        fillColor: ProviderTheme.surfaceColor,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide.none,
         ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: ProviderTheme.dividerColor, width: 1),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: ProviderTheme.secondaryColor, width: 2),
+        ),
+        labelStyle: TextStyle(color: ProviderTheme.secondaryTextColor),
+      ),
+      style: Theme.of(context).textTheme.bodyLarge!.copyWith(
+        color: ProviderTheme.primaryTextColor,
       ),
     );
   }

@@ -3,6 +3,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:service_provider/Provider%20Panel/screens/ServiceDetailScreen.dart';
 import 'package:shimmer/shimmer.dart';
+import 'package:service_provider/Provider%20Panel/provider_theme.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class ManageServices extends StatefulWidget {
   const ManageServices({Key? key}) : super(key: key);
@@ -54,14 +56,31 @@ class _ManageServicesState extends State<ManageServices> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: ProviderTheme.backgroundColor, // Light Gray background
       appBar: AppBar(
-        backgroundColor: const Color(0xFF060644),
-        title: const Text('Manage Services', style: TextStyle(color: Colors.white)),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () => Navigator.pop(context),
+        flexibleSpace: Container(
+          decoration: const BoxDecoration(
+            gradient: ProviderTheme.primaryGradient, // Gradient background
+          ),
         ),
+        leading: Padding(
+          padding: const EdgeInsets.only(left: 16.0),
+          child: IconButton(
+            icon: const Icon(
+              Icons.arrow_back,
+              color: ProviderTheme.surfaceColor, // White arrow
+              size: 28,
+            ),
+            onPressed: () => Navigator.pop(context),
+          ),
+        ),
+        title: const Text(
+          'Manage Services',
+          style: TextStyle(color: ProviderTheme.onPrimaryTextColor), // White text
+        ),
+        centerTitle: false,
         elevation: 4,
+        shadowColor: ProviderTheme.shadowColor.withOpacity(0.4), // Shadow effect
       ),
       body: FutureBuilder<List<Map<String, dynamic>>>(
         future: fetchServices(),
@@ -70,18 +89,29 @@ class _ManageServicesState extends State<ManageServices> {
             return const ServiceListShimmer();
           }
           if (snapshot.hasError) {
-            return Center(child: Text('Error: ${snapshot.error}'));
+            return Center(
+              child: Text(
+                'Error: ${snapshot.error}',
+                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                  color: ProviderTheme.errorTextColor, // Crimson Red for errors
+                ),
+              ),
+            );
           }
           final services = snapshot.data ?? [];
           if (services.isEmpty) {
-            return const Center(
+            return Center(
               child: Text(
                 'No services found.',
-                style: TextStyle(fontSize: 16, color: Colors.grey),
+                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                  fontSize: 16,
+                  color: ProviderTheme.secondaryTextColor, // Gray text
+                ),
               ),
             );
           }
           return ListView.builder(
+            padding: const EdgeInsets.symmetric(vertical: 8),
             itemCount: services.length,
             itemBuilder: (context, index) {
               final service = services[index];
@@ -116,6 +146,7 @@ class ServiceItem extends StatelessWidget {
       child: Card(
         margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         elevation: 3,
+        color: ProviderTheme.surfaceColor, // White card background
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -133,15 +164,26 @@ class ServiceItem extends StatelessWidget {
                     height: 180,
                     width: double.infinity,
                     fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) => Container(
+                      height: 180,
+                      color: ProviderTheme.cardHighlightColor, // Light Gray fallback
+                      child:  Center(
+                        child: FaIcon(
+                          FontAwesomeIcons.image,
+                          size: 60,
+                          color: ProviderTheme.secondaryTextColor, // Gray icon
+                        ),
+                      ),
+                    ),
                   )
                       : Container(
                     height: 180,
-                    color: Colors.grey[300],
-                    child: const Center(
-                      child: Icon(
-                        Icons.image_not_supported,
+                    color: ProviderTheme.cardHighlightColor, // Light Gray fallback
+                    child:  Center(
+                      child: FaIcon(
+                        FontAwesomeIcons.image,
                         size: 60,
-                        color: Colors.grey,
+                        color: ProviderTheme.secondaryTextColor, // Gray icon
                       ),
                     ),
                   ),
@@ -153,12 +195,15 @@ class ServiceItem extends StatelessWidget {
                     child: Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
-                        color: Colors.black54,
+                        color: ProviderTheme.primaryColor.withOpacity(0.7), // Dark Navy Blue with opacity
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Text(
                         '+${images.length - 1}',
-                        style: const TextStyle(color: Colors.white, fontSize: 12),
+                        style: const TextStyle(
+                          color: ProviderTheme.onPrimaryTextColor, // White text
+                          fontSize: 12,
+                        ),
                       ),
                     ),
                   ),
@@ -171,10 +216,10 @@ class ServiceItem extends StatelessWidget {
                 children: [
                   Text(
                     service['name'] ?? 'Service Name',
-                    style: const TextStyle(
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
-                      color: Color(0xFF060644),
+                      color: ProviderTheme.primaryTextColor, // Dark Navy Blue
                     ),
                   ),
                   const SizedBox(height: 8),
@@ -182,18 +227,18 @@ class ServiceItem extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        '₹${service['price'] ?? '0'}',
-                        style: const TextStyle(
+                        '₹${service['price']?.toString() ?? '0'}',
+                        style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
-                          color: Colors.green,
+                          color: ProviderTheme.successColor, // Forest Green for price
                         ),
                       ),
                       Text(
                         service['category'] ?? 'Category',
-                        style: const TextStyle(
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                           fontSize: 14,
-                          color: Color(0xFF060644),
+                          color: ProviderTheme.primaryTextColor, // Dark Navy Blue
                         ),
                       ),
                     ],
@@ -201,7 +246,10 @@ class ServiceItem extends StatelessWidget {
                   const SizedBox(height: 4),
                   Text(
                     service['subcategory'] ?? 'Subcategory',
-                    style: const TextStyle(fontSize: 14, color: Colors.grey),
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      fontSize: 14,
+                      color: ProviderTheme.secondaryTextColor, // Gray text
+                    ),
                   ),
                 ],
               ),
@@ -219,17 +267,20 @@ class ServiceListShimmer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListView.builder(
+      padding: const EdgeInsets.symmetric(vertical: 8),
       itemCount: 5,
       itemBuilder: (context, index) {
         return Shimmer.fromColors(
-          baseColor: Colors.grey[300]!,
-          highlightColor: Colors.grey[100]!,
+          baseColor: ProviderTheme.secondaryTextColor.withOpacity(0.3), // Slightly darker gray for base
+          highlightColor: ProviderTheme.cardHighlightColor, // Light Gray for highlight
           child: Card(
             margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            elevation: 2, // Add subtle elevation for shadow
+            shadowColor: ProviderTheme.shadowColor.withOpacity(0.2), // Dark Navy Blue shadow with opacity
             child: Container(
               height: 200,
-              color: Colors.white,
+              color: ProviderTheme.surfaceColor, // White card background
             ),
           ),
         );

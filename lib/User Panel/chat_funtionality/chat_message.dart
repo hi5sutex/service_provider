@@ -7,6 +7,7 @@ class ChatMessage {
   final String receiverEmail;
   final String message;
   final Timestamp timestamp;
+  final bool isRead;
 
   ChatMessage({
     required this.senderId,
@@ -15,21 +16,9 @@ class ChatMessage {
     required this.receiverEmail,
     required this.message,
     required this.timestamp,
+    required this.isRead,
   });
 
-  // Convert Firestore data to ChatMessage
-  factory ChatMessage.fromMap(Map<String, dynamic> data) {
-    return ChatMessage(
-      senderId: data['senderId'] ?? '',
-      receiverId: data['receiverId'] ?? '',
-      senderEmail: data['senderEmail'] ?? '',
-      receiverEmail: data['receiverEmail'] ?? '',
-      message: data['message'] ?? '',
-      timestamp: data['timestamp'] as Timestamp? ?? Timestamp.now(),
-    );
-  }
-
-  // Convert ChatMessage to Firestore data
   Map<String, dynamic> toMap() {
     return {
       'senderId': senderId,
@@ -38,6 +27,19 @@ class ChatMessage {
       'receiverEmail': receiverEmail,
       'message': message,
       'timestamp': timestamp,
+      'isRead': isRead,
     };
+  }
+
+  factory ChatMessage.fromMap(Map<String, dynamic> map) {
+    return ChatMessage(
+      senderId: map['senderId'] ?? '',
+      receiverId: map['receiverId'] ?? '',
+      senderEmail: map['senderEmail'] ?? '',
+      receiverEmail: map['receiverEmail'] ?? '',
+      message: map['message'] ?? '',
+      timestamp: map['timestamp'] ?? Timestamp.now(),
+      isRead: map['isRead'] ?? false,
+    );
   }
 }

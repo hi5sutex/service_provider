@@ -7,27 +7,29 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:service_provider/User%20Panel/chat_funtionality/chat_message.dart';
 import 'package:service_provider/User%20Panel/chat_funtionality/chat_service.dart';
 
-class ChatScreen extends StatefulWidget {
+class ProviderChatScreen extends StatefulWidget {
+  final String providerId;
   final String userId;
-  final String receiverId;
-  final String senderEmail;
-  final String receiverEmail;
-  final String receiverName;
+  final String providerEmail;
+  final String userEmail;
+  final String userName;
+  final String providerName;
 
-  const ChatScreen({
+  const ProviderChatScreen({
     Key? key,
+    required this.providerId,
     required this.userId,
-    required this.receiverId,
-    required this.senderEmail,
-    required this.receiverEmail,
-    required this.receiverName,
+    required this.providerEmail,
+    required this.userEmail,
+    required this.userName,
+    required this.providerName,
   }) : super(key: key);
 
   @override
-  _ChatScreenState createState() => _ChatScreenState();
+  _ProviderChatScreenState createState() => _ProviderChatScreenState();
 }
 
-class _ChatScreenState extends State<ChatScreen> {
+class _ProviderChatScreenState extends State<ProviderChatScreen> {
   final TextEditingController _messageController = TextEditingController();
   final ChatService _chatService = ChatService();
   final ScrollController _scrollController = ScrollController();
@@ -35,11 +37,11 @@ class _ChatScreenState extends State<ChatScreen> {
   bool _isFirstLoad = true;
 
   final List<String> _quickChats = [
-    'Can you help me with my request?',
-    'What are your rates?',
-    'Are you available this week?',
-    'Can you provide a quote?',
-    'Looking forward to working with you!',
+    'When are you available?',
+    'Can you share more details?',
+    'I’ll get back to you soon.',
+    'What’s your budget?',
+    'Thanks for reaching out!',
   ];
 
   @override
@@ -71,9 +73,9 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   void _markMessagesAsRead() async {
-    final chatRoomId = _chatService.getChatRoomId(widget.userId, widget.receiverId);
-    await _chatService.markMessagesAsRead(chatRoomId, widget.userId, widget.receiverEmail);
-  } 
+    final chatRoomId = _chatService.getChatRoomId(widget.providerId, widget.userId);
+    await _chatService.markMessagesAsRead(chatRoomId, widget.providerId, widget.userEmail);
+  }
 
   void _scrollToBottom() {
     if (_scrollController.hasClients) {
@@ -88,10 +90,10 @@ class _ChatScreenState extends State<ChatScreen> {
   void _sendQuickChat(String message) async {
     try {
       await _chatService.sendMessage(
-        senderId: widget.userId,
-        receiverId: widget.receiverId,
-        senderEmail: widget.senderEmail,
-        receiverEmail: widget.receiverEmail,
+        senderId: widget.providerId,
+        receiverId: widget.userId,
+        senderEmail: widget.providerEmail,
+        receiverEmail: widget.userEmail,
         message: message,
       );
       _scrollToBottom();
@@ -103,7 +105,7 @@ class _ChatScreenState extends State<ChatScreen> {
     }
   }
 
-  void _showProviderDetails(BuildContext context) {
+  void _showUserDetails(BuildContext context) {
     showModalBottomSheet(
       context: context,
       backgroundColor: ProviderTheme.surfaceColor,
@@ -111,17 +113,17 @@ class _ChatScreenState extends State<ChatScreen> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (context) => StreamBuilder<DocumentSnapshot>(
-        stream: FirebaseFirestore.instance.collection('providers').doc(widget.receiverId).snapshots(),
+        stream: FirebaseFirestore.instance.collection('users').doc(widget.userId).snapshots(),
         builder: (context, snapshot) {
           if (!snapshot.hasData) {
             return const Center(child: CircularProgressIndicator());
           }
-          final providerData = snapshot.data!.data() as Map<String, dynamic>? ?? {};
-          final name = providerData['name'] ?? 'Unknown Provider';
-          final email = providerData['email'] ?? 'No email';
-          final phone = providerData['phone'] ?? 'No phone';
-          final bio = providerData['bio'] ?? 'No bio';
-          final profileImage = providerData['profileImage'] ?? 'https://avatar.iran.liara.run/public';
+          final userData = snapshot.data!.data() as Map<String, dynamic>? ?? {};
+          final name = userData['name'] ?? 'Unknown User';
+          final email = userData['email'] ?? 'No email';
+          final phone = userData['phone'] ?? 'No phone';
+          final bio = userData['bio'] ?? 'No bio';
+          final profileImage = userData['profileImage'] ?? 'https://avatar.iran.liara.run/public';
 
           return Padding(
             padding: const EdgeInsets.all(16.0),
@@ -184,14 +186,14 @@ class _ChatScreenState extends State<ChatScreen> {
                 ),
                 const SizedBox(width: 8),
                 GestureDetector(
-                  onTap: () => _showProviderDetails(context),
+                  onTap: () => _showUserDetails(context),
                   child: StreamBuilder<DocumentSnapshot>(
-                    stream: FirebaseFirestore.instance.collection('providers').doc(widget.receiverId).snapshots(),
+                    stream: FirebaseFirestore.instance.collection('users').doc(widget.userId).snapshots(),
                     builder: (context, snapshot) {
                       String profileImage = 'https://avatar.iran.liara.run/public';
                       if (snapshot.hasData && snapshot.data!.exists) {
-                        final providerData = snapshot.data!.data() as Map<String, dynamic>;
-                        profileImage = providerData['profileImage'] ?? profileImage;
+                        final userData = snapshot.data!.data() as Map<String, dynamic>;
+                        profileImage = userData['profileImage'] ?? profileImage;
                       }
                       return Row(
                         children: [
@@ -205,7 +207,7 @@ class _ChatScreenState extends State<ChatScreen> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                widget.receiverName,
+                                widget.userName,
                                 style: Theme.of(context).textTheme.titleLarge?.copyWith(
                                   color: ProviderTheme.onPrimaryTextColor,
                                   fontSize: 18,
@@ -248,9 +250,9 @@ class _ChatScreenState extends State<ChatScreen> {
           ),
           Expanded(
             child: ChatMessageList(
-              userId: widget.userId,
-              receiverId: widget.receiverId,
-              senderEmail: widget.senderEmail,
+              userId: widget.providerId,
+              receiverId: widget.userId,
+              senderEmail: widget.providerEmail,
               onNewMessage: _scrollToBottom,
             ),
           ),
@@ -261,10 +263,10 @@ class _ChatScreenState extends State<ChatScreen> {
             onSend: (message) async {
               try {
                 await _chatService.sendMessage(
-                  senderId: widget.userId,
-                  receiverId: widget.receiverId,
-                  senderEmail: widget.senderEmail,
-                  receiverEmail: widget.receiverEmail,
+                  senderId: widget.providerId,
+                  receiverId: widget.userId,
+                  senderEmail: widget.providerEmail,
+                  receiverEmail: widget.userEmail,
                   message: message,
                 );
                 _scrollToBottom();
