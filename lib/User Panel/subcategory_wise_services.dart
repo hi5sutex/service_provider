@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:service_provider/User Panel/service_details_screen.dart';
+import 'package:service_provider/User%20Panel/service_details_screen.dart';
+import 'package:service_provider/theme.dart';
 
 class SubcategoryWiseServices extends StatelessWidget {
   final String subcategoryName;
@@ -11,17 +12,21 @@ class SubcategoryWiseServices extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
 
+    return Scaffold(
+      // Background color is set by ProviderTheme.scaffoldBackgroundColor (#F5F7FA)
+      appBar: AppBar(
+        // Background color is set by ProviderTheme.appBarTheme (Primary #060644)
         title: Text(
           subcategoryName,
-          style: TextStyle(color: Colors.white), // Set the text color to white
+          style: TextStyle(
+            color: ProviderTheme.onPrimaryTextColor, // Matches #FFFFFF (On Primary Text)
+          ),
         ),
-        backgroundColor: Color(0xFF060644),
-        foregroundColor: Colors.white,
+        // foregroundColor is set by ProviderTheme.appBarTheme.foregroundColor
       ),
-
       body: StreamBuilder<QuerySnapshot>(
         stream: FirebaseFirestore.instance
             .collection('services')
@@ -29,62 +34,78 @@ class SubcategoryWiseServices extends StatelessWidget {
             .snapshots(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(child: CircularProgressIndicator());
+            return Center(
+              child: CircularProgressIndicator(
+                color: ProviderTheme.primaryColor, // Matches #060644 (Primary)
+              ),
+            );
           }
 
           if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-            return Center(child: Text('No services available for this subcategory'));
+            return Center(
+              child: Text(
+                'No services available for this subcategory',
+                style: TextStyle(
+                  color: ProviderTheme.primaryTextColor, // Matches #060644 (Primary Text)
+                ),
+              ),
+            );
           }
 
           final services = snapshot.data!.docs;
 
           return ListView.builder(
+            padding: EdgeInsets.symmetric(vertical: screenHeight * 0.01),
             itemCount: services.length,
             itemBuilder: (context, index) {
               final serviceDoc = services[index];
               final service = serviceDoc.data() as Map<String, dynamic>;
-              final serviceId = serviceDoc.id; // Get the document ID
+              final serviceId = serviceDoc.id;
 
               return GestureDetector(
                 onTap: () {
-                  // Navigate to the service details screen with both service data and ID
                   Navigator.push(
                     context,
                     MaterialPageRoute(
                       builder: (context) => ServiceDetailsScreen(
-                        //service: service,
-                        serviceId: serviceId, // Pass the service ID
+                        serviceId: serviceId,
                       ),
                     ),
                   );
                 },
                 child: Card(
-                  margin: const EdgeInsets.all(10),
+                  margin: EdgeInsets.all(screenWidth * 0.025),
                   elevation: 5,
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
+                    borderRadius: BorderRadius.circular(screenWidth * 0.025),
                   ),
+                  color: ProviderTheme.surfaceColor, // Matches #FFFFFF (Surface)
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       // Service Image
                       if (service['images'] != null && (service['images'] as List).isNotEmpty)
                         ClipRRect(
-                          borderRadius: BorderRadius.vertical(top: Radius.circular(10)),
+                          borderRadius:
+                          BorderRadius.vertical(top: Radius.circular(screenWidth * 0.025)),
                           child: Image.network(
                             service['images'][0],
-                            height: 200,
+                            height: screenHeight * 0.25,
                             width: double.infinity,
                             fit: BoxFit.cover,
                             errorBuilder: (context, error, stackTrace) => Container(
-                              height: 200,
-                              color: Colors.grey[300],
-                              child: Icon(Icons.image, size: 50, color: Colors.grey[500]),
+                              height: screenHeight * 0.25,
+                              color: ProviderTheme.dividerColor, // Matches #D1D9E1 (Divider)
+                              child: Icon(
+                                Icons.image,
+                                size: screenWidth * 0.125,
+                                color: ProviderTheme.disabledTextColor, // Matches #B0B8C4 (Disabled Text)
+                              ),
                             ),
                           ),
                         ),
                       Padding(
-                        padding: const EdgeInsets.all(10.0),
+                        padding: EdgeInsets.all(screenWidth * 0.025),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -92,19 +113,23 @@ class SubcategoryWiseServices extends StatelessWidget {
                             Text(
                               service['name'] ?? 'Unnamed Service',
                               style: TextStyle(
-                                fontSize: 18,
+                                fontSize: screenWidth * 0.045,
                                 fontWeight: FontWeight.bold,
+                                color: ProviderTheme.primaryTextColor, // Matches #060644 (Primary Text)
                               ),
                             ),
-                            SizedBox(height: 5),
+                            SizedBox(height: screenHeight * 0.006),
                             // Service Description
                             Text(
                               service['description'] ?? 'No description available',
-                              style: TextStyle(fontSize: 14, color: Colors.grey[700]),
+                              style: TextStyle(
+                                fontSize: screenWidth * 0.035,
+                                color: ProviderTheme.secondaryTextColor, // Matches #6B7280 (Secondary Text)
+                              ),
                               maxLines: 2,
                               overflow: TextOverflow.ellipsis,
                             ),
-                            SizedBox(height: 10),
+                            SizedBox(height: screenHeight * 0.012),
                             // Price
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -113,18 +138,25 @@ class SubcategoryWiseServices extends StatelessWidget {
                                   children: [
                                     Text(
                                       'Price: ',
-                                      style: TextStyle(fontWeight: FontWeight.bold),
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        color: ProviderTheme.primaryTextColor, // Matches #060644 (Primary Text)
+                                      ),
                                     ),
                                     Text(
                                       '₹${service['price'].toString()}',
                                       style: TextStyle(
-                                        color: Colors.green,
+                                        color: ProviderTheme.successColor, // Matches #388E3C (Success Text)
                                         fontWeight: FontWeight.bold,
                                       ),
                                     ),
                                   ],
                                 ),
-                                Icon(Icons.arrow_forward_ios, size: 16),
+                                Icon(
+                                  Icons.arrow_forward_ios,
+                                  size: screenWidth * 0.04,
+                                  color: ProviderTheme.primaryColor, // Matches #060644 (Primary)
+                                ),
                               ],
                             ),
                           ],

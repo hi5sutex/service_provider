@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:service_provider/theme.dart';
+// import 'theme.dart'; // Import ProviderTheme
 
 class UserChatWindow extends StatelessWidget {
   final int chatId;
@@ -13,9 +15,14 @@ class UserChatWindow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      // Background color is set by ProviderTheme.scaffoldBackgroundColor (#F5F7FA)
       appBar: AppBar(
+        // Background color is set by ProviderTheme.appBarTheme (Primary #060644)
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Colors.black),
+          icon: Icon(
+            Icons.arrow_back,
+            color: ProviderTheme.onPrimaryTextColor, // Matches #FFFFFF (On Primary Text)
+          ),
           onPressed: () {
             Navigator.pop(context);
           },
@@ -30,15 +37,24 @@ class UserChatWindow extends StatelessWidget {
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(userName, style: TextStyle(color: Colors.black)),
-                Text('Online', style: TextStyle(color: Colors.green, fontSize: 12)),
+                Text(
+                  userName,
+                  style: TextStyle(
+                    color: ProviderTheme.onPrimaryTextColor, // Matches #FFFFFF (On Primary Text)
+                  ),
+                ),
+                Text(
+                  'Online',
+                  style: TextStyle(
+                    color: ProviderTheme.successColor, // Matches #388E3C (Success)
+                    fontSize: 12,
+                  ),
+                ),
               ],
             ),
           ],
         ),
-        backgroundColor: Colors.white,
         elevation: 1,
-        iconTheme: IconThemeData(color: Colors.black),
       ),
       body: Column(
         children: [
@@ -46,8 +62,16 @@ class UserChatWindow extends StatelessWidget {
             child: ListView(
               padding: EdgeInsets.all(16),
               children: [
-                buildChatBubble(isSender: false, text: 'Hello, I would like to know more about your cleaning service.', time: '10:30 AM'),
-                buildChatBubble(isSender: true, text: 'Sure! We offer complete home cleaning services.', time: '10:32 AM'),
+                buildChatBubble(
+                  isSender: false,
+                  text: 'Hello, I would like to know more about your cleaning service.',
+                  time: '10:30 AM',
+                ),
+                buildChatBubble(
+                  isSender: true,
+                  text: 'Sure! We offer complete home cleaning services.',
+                  time: '10:32 AM',
+                ),
               ],
             ),
           ),
@@ -64,11 +88,13 @@ class UserChatWindow extends StatelessWidget {
         margin: EdgeInsets.symmetric(vertical: 4),
         padding: EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: isSender ? Colors.blue : Colors.white,
+          color: isSender
+              ? ProviderTheme.primaryColor // Matches #060644 (Primary)
+              : ProviderTheme.surfaceColor, // Matches #FFFFFF (Surface)
           borderRadius: BorderRadius.circular(12),
           boxShadow: [
             BoxShadow(
-              color: Colors.black12,
+              color: ProviderTheme.shadowColor, // Matches #00000029 (Shadow)
               blurRadius: 4,
               offset: Offset(0, 2),
             ),
@@ -79,12 +105,21 @@ class UserChatWindow extends StatelessWidget {
           children: [
             Text(
               text,
-              style: TextStyle(color: isSender ? Colors.white : Colors.black),
+              style: TextStyle(
+                color: isSender
+                    ? ProviderTheme.onPrimaryTextColor // Matches #FFFFFF (On Primary Text)
+                    : ProviderTheme.primaryTextColor, // Matches #060644 (Primary Text)
+              ),
             ),
             SizedBox(height: 4),
             Text(
               time,
-              style: TextStyle(fontSize: 10, color: isSender ? Colors.white70 : Colors.grey),
+              style: TextStyle(
+                fontSize: 10,
+                color: isSender
+                    ? ProviderTheme.onPrimaryTextColor.withOpacity(0.7) // Matches #FFFFFF with opacity
+                    : ProviderTheme.secondaryTextColor, // Matches #6B7280 (Secondary Text)
+              ),
             ),
           ],
         ),
@@ -95,17 +130,21 @@ class UserChatWindow extends StatelessWidget {
   Widget buildMessageInput() {
     return Container(
       padding: EdgeInsets.all(8),
-      color: Colors.white,
+      color: ProviderTheme.surfaceColor, // Matches #FFFFFF (Surface)
       child: Row(
         children: [
           IconButton(
-            icon: Icon(Icons.attachment, color: Colors.grey),
+            icon: Icon(
+              Icons.attachment,
+              color: ProviderTheme.secondaryTextColor, // Matches #6B7280 (Secondary Text)
+            ),
             onPressed: () {},
           ),
           Expanded(
             child: TextField(
               decoration: InputDecoration(
                 hintText: 'Type a message...',
+                // Border, hint style, etc., are set by ProviderTheme.inputDecorationTheme
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(30),
                 ),
@@ -114,7 +153,10 @@ class UserChatWindow extends StatelessWidget {
             ),
           ),
           IconButton(
-            icon: Icon(Icons.send, color: Colors.blue),
+            icon: Icon(
+              Icons.send,
+              color: ProviderTheme.primaryColor, // Matches #060644 (Primary)
+            ),
             onPressed: () {},
           ),
         ],

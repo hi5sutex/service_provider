@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:service_provider/theme.dart';
 
 class UserOtpPage extends StatelessWidget {
   const UserOtpPage({Key? key}) : super(key: key);
@@ -10,9 +11,15 @@ class UserOtpPage extends StatelessWidget {
     final String userId = FirebaseAuth.instance.currentUser!.uid;
 
     return Scaffold(
+      backgroundColor: ProviderTheme.surfaceColor, // Matches #FFFFFF (Surface)
       appBar: AppBar(
         title: const Text('Your OTP'),
-        backgroundColor: const Color(0xFF060644),
+        backgroundColor: ProviderTheme.primaryColor, // Matches #060644 (Primary)
+        titleTextStyle: TextStyle(
+          color: ProviderTheme.onPrimaryTextColor, // Matches #FFFFFF (On Primary Text)
+          fontSize: 20,
+          fontWeight: FontWeight.bold,
+        ),
       ),
       body: StreamBuilder<QuerySnapshot>(
         stream: FirebaseFirestore.instance
@@ -22,14 +29,21 @@ class UserOtpPage extends StatelessWidget {
             .snapshots(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
+            return Center(
+              child: CircularProgressIndicator(
+                color: ProviderTheme.primaryColor, // Matches #060644 (Primary)
+              ),
+            );
           }
 
           if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-            return const Center(
+            return Center(
               child: Text(
                 'No active bookings with OTP available',
-                style: TextStyle(fontSize: 16),
+                style: TextStyle(
+                  fontSize: 16,
+                  color: ProviderTheme.primaryTextColor, // Matches #060644 (Primary Text)
+                ),
               ),
             );
           }
@@ -44,35 +58,46 @@ class UserOtpPage extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                const Text(
+                Text(
                   'Your OTP for Booking',
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: ProviderTheme.primaryTextColor, // Matches #060644 (Primary Text)
+                  ),
                 ),
                 const SizedBox(height: 10),
                 Text(
                   'Booking ID: $bookingId',
-                  style: const TextStyle(fontSize: 16),
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: ProviderTheme.secondaryTextColor, // Matches #6B7280 (Secondary Text)
+                  ),
                 ),
                 const SizedBox(height: 20),
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: Colors.grey[200],
+                    color: ProviderTheme.dividerColor, // Matches #D1D9E1 (Divider)
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
                     otp,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 32,
                       fontWeight: FontWeight.bold,
                       letterSpacing: 2.0,
+                      color: ProviderTheme.primaryTextColor, // Matches #060644 (Primary Text)
                     ),
                   ),
                 ),
                 const SizedBox(height: 20),
-                const Text(
+                Text(
                   'Share this OTP with your service provider to complete the booking.',
-                  style: TextStyle(fontSize: 16),
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: ProviderTheme.secondaryTextColor, // Matches #6B7280 (Secondary Text)
+                  ),
                   textAlign: TextAlign.center,
                 ),
               ],

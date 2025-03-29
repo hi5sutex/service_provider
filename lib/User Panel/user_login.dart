@@ -9,7 +9,7 @@ import 'package:service_provider/Provider%20Panel/screens/register_screen.dart';
 import 'package:service_provider/Admin%20Panel/screens/main.dart';
 import 'package:service_provider/notification_service.dart';
 import 'package:service_provider/welcome_screen.dart';
-import '../Provider Panel/screens/chat/provider_chat_list.dart';
+import 'package:service_provider/theme.dart';
 
 class LoginPage extends StatefulWidget {
   @override
@@ -153,13 +153,17 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: ProviderTheme.surfaceColor, // Matches #FFFFFF (Surface)
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: ProviderTheme.surfaceColor, // Matches #FFFFFF (Surface)
         elevation: 0,
         leading: IconButton(
           padding: const EdgeInsets.all(20.0),
-          icon: Icon(Icons.arrow_back, color: Colors.black, size: 25),
+          icon: Icon(
+            Icons.arrow_back,
+            color: ProviderTheme.primaryTextColor, // Matches #060644 (Primary Text)
+            size: 25,
+          ),
           onPressed: () {
             Navigator.pushReplacement(
               context,
@@ -179,7 +183,10 @@ class _LoginPageState extends State<LoginPage> {
               },
               child: Text(
                 "Register",
-                style: TextStyle(color: Colors.black, fontSize: 18),
+                style: TextStyle(
+                  color: ProviderTheme.primaryTextColor, // Matches #060644 (Primary Text)
+                  fontSize: 18,
+                ),
               ),
             ),
           ),
@@ -194,27 +201,30 @@ class _LoginPageState extends State<LoginPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
+                Text(
                   'Sign In',
                   style: TextStyle(
-                    color: Colors.black,
+                    color: ProviderTheme.primaryTextColor, // Matches #060644 (Primary Text)
                     fontSize: 40,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
                 const SizedBox(height: 10),
-                const Text(
+                Text(
                   "Log in to access your account and explore the services!",
-                  style: TextStyle(color: Colors.black, fontSize: 16),
+                  style: TextStyle(
+                    color: ProviderTheme.secondaryTextColor, // Matches #6B7280 (Secondary Text)
+                    fontSize: 16,
+                  ),
                 ),
               ],
             ),
           ),
           Expanded(
             child: Container(
-              decoration: const BoxDecoration(
-                color: Color(0xFF060644),
-                borderRadius: BorderRadius.only(
+              decoration: BoxDecoration(
+                color: ProviderTheme.primaryColor, // Matches #060644 (Primary)
+                borderRadius: const BorderRadius.only(
                   topLeft: Radius.circular(30.0),
                   topRight: Radius.circular(30.0),
                 ),
@@ -258,17 +268,17 @@ class _LoginPageState extends State<LoginPage> {
                         width: double.infinity,
                         height: 50,
                         child: isLoading
-                            ? const Center(
+                            ? Center(
                           child: CircularProgressIndicator(
-                            color: Colors.white,
+                            color: ProviderTheme.onPrimaryTextColor, // Matches #FFFFFF (On Primary Text)
                           ),
                         )
                             : ElevatedButton(
                           onPressed: loginWithEmailAndPassword,
                           style: ElevatedButton.styleFrom(
                             minimumSize: const Size(double.infinity, 50),
-                            backgroundColor: Colors.white,
-                            foregroundColor: Colors.black,
+                            backgroundColor: ProviderTheme.surfaceColor, // Matches #FFFFFF (Surface)
+                            foregroundColor: ProviderTheme.primaryColor, // Matches #060644 (Primary)
                           ),
                           child: const Text(
                             "Login",
@@ -289,11 +299,13 @@ class _LoginPageState extends State<LoginPage> {
                             );
                           },
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.green,
-                            foregroundColor: Colors.white,
+                            backgroundColor: ProviderTheme.successColor, // Matches #388E3C (Success Text)
+                            foregroundColor: ProviderTheme.onPrimaryTextColor, // Matches #FFFFFF (On Primary Text)
                           ),
-                          child: const Text("Become a Provider",
-                              style: TextStyle(fontSize: 19)),
+                          child: const Text(
+                            "Become a Provider",
+                            style: TextStyle(fontSize: 19),
+                          ),
                         ),
                       ),
                       const SizedBox(height: 20),
@@ -317,38 +329,56 @@ class _LoginPageState extends State<LoginPage> {
     return TextFormField(
       controller: controller,
       obscureText: isPassword && _isObscure,
-      style: const TextStyle(color: Colors.black, fontSize: 16),
+      style: TextStyle(
+        color: ProviderTheme.primaryTextColor, // Matches #060644 (Primary Text)
+        fontSize: 16,
+      ),
       validator: validator,
       decoration: InputDecoration(
         hintText: hintText,
-        hintStyle: const TextStyle(color: Colors.black),
+        hintStyle: TextStyle(
+          color: ProviderTheme.secondaryTextColor, // Matches #6B7280 (Secondary Text)
+        ),
         filled: true,
-        fillColor: Colors.grey[300],
-        errorStyle: const TextStyle(color: Colors.red),
+        fillColor: ProviderTheme.dividerColor, // Matches #D1D9E1 (Divider)
+        errorStyle: TextStyle(
+          color: ProviderTheme.errorTextColor, // Matches #D32F2F (Error Text)
+        ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(23),
           borderSide: BorderSide(
-            color: controller.text.isNotEmpty ? Colors.green : Colors.black,
+            color: controller.text.isNotEmpty
+                ? ProviderTheme.successColor // Matches #388E3C (Success Text)
+                : ProviderTheme.onPrimaryTextColor, // Matches #FFFFFF (On Primary Text)
             width: 1.5,
           ),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(23),
-          borderSide: const BorderSide(color: Colors.green, width: 2),
+          borderSide: BorderSide(
+            color: ProviderTheme.successColor, // Matches #388E3C (Success Text)
+            width: 2,
+          ),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(23),
-          borderSide: const BorderSide(color: Colors.red, width: 1.5),
+          borderSide: BorderSide(
+            color: ProviderTheme.errorTextColor, // Matches #D32F2F (Error Text)
+            width: 1.5,
+          ),
         ),
         focusedErrorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(23),
-          borderSide: const BorderSide(color: Colors.red, width: 2),
+          borderSide: BorderSide(
+            color: ProviderTheme.errorTextColor, // Matches #D32F2F (Error Text)
+            width: 2,
+          ),
         ),
         suffixIcon: isPassword
             ? IconButton(
-          icon: Icon(
+              icon: Icon(
             _isObscure ? Icons.visibility : Icons.visibility_off,
-            color: Colors.black,
+            color: ProviderTheme.primaryTextColor, // Matches #060644 (Primary Text)
           ),
           onPressed: () {
             setState(() {
@@ -372,7 +402,10 @@ class _LoginPageState extends State<LoginPage> {
         },
         child: Text(
           text,
-          style: const TextStyle(color: Colors.white, fontSize: 15),
+          style: TextStyle(
+            color: ProviderTheme.onPrimaryTextColor, // Matches #FFFFhFF (On Primary Text)
+            fontSize: 15,
+          ),
         ),
       ),
     );

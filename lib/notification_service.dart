@@ -159,10 +159,14 @@ class NotificationService {
     if (_context != null) {
       ScaffoldMessenger.of(_context!).showSnackBar(
         SnackBar(
+          // Background color is set by ProviderTheme.snackBarTheme (Primary #060644)
           content: Text(
-              '${message.notification?.title}: ${message.notification?.body}'),
+            '${message.notification?.title}: ${message.notification?.body}',
+            // Text color is set by ProviderTheme.snackBarTheme.contentTextStyle (On Primary Text #FFFFFF)
+          ),
           action: SnackBarAction(
             label: 'View',
+            // Text color is set by ProviderTheme.snackBarTheme.actionTextColor (Accent #FFD700)
             onPressed: () => _handleMessage(message),
           ),
         ),

@@ -6,7 +6,7 @@ import 'package:dio/dio.dart';
 import 'package:service_provider/User%20Panel/UserOtpPage.dart';
 import 'package:service_provider/User%20Panel/edit_profile.dart';
 import 'package:service_provider/User%20Panel/user_login.dart';
-import 'package:service_provider/User%20Panel/UserOtpPage.dart'; // Import UserOtpPage
+import 'package:service_provider/theme.dart';
 
 class UserProfile extends StatefulWidget {
   @override
@@ -87,47 +87,56 @@ class _UserProfileState extends State<UserProfile> {
   }
 
   Future<void> _showLogoutConfirmation(BuildContext context) async {
+    final screenWidth = MediaQuery.of(context).size.width;
     return showDialog<void>(
       context: context,
       barrierDismissible: true,
       builder: (BuildContext context) {
         return Dialog(
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-          backgroundColor: Color(0xFF060644),
+          backgroundColor: ProviderTheme.primaryColor, // Matches #060644 (Primary)
           child: Padding(
-            padding: EdgeInsets.all(20),
+            padding: EdgeInsets.all(screenWidth * 0.05),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(Icons.logout, size: 50, color: Colors.white),
-                SizedBox(height: 16),
+                Icon(
+                  Icons.logout,
+                  size: screenWidth * 0.12,
+                  color: ProviderTheme.onPrimaryTextColor, // Matches #FFFFFF (On Primary Text)
+                ),
+                SizedBox(height: screenWidth * 0.04),
                 Text(
                   'Are you sure?',
                   style: TextStyle(
-                    fontSize: 20,
+                    fontSize: screenWidth * 0.05,
                     fontWeight: FontWeight.bold,
-                    color: Colors.white,
+                    color: ProviderTheme.onPrimaryTextColor, // Matches #FFFFFF (On Primary Text)
                   ),
                 ),
-                SizedBox(height: 10),
+                SizedBox(height: screenWidth * 0.025),
                 Text(
                   'You will be logged out of your account.',
+                  textAlign: TextAlign.center, // Apply it here
                   style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.white70,
+                    fontSize: screenWidth * 0.035,
+                    color: ProviderTheme.onPrimaryTextColor.withOpacity(0.7), // Matches #FFFFFF with opacity
                   ),
-                  textAlign: TextAlign.center,
                 ),
-                SizedBox(height: 20),
+
+                SizedBox(height: screenWidth * 0.05),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
                     ElevatedButton(
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.white,
+                        backgroundColor: ProviderTheme.surfaceColor, // Matches #FFFFFF (Surface)
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(10),
                         ),
+                        padding: EdgeInsets.symmetric(
+                            horizontal: screenWidth * 0.05,
+                            vertical: screenWidth * 0.025),
                       ),
                       onPressed: () {
                         Navigator.pop(context);
@@ -135,21 +144,25 @@ class _UserProfileState extends State<UserProfile> {
                       child: Text(
                         'Cancel',
                         style: TextStyle(
-                          color: Color(0xFF060644),
+                          color: ProviderTheme.primaryColor, // Matches #060644 (Primary)
                           fontWeight: FontWeight.bold,
+                          fontSize: screenWidth * 0.035,
                         ),
                       ),
                     ),
                     ElevatedButton(
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.red,
+                        backgroundColor: ProviderTheme.errorTextColor, // Matches #D32F2F (Error Text)
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(10),
                         ),
+                        padding: EdgeInsets.symmetric(
+                            horizontal: screenWidth * 0.05,
+                            vertical: screenWidth * 0.025),
                       ),
                       onPressed: () async {
                         await _auth.signOut();
-                        Navigator.pop(context); // Close the dialog
+                        Navigator.pop(context);
                         Navigator.pushReplacement(
                           context,
                           MaterialPageRoute(builder: (context) => LoginPage()),
@@ -158,8 +171,9 @@ class _UserProfileState extends State<UserProfile> {
                       child: Text(
                         'Logout',
                         style: TextStyle(
-                          color: Colors.white,
+                          color: ProviderTheme.onPrimaryTextColor, // Matches #FFFFFF (On Primary Text)
                           fontWeight: FontWeight.bold,
+                          fontSize: screenWidth * 0.035,
                         ),
                       ),
                     ),
@@ -175,13 +189,20 @@ class _UserProfileState extends State<UserProfile> {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
+
     return Scaffold(
-      backgroundColor: Color(0xFF060644),
+      backgroundColor: ProviderTheme.primaryColor, // Matches #060644 (Primary)
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Colors.white),
+          icon: Icon(
+            Icons.arrow_back,
+            color: ProviderTheme.onPrimaryTextColor, // Matches #FFFFFF (On Primary Text)
+            size: screenWidth * 0.06,
+          ),
           onPressed: () => Navigator.pop(context),
         ),
       ),
@@ -190,13 +211,18 @@ class _UserProfileState extends State<UserProfile> {
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return Center(
-              child: CircularProgressIndicator(color: Colors.white),
+              child: CircularProgressIndicator(
+                color: ProviderTheme.onPrimaryTextColor, // Matches #FFFFFF (On Primary Text)
+              ),
             );
           } else if (snapshot.hasError) {
             return Center(
               child: Text(
                 'Error loading profile',
-                style: TextStyle(color: Colors.white),
+                style: TextStyle(
+                  color: ProviderTheme.onPrimaryTextColor, // Matches #FFFFFF (On Primary Text)
+                  fontSize: screenWidth * 0.045,
+                ),
               ),
             );
           }
@@ -207,14 +233,14 @@ class _UserProfileState extends State<UserProfile> {
               Container(
                 width: double.infinity,
                 decoration: BoxDecoration(
-                  color: Color(0xFF060644),
+                  color: ProviderTheme.primaryColor, // Matches #060644 (Primary)
                   borderRadius: BorderRadius.vertical(
-                    bottom: Radius.circular(30),
+                    bottom: Radius.circular(screenWidth * 0.075),
                   ),
                 ),
                 child: SafeArea(
                   child: Padding(
-                    padding: EdgeInsets.all(20),
+                    padding: EdgeInsets.all(screenWidth * 0.05),
                     child: Column(
                       children: [
                         GestureDetector(
@@ -225,19 +251,22 @@ class _UserProfileState extends State<UserProfile> {
                                 decoration: BoxDecoration(
                                   shape: BoxShape.circle,
                                   border: Border.all(
-                                    color: Colors.white,
+                                    color: ProviderTheme.onPrimaryTextColor, // Matches #FFFFFF (On Primary Text)
                                     width: 4,
                                   ),
                                 ),
                                 child: CircleAvatar(
-                                  radius: 50,
-                                  backgroundColor: Colors.grey[300],
+                                  radius: screenWidth * 0.12,
+                                  backgroundColor: ProviderTheme.dividerColor, // Matches #D1D9E1 (Divider)
                                   backgroundImage: _profileImageUrl != null
                                       ? NetworkImage(_profileImageUrl!)
                                       : null,
                                   child: _profileImageUrl == null
-                                      ? Icon(Icons.person,
-                                      size: 50, color: Colors.grey[400])
+                                      ? Icon(
+                                    Icons.person,
+                                    size: screenWidth * 0.12,
+                                    color: ProviderTheme.secondaryTextColor, // Matches #6B7280 (Secondary Text)
+                                  )
                                       : null,
                                 ),
                               ),
@@ -245,25 +274,28 @@ class _UserProfileState extends State<UserProfile> {
                                 bottom: 0,
                                 right: 0,
                                 child: Container(
-                                  padding: EdgeInsets.all(4),
+                                  padding: EdgeInsets.all(screenWidth * 0.01),
                                   decoration: BoxDecoration(
-                                    color: Colors.white,
+                                    color: ProviderTheme.onPrimaryTextColor, // Matches #FFFFFF (On Primary Text)
                                     shape: BoxShape.circle,
                                   ),
-                                  child: Icon(Icons.camera_alt,
-                                      size: 16, color: Color(0xFF060644)),
+                                  child: Icon(
+                                    Icons.camera_alt,
+                                    size: screenWidth * 0.04,
+                                    color: ProviderTheme.primaryColor, // Matches #060644 (Primary)
+                                  ),
                                 ),
                               ),
                             ],
                           ),
                         ),
-                        SizedBox(height: 16),
+                        SizedBox(height: screenHeight * 0.02),
                         Text(
                           _userName ?? 'Hello, User',
                           style: TextStyle(
-                            fontSize: 24,
+                            fontSize: screenWidth * 0.06,
                             fontWeight: FontWeight.bold,
-                            color: Colors.white,
+                            color: ProviderTheme.onPrimaryTextColor, // Matches #FFFFFF (On Primary Text)
                           ),
                         ),
                         Text(
@@ -271,10 +303,11 @@ class _UserProfileState extends State<UserProfile> {
                               ? '+91 $_phoneNumber'
                               : 'Lagos, Nigeria',
                           style: TextStyle(
-                            fontSize: 16,
-                            color: Colors.white70,
+                            fontSize: screenWidth * 0.04,
+                            color: ProviderTheme.onPrimaryTextColor.withOpacity(0.7), // Matches #FFFFFF with opacity
                           ),
                         ),
+                        SizedBox(height: screenHeight * 0.02),
                       ],
                     ),
                   ),
@@ -283,81 +316,126 @@ class _UserProfileState extends State<UserProfile> {
               // Bottom White Section
               Expanded(
                 child: Container(
-                  padding: EdgeInsets.all(20),
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: ProviderTheme.surfaceColor, // Matches #FFFFFF (Surface)
                     borderRadius: BorderRadius.vertical(
-                      top: Radius.circular(30),
+                      top: Radius.circular(screenWidth * 0.075),
                     ),
                   ),
-                  child: SingleChildScrollView(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        ListTile(
-                          leading: Icon(Icons.person_outline,
-                              color: Color(0xFF060644)),
-                          title: Text('Edit Profile'),
-                          trailing: Icon(Icons.arrow_forward_ios,
-                              color: Color(0xFF060644)),
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) => EditUserProfile()),
-                            );
-                          },
+                  child: ListView(
+                    padding: EdgeInsets.all(screenWidth * 0.05),
+                    children: [
+                      ListTile(
+                        leading: Icon(
+                          Icons.person_outline,
+                          color: ProviderTheme.primaryColor, // Matches #060644 (Primary)
+                          size: screenWidth * 0.06,
                         ),
-                        Divider(),
-                        ListTile(
-                          leading:
-                          Icon(Icons.lock_outline, color: Color(0xFF060644)),
-                          title: Text('Change Password'),
-                          trailing: Icon(Icons.arrow_forward_ios,
-                              color: Color(0xFF060644)),
-                          onTap: () {},
-                        ),
-                        Divider(),
-                        ListTile(
-                          leading: Icon(Icons.dark_mode_outlined,
-                              color: Color(0xFF060644)),
-                          title: Text('Dark Mode'),
-                          trailing: Switch(
-                            value: true,
-                            onChanged: (value) {},
-                            activeColor: Color(0xFF060644),
+                        title: Text(
+                          'Edit Profile',
+                          style: TextStyle(
+                            fontSize: screenWidth * 0.045,
+                            color: ProviderTheme.primaryTextColor, // Matches #060644 (Primary Text)
                           ),
                         ),
-                        Divider(),
-                        ListTile(
-                          leading: Icon(Icons.payment, color: Color(0xFF060644)),
-                          title: Text('Add Payment Method'),
-                          trailing: Icon(Icons.arrow_forward_ios,
-                              color: Color(0xFF060644)),
-                          onTap: () {},
+                        trailing: Icon(
+                          Icons.arrow_forward_ios,
+                          color: ProviderTheme.primaryColor, // Matches #060644 (Primary)
+                          size: screenWidth * 0.045,
                         ),
-                        Divider(),
-                        ListTile(
-                          leading: Icon(Icons.vpn_key, color: Color(0xFF060644)), // New icon for OTP
-                          title: Text('View OTP'),
-                          trailing: Icon(Icons.arrow_forward_ios,
-                              color: Color(0xFF060644)),
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) => UserOtpPage()),
-                            );
-                          },
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => EditUserProfile()),
+                          );
+                        },
+                      ),
+                      Divider(color: ProviderTheme.dividerColor), // Matches #D1D9E1 (Divider)
+                      ListTile(
+                        leading: Icon(
+                          Icons.lock_outline,
+                          color: ProviderTheme.primaryColor, // Matches #060644 (Primary)
+                          size: screenWidth * 0.06,
                         ),
-                        Divider(),
-                        ListTile(
-                          leading: Icon(Icons.logout, color: Color(0xFF060644)),
-                          title: Text('Logout'),
-                          onTap: () => _showLogoutConfirmation(context),
+                        title: Text(
+                          'Change Password',
+                          style: TextStyle(
+                            fontSize: screenWidth * 0.045,
+                            color: ProviderTheme.primaryTextColor, // Matches #060644 (Primary Text)
+                          ),
                         ),
-                      ],
-                    ),
+                        trailing: Icon(
+                          Icons.arrow_forward_ios,
+                          color: ProviderTheme.primaryColor, // Matches #060644 (Primary)
+                          size: screenWidth * 0.045,
+                        ),
+                        onTap: () {},
+                      ),
+                      Divider(color: ProviderTheme.dividerColor), // Matches #D1D9E1 (Divider)
+                      ListTile(
+                        leading: Icon(
+                          Icons.dark_mode_outlined,
+                          color: ProviderTheme.primaryColor, // Matches #060644 (Primary)
+                          size: screenWidth * 0.06,
+                        ),
+                        title: Text(
+                          'Dark Mode',
+                          style: TextStyle(
+                            fontSize: screenWidth * 0.045,
+                            color: ProviderTheme.primaryTextColor, // Matches #060644 (Primary Text)
+                          ),
+                        ),
+                        trailing: Switch(
+                          value: true,
+                          onChanged: (value) {},
+                          activeColor: ProviderTheme.primaryColor, // Matches #060644 (Primary)
+                        ),
+                      ),
+                      Divider(color: ProviderTheme.dividerColor), // Matches #D1D9E1 (Divider)
+                      ListTile(
+                        leading: Icon(
+                          Icons.vpn_key,
+                          color: ProviderTheme.primaryColor, // Matches #060644 (Primary)
+                          size: screenWidth * 0.06,
+                        ),
+                        title: Text(
+                          'View OTP',
+                          style: TextStyle(
+                            fontSize: screenWidth * 0.045,
+                            color: ProviderTheme.primaryTextColor, // Matches #060644 (Primary Text)
+                          ),
+                        ),
+                        trailing: Icon(
+                          Icons.arrow_forward_ios,
+                          color: ProviderTheme.primaryColor, // Matches #060644 (Primary)
+                          size: screenWidth * 0.045,
+                        ),
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => UserOtpPage()),
+                          );
+                        },
+                      ),
+                      Divider(color: ProviderTheme.dividerColor), // Matches #D1D9E1 (Divider)
+                      ListTile(
+                        leading: Icon(
+                          Icons.logout,
+                          color: ProviderTheme.primaryColor, // Matches #060644 (Primary)
+                          size: screenWidth * 0.06,
+                        ),
+                        title: Text(
+                          'Logout',
+                          style: TextStyle(
+                            fontSize: screenWidth * 0.045,
+                            color: ProviderTheme.primaryTextColor, // Matches #060644 (Primary Text)
+                          ),
+                        ),
+                        onTap: () => _showLogoutConfirmation(context),
+                      ),
+                    ],
                   ),
                 ),
               ),

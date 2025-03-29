@@ -12,10 +12,8 @@ import 'package:service_provider/User%20Panel/main_home.dart'; // User home
 import 'package:service_provider/Provider%20Panel/screens/main.dart'; // Provider home
 import 'package:service_provider/welcome_screen.dart';
 import 'package:service_provider/notification_service.dart';
-// import 'package:service_provider/Provider%20Panel/screens/bookings/provider_booking.dart'; // For navigation
-// import 'package:service_provider/Provider%20Panel/screens/chat/provider_chat_list.dart'; // For navigation
 import 'firebase_options.dart';
-import 'theme.dart'; // Import the theme file
+import 'theme.dart'; // Import the theme file (ProviderTheme)
 
 final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
 
@@ -26,9 +24,11 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   print('Body: ${message.notification?.body}');
   print('Data: ${message.data}');
   await NotificationService.showBackgroundNotification(message);  // Use NotificationService
+
 }
 
 void main() async {
+
   WidgetsFlutterBinding.ensureInitialized();
 
   // Initialize Firebase
@@ -51,17 +51,13 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Service Provider App',
-      theme: AppTheme.lightTheme,
+      theme: ProviderTheme.themeData, // Updated to use ProviderTheme
       home: const SplashScreen(),
       navigatorKey: navigatorKey, // Assign the navigator key
       routes: {
         '/providerBooking': (context) => ProviderBooking(),
-        //     ProviderBooking(
-        //   bookingId: ModalRoute.of(context)?.settings.arguments as String?,
-        // ),
-
         '/chat': (context) => ProviderChatListScreen(),
-        '/serviceRequests': (context) => PendingServicesScreen(), // Placeholder; replace with actual screen
+        '/serviceRequests': (context) => PendingServicesScreen(),
       },
     );
   }
@@ -94,7 +90,7 @@ class _SplashScreenState extends State<SplashScreen> {
       body: Container(
         width: double.infinity,
         height: double.infinity,
-        color: AppTheme.primaryColorCustom,
+        color: ProviderTheme.primaryColor, // Matches #060644 (Primary)
         child: Stack(
           children: [
             Positioned(
@@ -104,7 +100,7 @@ class _SplashScreenState extends State<SplashScreen> {
                 width: 180,
                 height: 180,
                 decoration: BoxDecoration(
-                  color: AppTheme.secondaryColorCustom,
+                  color: ProviderTheme.secondaryColor, // Matches #8B9EB2 (Secondary)
                   shape: BoxShape.circle,
                 ),
               ),
@@ -116,7 +112,7 @@ class _SplashScreenState extends State<SplashScreen> {
                 width: 250,
                 height: 250,
                 decoration: BoxDecoration(
-                  color: AppTheme.secondaryColorCustom,
+                  color: ProviderTheme.secondaryColor, // Matches #8B9EB2 (Secondary)
                   shape: BoxShape.circle,
                 ),
               ),
@@ -136,7 +132,7 @@ class _SplashScreenState extends State<SplashScreen> {
                     'Quick Expert',
                     style: Theme.of(context).textTheme.displayLarge?.copyWith(
                       fontSize: 30.0,
-                      color: AppTheme.secondaryColorCustom,
+                      color: ProviderTheme.onPrimaryTextColor, // Updated to #FFFFFF (On Primary Text) for better contrast
                     ),
                   ),
                 ],
@@ -158,8 +154,12 @@ class AuthStateHandler extends StatelessWidget {
       stream: FirebaseAuth.instance.authStateChanges(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Scaffold(
-            body: Center(child: CircularProgressIndicator()),
+          return Scaffold(
+            body: Center(
+              child: CircularProgressIndicator(
+                // Color is already set by ProviderTheme.progressIndicatorTheme (Primary #060644)
+              ),
+            ),
           );
         }
 
@@ -171,8 +171,12 @@ class AuthStateHandler extends StatelessWidget {
           future: _getUserType(snapshot.data!.uid),
           builder: (context, userTypeSnapshot) {
             if (userTypeSnapshot.connectionState == ConnectionState.waiting) {
-              return const Scaffold(
-                body: Center(child: CircularProgressIndicator()),
+              return Scaffold(
+                body: Center(
+                  child: CircularProgressIndicator(
+                    // Color is already set by ProviderTheme.progressIndicatorTheme (Primary #060644)
+                  ),
+                ),
               );
             }
 
@@ -188,8 +192,16 @@ class AuthStateHandler extends StatelessWidget {
             } else if (userType == 'provider') {
               return Main();
             } else {
-              return const Scaffold(
-                body: Center(child: Text("Invalid user type!")),
+              return Scaffold(
+                body: Center(
+                  child: Text(
+                    "Invalid user type!",
+                    style: TextStyle(
+                      color: ProviderTheme.errorTextColor, // Matches #D32F2F (Error Text)
+                      fontSize: 18.0,
+                    ),
+                  ),
+                ),
               );
             }
           },

@@ -1,11 +1,13 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:service_provider/theme.dart';
+// import 'theme.dart'; // Import ProviderTheme
 
 class BookingTrackingPage extends StatelessWidget {
   final String bookingId;
   final Map<String, dynamic> bookingData;
-  final String serviceName; // Parameter for service name
+  final String serviceName;
 
   const BookingTrackingPage({
     required this.bookingId,
@@ -33,28 +35,28 @@ class BookingTrackingPage extends StatelessWidget {
           'title': 'Booking Placed',
           'description': 'We have received your Booking Request',
           'date': bookingDate,
-          'color': Colors.orange, // Orange for Pending
+          'color': ProviderTheme.pendingColor, // Matches #607D8B (Pending)
           'isActive': true,
         });
         stages.add({
           'title': 'Booking Confirmed',
           'description': 'We have been confirmed your Booking',
           'date': 'Not specified',
-          'color': Colors.green,
+          'color': ProviderTheme.completedColor, // Matches #388E3C (Confirmed/Completed)
           'isActive': false,
         });
         stages.add({
           'title': 'Booking Processed',
           'description': 'Provider is On the Way...',
           'date': 'Not specified',
-          'color': Colors.blue[800]!,
+          'color': ProviderTheme.ongoingColor, // Matches #7B1FA2 (Ongoing)
           'isActive': false,
         });
         stages.add({
           'title': 'Booking Completed',
           'description': 'Your Booking has been completed',
           'date': 'Not specified',
-          'color': Colors.blue[800]!,
+          'color': ProviderTheme.completedColor, // Matches #388E3C (Completed)
           'isActive': false,
         });
         break;
@@ -64,28 +66,28 @@ class BookingTrackingPage extends StatelessWidget {
           'title': 'Booking Placed',
           'description': 'We have received your Booking',
           'date': bookingDate,
-          'color': Colors.orange, // Orange for Pending (completed stage)
+          'color': ProviderTheme.pendingColor, // Matches #607D8B (Pending)
           'isActive': true,
         });
         stages.add({
           'title': 'Booking Confirmed',
           'description': 'We have been confirmed your Booking',
           'date': confirmedAt,
-          'color': Colors.green, // Green for Confirmed
+          'color': ProviderTheme.completedColor, // Matches #388E3C (Confirmed/Completed)
           'isActive': true,
         });
         stages.add({
           'title': 'Booking Processed',
           'description': 'Provider is On the Way...',
           'date': 'Not specified',
-          'color': Colors.blue[800]!,
+          'color': ProviderTheme.ongoingColor, // Matches #7B1FA2 (Ongoing)
           'isActive': false,
         });
         stages.add({
           'title': 'Booking Completed',
           'description': 'Your Booking has been completed',
           'date': 'Not specified',
-          'color': Colors.blue[800]!,
+          'color': ProviderTheme.completedColor, // Matches #388E3C (Completed)
           'isActive': false,
         });
         break;
@@ -95,28 +97,28 @@ class BookingTrackingPage extends StatelessWidget {
           'title': 'Booking Placed',
           'description': 'We have received your Booking',
           'date': bookingDate,
-          'color': Colors.orange, // Orange for Pending (completed stage)
+          'color': ProviderTheme.pendingColor, // Matches #607D8B (Pending)
           'isActive': true,
         });
         stages.add({
           'title': 'Booking Confirmed',
           'description': 'We have been confirmed your Booking',
           'date': confirmedAt,
-          'color': Colors.green, // Green for Confirmed (completed stage)
+          'color': ProviderTheme.completedColor, // Matches #388E3C (Confirmed/Completed)
           'isActive': true,
         });
         stages.add({
           'title': 'Booking Processed',
           'description': 'Provider is On the Way...',
           'date': ongoingAt,
-          'color': Colors.blue[800]!, // Blue for Ongoing
+          'color': ProviderTheme.ongoingColor, // Matches #7B1FA2 (Ongoing)
           'isActive': true,
         });
         stages.add({
           'title': 'Booking Completed',
           'description': 'Your Booking has been completed',
           'date': 'Not specified',
-          'color': Colors.blue[800]!,
+          'color': ProviderTheme.completedColor, // Matches #388E3C (Completed)
           'isActive': false,
         });
         break;
@@ -126,28 +128,28 @@ class BookingTrackingPage extends StatelessWidget {
           'title': 'Booking Placed',
           'description': 'We have received your Booking',
           'date': bookingDate,
-          'color': Colors.orange, // Orange for Pending (completed stage)
+          'color': ProviderTheme.pendingColor, // Matches #607D8B (Pending)
           'isActive': true,
         });
         stages.add({
           'title': 'Booking Confirmed',
           'description': 'We have been confirmed your Booking',
           'date': confirmedAt,
-          'color': Colors.green, // Green for Confirmed (completed stage)
+          'color': ProviderTheme.completedColor, // Matches #388E3C (Confirmed/Completed)
           'isActive': true,
         });
         stages.add({
           'title': 'Booking Processed',
           'description': 'Provider is On the Way...',
           'date': ongoingAt,
-          'color': Colors.blue[800]!, // Blue for Ongoing (completed stage)
+          'color': ProviderTheme.ongoingColor, // Matches #7B1FA2 (Ongoing)
           'isActive': true,
         });
         stages.add({
           'title': 'Booking Completed',
           'description': 'Your Booking has been completed',
           'date': completedAt,
-          'color': Colors.blue[800]!, // Blue for Completed
+          'color': ProviderTheme.completedColor, // Matches #388E3C (Completed)
           'isActive': true,
         });
         break;
@@ -157,28 +159,28 @@ class BookingTrackingPage extends StatelessWidget {
           'title': 'Booking Placed',
           'description': 'We have received your Booking',
           'date': bookingDate,
-          'color': Colors.orange, // Orange for Pending (completed stage)
+          'color': ProviderTheme.pendingColor, // Matches #607D8B (Pending)
           'isActive': true,
         });
         stages.add({
           'title': 'Booking Confirmed',
           'description': 'We have been confirmed your Booking',
           'date': confirmedAt,
-          'color': Colors.green, // Green for Confirmed (completed stage, if applicable)
+          'color': ProviderTheme.completedColor, // Matches #388E3C (Confirmed/Completed)
           'isActive': confirmedAt != 'Not specified',
         });
         stages.add({
           'title': 'Booking Processed',
           'description': 'Provider is On the Way...',
           'date': ongoingAt,
-          'color': Colors.blue[800]!, // Blue for Ongoing (completed stage, if applicable)
+          'color': ProviderTheme.ongoingColor, // Matches #7B1FA2 (Ongoing)
           'isActive': ongoingAt != 'Not specified',
         });
         stages.add({
           'title': 'Booking Cancelled',
           'description': 'Your Booking has been cancelled',
           'date': cancelledAt,
-          'color': Colors.red, // Red for Cancelled
+          'color': ProviderTheme.canceledColor, // Matches #D32F2F (Cancelled)
           'isActive': true,
         });
         break;
@@ -188,28 +190,28 @@ class BookingTrackingPage extends StatelessWidget {
           'title': 'Booking Placed',
           'description': 'We have received your Booking',
           'date': bookingDate,
-          'color': Colors.orange, // Default to orange for Pending
+          'color': ProviderTheme.pendingColor, // Matches #607D8B (Pending)
           'isActive': true,
         });
         stages.add({
           'title': 'Booking Confirmed',
           'description': 'We have been confirmed your Booking',
           'date': 'Not specified',
-          'color': Colors.green,
+          'color': ProviderTheme.completedColor, // Matches #388E3C (Confirmed/Completed)
           'isActive': false,
         });
         stages.add({
           'title': 'Booking Processed',
           'description': 'Provider is On the Way...',
           'date': 'Not specified',
-          'color': Colors.blue[800]!,
+          'color': ProviderTheme.ongoingColor, // Matches #7B1FA2 (Ongoing)
           'isActive': false,
         });
         stages.add({
           'title': 'Booking Completed',
           'description': 'Your Booking has been completed',
           'date': 'Not specified',
-          'color': Colors.blue[800]!,
+          'color': ProviderTheme.completedColor, // Matches #388E3C (Completed)
           'isActive': false,
         });
     }
@@ -229,22 +231,37 @@ class BookingTrackingPage extends StatelessWidget {
     List<Map<String, dynamic>> timelineStages = _getTimelineStages(status);
 
     return Scaffold(
-      backgroundColor: Color(0xFF060644), // Primary color as background (same as UserBooking)
+      // Background color is set by ProviderTheme.scaffoldBackgroundColor (#F5F7FA)
       appBar: AppBar(
+        // Background color is set by ProviderTheme.appBarTheme (Primary #060644)
         leading: IconButton(
-          icon: Icon(Icons.arrow_back_ios, color: Colors.white),
+          icon: Icon(
+            Icons.arrow_back_ios,
+            color: ProviderTheme.onPrimaryTextColor, // Matches #FFFFFF (On Primary Text)
+          ),
           onPressed: () => Navigator.pop(context),
         ),
-        title: Text('Track Bookings', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-        backgroundColor: Color(0xFF060644),
+        title: Text(
+          'Track Bookings',
+          style: TextStyle(
+            color: ProviderTheme.onPrimaryTextColor, // Matches #FFFFFF (On Primary Text)
+            fontWeight: FontWeight.bold,
+          ),
+        ),
         elevation: 0,
         actions: [
           IconButton(
-            icon: Icon(Icons.search, color: Colors.white),
+            icon: Icon(
+              Icons.search,
+              color: ProviderTheme.onPrimaryTextColor, // Matches #FFFFFF (On Primary Text)
+            ),
             onPressed: () {},
           ),
           IconButton(
-            icon: Icon(Icons.shopping_bag_outlined, color: Colors.white),
+            icon: Icon(
+              Icons.shopping_bag_outlined,
+              color: ProviderTheme.onPrimaryTextColor, // Matches #FFFFFF (On Primary Text)
+            ),
             onPressed: () {},
           ),
         ],
@@ -260,7 +277,7 @@ class BookingTrackingPage extends StatelessWidget {
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12.0),
                 ),
-                color: Colors.white, // Secondary color for card (same as UserBooking)
+                color: ProviderTheme.surfaceColor, // Matches #FFFFFF (Surface)
                 child: Padding(
                   padding: const EdgeInsets.all(16.0),
                   child: Column(
@@ -269,7 +286,13 @@ class BookingTrackingPage extends StatelessWidget {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text('Order # $orderId', style: TextStyle(fontSize: 14, color: Colors.grey[600])),
+                          Text(
+                            'Order # $orderId',
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: ProviderTheme.secondaryTextColor, // Matches #6B7280 (Secondary Text)
+                            ),
+                          ),
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                             decoration: BoxDecoration(
@@ -280,7 +303,7 @@ class BookingTrackingPage extends StatelessWidget {
                               status,
                               style: TextStyle(
                                 fontSize: 12,
-                                color: timelineStages.last['color'],
+                                color: timelineStages.last['color'], // Matches the stage color
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
@@ -290,37 +313,43 @@ class BookingTrackingPage extends StatelessWidget {
                       SizedBox(height: 12),
                       Text(
                         serviceName,
-                        style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFF060644)),
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: ProviderTheme.primaryTextColor, // Matches #060644 (Primary Text)
+                        ),
                       ),
                       SizedBox(height: 12),
                       _buildDetailRow(Icons.calendar_today, 'Booking Date', bookingDate),
                       _buildDetailRow(Icons.calendar_today, 'Service Date', serviceDate),
                       _buildDetailRow(Icons.access_time, 'Service Time', serviceTime),
                       _buildDetailRow(Icons.attach_money, 'Total Amount', paymentAmount),
-                      // Add kiwi image or service-specific image if needed
                       SizedBox(height: 16),
                       Row(
                         children: [
-                          Icon(Icons.star, color: Colors.amber, size: 16),
-                          Icon(Icons.star, color: Colors.amber, size: 16),
-                          Icon(Icons.star, color: Colors.amber, size: 16),
-                          Icon(Icons.star, color: Colors.amber, size: 16),
-                          Icon(Icons.star, color: Colors.amber, size: 16),
+                          Icon(Icons.star, color: ProviderTheme.warningColor, size: 16), // Matches #FBC02D (Warning)
+                          Icon(Icons.star, color: ProviderTheme.warningColor, size: 16),
+                          Icon(Icons.star, color: ProviderTheme.warningColor, size: 16),
+                          Icon(Icons.star, color: ProviderTheme.warningColor, size: 16),
+                          Icon(Icons.star, color: ProviderTheme.warningColor, size: 16),
                         ],
                       ),
                     ],
                   ),
                 ),
               ),
-              SizedBox(height: 32), // Increased padding above the timeline
+              SizedBox(height: 32),
               Text(
                 'Track Booking',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF060644)),
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: ProviderTheme.primaryTextColor, // Matches #060644 (Primary Text)
+                ),
               ),
               SizedBox(height: 16),
-              // Timeline (unchanged from the example design)
               _buildOrderTimeline(timelineStages),
-              SizedBox(height: 32), // Increased padding below the timeline
+              SizedBox(height: 32),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
@@ -330,14 +359,22 @@ class BookingTrackingPage extends StatelessWidget {
                         SnackBar(content: Text('Contacting support...')),
                       );
                     },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Color(0xFF060644), // Primary color for buttons
-                      padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
+                    style: Theme.of(context).elevatedButtonTheme.style?.copyWith(
+                      // Background and text colors are set by ProviderTheme.elevatedButtonTheme
+                      // (Default Button #060644, On Primary Text #FFFFFF)
+                      padding: MaterialStateProperty.all(
+                        EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                      ),
+                      shape: MaterialStateProperty.all(
+                        RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
                       ),
                     ),
-                    child: Text('Contact Support', style: TextStyle(color: Colors.white, fontSize: 14)),
+                    child: Text(
+                      'Contact Support',
+                      style: TextStyle(fontSize: 14),
+                    ),
                   ),
                   ElevatedButton(
                     onPressed: () {
@@ -345,18 +382,26 @@ class BookingTrackingPage extends StatelessWidget {
                         SnackBar(content: Text('Viewing invoice...')),
                       );
                     },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Color(0xFF060644), // Primary color for buttons
-                      padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
+                    style: Theme.of(context).elevatedButtonTheme.style?.copyWith(
+                      // Background and text colors are set by ProviderTheme.elevatedButtonTheme
+                      // (Default Button #060644, On Primary Text #FFFFFF)
+                      padding: MaterialStateProperty.all(
+                        EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                      ),
+                      shape: MaterialStateProperty.all(
+                        RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
                       ),
                     ),
-                    child: Text('View Invoice', style: TextStyle(color: Colors.white, fontSize: 14)),
+                    child: Text(
+                      'View Invoice',
+                      style: TextStyle(fontSize: 14),
+                    ),
                   ),
                 ],
               ),
-              SizedBox(height: 16), // Added to ensure padding at the bottom
+              SizedBox(height: 16),
             ],
           ),
         ),
@@ -369,16 +414,27 @@ class BookingTrackingPage extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 4.0),
       child: Row(
         children: [
-          Icon(icon, size: 16, color: Color(0xFF060644)), // Primary color for icons
+          Icon(
+            icon,
+            size: 16,
+            color: ProviderTheme.primaryColor, // Matches #060644 (Primary)
+          ),
           SizedBox(width: 8),
           Text(
             '$label: ',
-            style: TextStyle(fontSize: 14, color: Colors.grey[600], fontWeight: FontWeight.bold),
+            style: TextStyle(
+              fontSize: 14,
+              color: ProviderTheme.secondaryTextColor, // Matches #6B7280 (Secondary Text)
+              fontWeight: FontWeight.bold,
+            ),
           ),
           Expanded(
             child: Text(
               value,
-              style: TextStyle(fontSize: 14, color: Colors.black87),
+              style: TextStyle(
+                fontSize: 14,
+                color: ProviderTheme.primaryTextColor, // Matches #060644 (Primary Text)
+              ),
               overflow: TextOverflow.ellipsis,
             ),
           ),
@@ -390,11 +446,11 @@ class BookingTrackingPage extends StatelessWidget {
   Widget _buildOrderTimeline(List<Map<String, dynamic>> timelineStages) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white, // Secondary color for container
+        color: ProviderTheme.surfaceColor, // Matches #FFFFFF (Surface)
         borderRadius: BorderRadius.circular(12.0),
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withOpacity(0.2),
+            color: ProviderTheme.shadowColor, // Matches #00000029 (Shadow)
             spreadRadius: 2,
             blurRadius: 5,
             offset: Offset(0, 3),
@@ -405,7 +461,7 @@ class BookingTrackingPage extends StatelessWidget {
         children: timelineStages.map((stage) {
           final index = timelineStages.indexOf(stage);
           final isActive = stage['isActive'];
-          final color = isActive ? stage['color'] : Colors.grey[300];
+          final color = isActive ? stage['color'] : ProviderTheme.disabledTextColor; // Matches #B0B8C4 (Disabled Text)
           final isLast = index == timelineStages.length - 1;
 
           return Padding(
@@ -413,7 +469,6 @@ class BookingTrackingPage extends StatelessWidget {
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Vertical line and icon column
                 Column(
                   children: [
                     Container(
@@ -425,7 +480,7 @@ class BookingTrackingPage extends StatelessWidget {
                       ),
                       child: Icon(
                         isActive ? Icons.check : Icons.circle,
-                        color: Colors.white,
+                        color: ProviderTheme.onPrimaryTextColor, // Matches #FFFFFF (On Primary Text)
                         size: 20,
                       ),
                     ),
@@ -433,12 +488,11 @@ class BookingTrackingPage extends StatelessWidget {
                       Container(
                         width: 2,
                         height: 60,
-                        color: isActive ? color : Colors.grey[300],
+                        color: isActive ? color : ProviderTheme.disabledTextColor, // Matches #B0B8C4 (Disabled Text)
                       ),
                   ],
                 ),
                 SizedBox(width: 16),
-                // Stage details
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -448,7 +502,9 @@ class BookingTrackingPage extends StatelessWidget {
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
-                          color: isActive ? color : Colors.grey[600],
+                          color: isActive
+                              ? color
+                              : ProviderTheme.secondaryTextColor, // Matches #6B7280 (Secondary Text)
                         ),
                       ),
                       SizedBox(height: 4),
@@ -456,7 +512,7 @@ class BookingTrackingPage extends StatelessWidget {
                         stage['description'],
                         style: TextStyle(
                           fontSize: 14,
-                          color: Colors.grey[600],
+                          color: ProviderTheme.secondaryTextColor, // Matches #6B7280 (Secondary Text)
                         ),
                       ),
                       if (stage['date'] != 'Not specified') ...[
@@ -465,7 +521,7 @@ class BookingTrackingPage extends StatelessWidget {
                           stage['date'],
                           style: TextStyle(
                             fontSize: 14,
-                            color: Colors.black87,
+                            color: ProviderTheme.primaryTextColor, // Matches #060644 (Primary Text)
                           ),
                         ),
                       ],
