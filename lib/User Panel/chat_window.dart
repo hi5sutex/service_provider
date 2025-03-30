@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:service_provider/theme.dart';
-// import 'theme.dart'; // Import ProviderTheme
+import 'package:service_provider/User%20Panel/Usertheme.dart';
+// import 'Usertheme.dart'; // Import ProviderTheme
 
 class UserChatWindow extends StatelessWidget {
   final int chatId;
@@ -21,7 +21,7 @@ class UserChatWindow extends StatelessWidget {
         leading: IconButton(
           icon: Icon(
             Icons.arrow_back,
-            color: ProviderTheme.onPrimaryTextColor, // Matches #FFFFFF (On Primary Text)
+            color: UserTheme.onPrimaryTextColor, // Matches #FFFFFF (On Primary Text)
           ),
           onPressed: () {
             Navigator.pop(context);
@@ -40,13 +40,13 @@ class UserChatWindow extends StatelessWidget {
                 Text(
                   userName,
                   style: TextStyle(
-                    color: ProviderTheme.onPrimaryTextColor, // Matches #FFFFFF (On Primary Text)
+                    color: UserTheme.onPrimaryTextColor, // Matches #FFFFFF (On Primary Text)
                   ),
                 ),
                 Text(
                   'Online',
                   style: TextStyle(
-                    color: ProviderTheme.successColor, // Matches #388E3C (Success)
+                    color: UserTheme.successColor, // Matches #388E3C (Success)
                     fontSize: 12,
                   ),
                 ),
@@ -89,12 +89,12 @@ class UserChatWindow extends StatelessWidget {
         padding: EdgeInsets.all(12),
         decoration: BoxDecoration(
           color: isSender
-              ? ProviderTheme.primaryColor // Matches #060644 (Primary)
-              : ProviderTheme.surfaceColor, // Matches #FFFFFF (Surface)
+              ? UserTheme.primaryColor // Matches #060644 (Primary)
+              : UserTheme.surfaceColor, // Matches #FFFFFF (Surface)
           borderRadius: BorderRadius.circular(12),
           boxShadow: [
             BoxShadow(
-              color: ProviderTheme.shadowColor, // Matches #00000029 (Shadow)
+              color: UserTheme.shadowColor, // Matches #00000029 (Shadow)
               blurRadius: 4,
               offset: Offset(0, 2),
             ),
@@ -107,8 +107,8 @@ class UserChatWindow extends StatelessWidget {
               text,
               style: TextStyle(
                 color: isSender
-                    ? ProviderTheme.onPrimaryTextColor // Matches #FFFFFF (On Primary Text)
-                    : ProviderTheme.primaryTextColor, // Matches #060644 (Primary Text)
+                    ? UserTheme.onPrimaryTextColor // Matches #FFFFFF (On Primary Text)
+                    : UserTheme.primaryTextColor, // Matches #060644 (Primary Text)
               ),
             ),
             SizedBox(height: 4),
@@ -117,8 +117,8 @@ class UserChatWindow extends StatelessWidget {
               style: TextStyle(
                 fontSize: 10,
                 color: isSender
-                    ? ProviderTheme.onPrimaryTextColor.withOpacity(0.7) // Matches #FFFFFF with opacity
-                    : ProviderTheme.secondaryTextColor, // Matches #6B7280 (Secondary Text)
+                    ? UserTheme.onPrimaryTextColor.withOpacity(0.7) // Matches #FFFFFF with opacity
+                    : UserTheme.secondaryTextColor, // Matches #6B7280 (Secondary Text)
               ),
             ),
           ],
@@ -130,13 +130,13 @@ class UserChatWindow extends StatelessWidget {
   Widget buildMessageInput() {
     return Container(
       padding: EdgeInsets.all(8),
-      color: ProviderTheme.surfaceColor, // Matches #FFFFFF (Surface)
+      color: UserTheme.surfaceColor, // Matches #FFFFFF (Surface)
       child: Row(
         children: [
           IconButton(
             icon: Icon(
               Icons.attachment,
-              color: ProviderTheme.secondaryTextColor, // Matches #6B7280 (Secondary Text)
+              color: UserTheme.secondaryTextColor, // Matches #6B7280 (Secondary Text)
             ),
             onPressed: () {},
           ),
@@ -155,7 +155,7 @@ class UserChatWindow extends StatelessWidget {
           IconButton(
             icon: Icon(
               Icons.send,
-              color: ProviderTheme.primaryColor, // Matches #060644 (Primary)
+              color: UserTheme.primaryColor, // Matches #060644 (Primary)
             ),
             onPressed: () {},
           ),

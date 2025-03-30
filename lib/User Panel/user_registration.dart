@@ -5,7 +5,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/services.dart';
 import 'package:service_provider/User%20Panel/user_verification.dart';
 import 'package:service_provider/User%20Panel/user_login.dart';
-import 'package:service_provider/theme.dart';
+import 'package:service_provider/User%20Panel/Usertheme.dart';
 import 'package:service_provider/welcome_screen.dart';
 
 class RegistrationPage extends StatefulWidget {
@@ -33,6 +33,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
     });
 
     if (!_formKey.currentState!.validate()) {
+      print("Form validation failed");
       return;
     }
 
@@ -40,6 +41,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Passwords do not match")),
       );
+      print("Passwords do not match");
       return;
     }
 
@@ -53,7 +55,10 @@ class _RegistrationPageState extends State<RegistrationPage> {
         otpType: OTPType.numeric,
       );
 
-      bool result = await EmailOTP.sendOTP(email: emailController.text);
+      print("Sending OTP to: ${emailController.text.trim()}");
+      bool result = await EmailOTP.sendOTP(email: emailController.text.trim());
+      print("OTP Send Result: $result");
+
       if (result) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text("OTP sent to your email")),
@@ -61,23 +66,23 @@ class _RegistrationPageState extends State<RegistrationPage> {
 
         await FirebaseFirestore.instance
             .collection('user_chatroom')
-            .doc(emailController.text)
+            .doc(emailController.text.trim())
             .set({
-          'name': nameController.text,
-          'phone': phoneController.text,
-          'email': emailController.text,
+          'name': nameController.text.trim(),
+          'phone': phoneController.text.trim(),
+          'email': emailController.text.trim(),
           'createdAt': FieldValue.serverTimestamp(),
           'role': 'user',
         });
 
-        Navigator.push(
+        Navigator.pushReplacement(
           context,
           MaterialPageRoute(
             builder: (context) => OtpVerificationPage(
-              name: nameController.text,
-              phone: phoneController.text,
-              email: emailController.text,
-              password: passwordController.text,
+              name: nameController.text.trim(),
+              phone: phoneController.text.trim(),
+              email: emailController.text.trim(),
+              password: passwordController.text.trim(),
             ),
           ),
         );
@@ -86,6 +91,10 @@ class _RegistrationPageState extends State<RegistrationPage> {
           const SnackBar(content: Text("Failed to send OTP")),
         );
       }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Error: ${e.toString()}")),
+      );
     } finally {
       setState(() => isLoading = false);
     }
@@ -98,19 +107,19 @@ class _RegistrationPageState extends State<RegistrationPage> {
     final theme = Theme.of(context);
 
     return Scaffold(
-      resizeToAvoidBottomInset: true, // Allow resizing when keyboard appears
-      backgroundColor: ProviderTheme.surfaceColor, // Matches #FFFFFF (Surface)
+      resizeToAvoidBottomInset: true,
+      backgroundColor: UserTheme.surfaceColor,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         systemOverlayStyle: SystemUiOverlayStyle(
-          statusBarColor: ProviderTheme.surfaceColor, // Matches #FFFFFF (Surface)
+          statusBarColor: UserTheme.surfaceColor,
           statusBarIconBrightness: Brightness.dark,
         ),
         leading: IconButton(
           icon: Icon(
             Icons.arrow_back,
-            color: ProviderTheme.primaryColor, // Matches #060644 (Primary)
+            color: UserTheme.primaryColor,
           ),
           onPressed: () {
             Navigator.pushReplacement(
@@ -124,7 +133,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
             padding: EdgeInsets.only(right: screenWidth * 0.03),
             child: TextButton(
               onPressed: () {
-                Navigator.push(
+                Navigator.pushReplacement(
                   context,
                   MaterialPageRoute(builder: (context) => LoginPage()),
                 );
@@ -132,7 +141,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
               child: Text(
                 "Login",
                 style: TextStyle(
-                  color: ProviderTheme.primaryColor, // Matches #060644 (Primary)
+                  color: UserTheme.primaryColor,
                   fontSize: screenWidth * 0.045,
                 ),
               ),
@@ -140,10 +149,10 @@ class _RegistrationPageState extends State<RegistrationPage> {
           ),
         ],
         flexibleSpace: Container(
-          color: ProviderTheme.surfaceColor, // Matches #FFFFFF (Surface)
+          color: UserTheme.surfaceColor,
         ),
       ),
-      body: SingleChildScrollView( // Wrap entire body in SingleChildScrollView
+      body: SingleChildScrollView(
         child: Column(
           children: [
             SizedBox(
@@ -155,7 +164,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
                   child: Text(
                     'Sign Up',
                     style: TextStyle(
-                      color: ProviderTheme.primaryColor, // Matches #060644 (Primary)
+                      color: UserTheme.primaryColor,
                       fontSize: screenWidth * 0.1,
                       fontWeight: FontWeight.bold,
                     ),
@@ -165,10 +174,10 @@ class _RegistrationPageState extends State<RegistrationPage> {
             ),
             Container(
               constraints: BoxConstraints(
-                minHeight: screenHeight * 0.85, // Ensure enough height for content
+                minHeight: screenHeight * 0.85,
               ),
               decoration: BoxDecoration(
-                color: ProviderTheme.primaryColor, // Matches #060644 (Primary)
+                color: UserTheme.primaryColor,
                 borderRadius: const BorderRadius.only(
                   topLeft: Radius.circular(30.0),
                   topRight: Radius.circular(30.0),
@@ -187,6 +196,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
                     _buildTextField(
                       controller: nameController,
                       hintText: "Full Name",
+                      icon: Icons.person_outline,
                       isPassword: false,
                       validator: (value) {
                         if (value == null || value.isEmpty) {
@@ -199,7 +209,13 @@ class _RegistrationPageState extends State<RegistrationPage> {
                     _buildTextField(
                       controller: phoneController,
                       hintText: "Phone Number",
+                      icon: Icons.phone_android_outlined,
                       isPassword: false,
+                      keyboardType: TextInputType.phone,
+                      inputFormatters: [
+                        FilteringTextInputFormatter.digitsOnly,
+                        LengthLimitingTextInputFormatter(10),
+                      ],
                       validator: (value) {
                         if (value == null || value.isEmpty) {
                           return 'Please enter your phone number';
@@ -214,6 +230,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
                     _buildTextField(
                       controller: emailController,
                       hintText: "Email",
+                      icon: Icons.email_outlined,
                       isPassword: false,
                       validator: (value) {
                         if (value == null || value.isEmpty) {
@@ -230,6 +247,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
                     _buildTextField(
                       controller: passwordController,
                       hintText: "Password",
+                      icon: Icons.lock_outline,
                       isPassword: true,
                       validator: (value) {
                         if (value == null || value.isEmpty) {
@@ -245,6 +263,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
                     _buildTextField(
                       controller: confirmPasswordController,
                       hintText: "Confirm Password",
+                      icon: Icons.lock_reset_outlined,
                       isPassword: true,
                       validator: (value) {
                         if (value == null || value.isEmpty) {
@@ -263,7 +282,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
                       child: isLoading
                           ? Center(
                         child: CircularProgressIndicator(
-                          color: ProviderTheme.onPrimaryTextColor, // Matches #FFFFFF (On Primary Text)
+                          color: UserTheme.onPrimaryTextColor,
                         ),
                       )
                           : ElevatedButton(
@@ -273,10 +292,10 @@ class _RegistrationPageState extends State<RegistrationPage> {
                             Size(double.infinity, screenHeight * 0.07),
                           ),
                           backgroundColor: MaterialStateProperty.all(
-                            ProviderTheme.surfaceColor, // Matches #FFFFFF (Surface)
+                            UserTheme.surfaceColor,
                           ),
                           foregroundColor: MaterialStateProperty.all(
-                            ProviderTheme.primaryColor, // Matches #060644 (Primary)
+                            UserTheme.primaryColor,
                           ),
                         ),
                         child: Text(
@@ -303,54 +322,60 @@ class _RegistrationPageState extends State<RegistrationPage> {
   Widget _buildTextField({
     required TextEditingController controller,
     required String hintText,
+    required IconData icon,
     required bool isPassword,
+    TextInputType? keyboardType,
+    List<TextInputFormatter>? inputFormatters,
     String? Function(String?)? validator,
   }) {
     return TextFormField(
       controller: controller,
       obscureText: isPassword && _isObscure,
+      keyboardType: keyboardType,
+      inputFormatters: inputFormatters,
       style: TextStyle(
-        color: ProviderTheme.onPrimaryTextColor, // Matches #FFFFFF (On Primary Text)
+        color: UserTheme.primaryTextColor, // Changed to primaryTextColor
         fontSize: MediaQuery.of(context).size.width * 0.04,
       ),
       validator: validator,
       decoration: InputDecoration(
         hintText: hintText,
         hintStyle: TextStyle(
-          color: ProviderTheme.onPrimaryTextColor.withOpacity(0.7), // Matches #FFFFFF with opacity
+          color: UserTheme.secondaryTextColor,
         ),
+        prefixIcon: Icon(icon, color: UserTheme.secondaryTextColor),
         filled: true,
-        fillColor: ProviderTheme.dividerColor, // Matches #D1D9E1 (Divider)
+        fillColor: UserTheme.dividerColor,
         errorStyle: TextStyle(
-          color: ProviderTheme.errorTextColor, // Matches #D32F2F (Error Text)
+          color: UserTheme.errorTextColor,
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(23),
           borderSide: BorderSide(
             color: controller.text.isNotEmpty
-                ? ProviderTheme.successColor // Matches #388E3C (Success Text)
-                : ProviderTheme.onPrimaryTextColor, // Matches #FFFFFF (On Primary Text)
+                ? UserTheme.successColor
+                : UserTheme.secondaryTextColor,
             width: 1.5,
           ),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(23),
           borderSide: BorderSide(
-            color: ProviderTheme.successColor, // Matches #388E3C (Success Text)
+            color: UserTheme.successColor,
             width: 2,
           ),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(23),
           borderSide: BorderSide(
-            color: ProviderTheme.errorTextColor, // Matches #D32F2F (Error Text)
+            color: UserTheme.errorTextColor,
             width: 1.5,
           ),
         ),
         focusedErrorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(23),
           borderSide: BorderSide(
-            color: ProviderTheme.errorTextColor, // Matches #D32F2F (Error Text)
+            color: UserTheme.errorTextColor,
             width: 2,
           ),
         ),
@@ -358,7 +383,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
             ? IconButton(
           icon: Icon(
             _isObscure ? Icons.visibility : Icons.visibility_off,
-            color: ProviderTheme.onPrimaryTextColor, // Matches #FFFFFF (On Primary Text)
+            color: UserTheme.secondaryTextColor,
           ),
           onPressed: () {
             setState(() {
@@ -383,7 +408,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
         child: Text(
           text,
           style: TextStyle(
-            color: ProviderTheme.onPrimaryTextColor, // Matches #FFFFFF (On Primary Text)
+            color: UserTheme.onPrimaryTextColor,
             fontSize: MediaQuery.of(context).size.width * 0.04,
           ),
         ),

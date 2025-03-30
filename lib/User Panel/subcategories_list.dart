@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'subcategory_wise_services.dart';
-import 'package:service_provider/theme.dart';
+import 'package:service_provider/User%20Panel/Usertheme.dart';
 
 class SubcategoriesPage extends StatefulWidget {
   final String categoryName;
@@ -66,7 +66,7 @@ class _SubcategoriesPageState extends State<SubcategoriesPage> {
         title: const Text(
           'Subcategories',
           style: TextStyle(
-            color: ProviderTheme.onPrimaryTextColor, // Matches #FFFFFF (On Primary Text)
+            color: UserTheme.onPrimaryTextColor, // Matches #FFFFFF (On Primary Text)
           ),
         ),
         // foregroundColor is set by ProviderTheme.appBarTheme.foregroundColor
@@ -77,7 +77,7 @@ class _SubcategoriesPageState extends State<SubcategoriesPage> {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return Center(
               child: CircularProgressIndicator(
-                color: ProviderTheme.primaryColor, // Matches #060644 (Primary)
+                color: UserTheme.primaryColor, // Matches #060644 (Primary)
               ),
             );
           }
@@ -86,7 +86,7 @@ class _SubcategoriesPageState extends State<SubcategoriesPage> {
               child: Text(
                 'Error: ${snapshot.error}',
                 style: TextStyle(
-                  color: ProviderTheme.primaryTextColor, // Matches #060644 (Primary Text)
+                  color: UserTheme.primaryTextColor, // Matches #060644 (Primary Text)
                 ),
               ),
             );
@@ -98,7 +98,7 @@ class _SubcategoriesPageState extends State<SubcategoriesPage> {
               child: Text(
                 'No subcategories found.',
                 style: TextStyle(
-                  color: ProviderTheme.primaryTextColor, // Matches #060644 (Primary Text)
+                  color: UserTheme.primaryTextColor, // Matches #060644 (Primary Text)
                 ),
               ),
             );
@@ -132,7 +132,7 @@ class _SubcategoriesPageState extends State<SubcategoriesPage> {
                     borderRadius: BorderRadius.circular(screenWidth * 0.03),
                   ),
                   elevation: 4.0,
-                  color: ProviderTheme.surfaceColor, // Matches #FFFFFF (Surface)
+                  color: UserTheme.surfaceColor, // Matches #FFFFFF (Surface)
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
@@ -155,7 +155,7 @@ class _SubcategoriesPageState extends State<SubcategoriesPage> {
                               if (progress == null) return child;
                               return Center(
                                 child: CircularProgressIndicator(
-                                  color: ProviderTheme.primaryColor, // Matches #060644 (Primary)
+                                  color: UserTheme.primaryColor, // Matches #060644 (Primary)
                                 ),
                               );
                             },
@@ -172,7 +172,7 @@ class _SubcategoriesPageState extends State<SubcategoriesPage> {
                               style: TextStyle(
                                 fontWeight: FontWeight.bold,
                                 fontSize: 14.0,
-                                color: ProviderTheme.primaryTextColor, // Matches #060644 (Primary Text)
+                                color: UserTheme.primaryTextColor, // Matches #060644 (Primary Text)
                               ),
                               textAlign: TextAlign.center,
                               maxLines: 2,

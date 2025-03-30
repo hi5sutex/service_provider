@@ -3,7 +3,7 @@ import 'package:service_provider/User%20Panel/user_home.dart';
 import 'package:service_provider/User%20Panel/user_profile.dart';
 import 'package:service_provider/User%20Panel/user_booking.dart';
 import 'package:service_provider/User%20Panel/chat_funtionality/ChatListScreen.dart';
-import 'package:service_provider/theme.dart'; // Ensure ProviderTheme is imported
+import 'package:service_provider/User%20Panel/Usertheme.dart'; // Ensure ProviderTheme is imported
 
 class MainHome extends StatefulWidget {
   @override
@@ -88,8 +88,8 @@ class _MainHomeState extends State<MainHome> {
                     ),
                   ],
                   currentIndex: _selectedIndex,
-                  selectedItemColor: ProviderTheme.primaryColor, // #060644
-                  unselectedItemColor: ProviderTheme.disabledTextColor, // #B0B8C4
+                  selectedItemColor: UserTheme.primaryColor, // #060644
+                  unselectedItemColor: UserTheme.disabledTextColor, // #B0B8C4
                   onTap: _onItemTapped,
                   selectedLabelStyle: const TextStyle(
                     fontWeight: FontWeight.bold,

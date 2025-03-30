@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:service_provider/theme.dart';
+import 'package:service_provider/User%20Panel/Usertheme.dart';
 
 class UserOtpPage extends StatelessWidget {
   const UserOtpPage({Key? key}) : super(key: key);
@@ -11,12 +11,12 @@ class UserOtpPage extends StatelessWidget {
     final String userId = FirebaseAuth.instance.currentUser!.uid;
 
     return Scaffold(
-      backgroundColor: ProviderTheme.surfaceColor, // Matches #FFFFFF (Surface)
+      backgroundColor: UserTheme.surfaceColor, // Matches #FFFFFF (Surface)
       appBar: AppBar(
         title: const Text('Your OTP'),
-        backgroundColor: ProviderTheme.primaryColor, // Matches #060644 (Primary)
+        backgroundColor: UserTheme.primaryColor, // Matches #060644 (Primary)
         titleTextStyle: TextStyle(
-          color: ProviderTheme.onPrimaryTextColor, // Matches #FFFFFF (On Primary Text)
+          color: UserTheme.onPrimaryTextColor, // Matches #FFFFFF (On Primary Text)
           fontSize: 20,
           fontWeight: FontWeight.bold,
         ),
@@ -31,7 +31,7 @@ class UserOtpPage extends StatelessWidget {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return Center(
               child: CircularProgressIndicator(
-                color: ProviderTheme.primaryColor, // Matches #060644 (Primary)
+                color: UserTheme.primaryColor, // Matches #060644 (Primary)
               ),
             );
           }
@@ -42,7 +42,7 @@ class UserOtpPage extends StatelessWidget {
                 'No active bookings with OTP available',
                 style: TextStyle(
                   fontSize: 16,
-                  color: ProviderTheme.primaryTextColor, // Matches #060644 (Primary Text)
+                  color: UserTheme.primaryTextColor, // Matches #060644 (Primary Text)
                 ),
               ),
             );
@@ -63,7 +63,7 @@ class UserOtpPage extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
-                    color: ProviderTheme.primaryTextColor, // Matches #060644 (Primary Text)
+                    color: UserTheme.primaryTextColor, // Matches #060644 (Primary Text)
                   ),
                 ),
                 const SizedBox(height: 10),
@@ -71,14 +71,14 @@ class UserOtpPage extends StatelessWidget {
                   'Booking ID: $bookingId',
                   style: TextStyle(
                     fontSize: 16,
-                    color: ProviderTheme.secondaryTextColor, // Matches #6B7280 (Secondary Text)
+                    color: UserTheme.secondaryTextColor, // Matches #6B7280 (Secondary Text)
                   ),
                 ),
                 const SizedBox(height: 20),
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: ProviderTheme.dividerColor, // Matches #D1D9E1 (Divider)
+                    color: UserTheme.dividerColor, // Matches #D1D9E1 (Divider)
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
@@ -87,7 +87,7 @@ class UserOtpPage extends StatelessWidget {
                       fontSize: 32,
                       fontWeight: FontWeight.bold,
                       letterSpacing: 2.0,
-                      color: ProviderTheme.primaryTextColor, // Matches #060644 (Primary Text)
+                      color: UserTheme.primaryTextColor, // Matches #060644 (Primary Text)
                     ),
                   ),
                 ),
@@ -96,7 +96,7 @@ class UserOtpPage extends StatelessWidget {
                   'Share this OTP with your service provider to complete the booking.',
                   style: TextStyle(
                     fontSize: 16,
-                    color: ProviderTheme.secondaryTextColor, // Matches #6B7280 (Secondary Text)
+                    color: UserTheme.secondaryTextColor, // Matches #6B7280 (Secondary Text)
                   ),
                   textAlign: TextAlign.center,
                 ),

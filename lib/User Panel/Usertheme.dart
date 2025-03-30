@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-class ProviderTheme {
+class UserTheme {
   // Core Colors
   static const Color primaryColor = Color(0xFF060644); // Dark Navy Blue
   static const Color secondaryColor = Color(0xFF8B9EB2); // Steel Blue

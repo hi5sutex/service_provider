@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:service_provider/User%20Panel/chat_window.dart';
-import 'package:service_provider/theme.dart';
+import 'package:service_provider/User%20Panel/Usertheme.dart';
 
 class UserChat extends StatefulWidget {
   @override
@@ -15,13 +15,13 @@ class _ProviderChatState extends State<UserChat> {
         title: Text(
           'Messages',
           style: TextStyle(
-            color: ProviderTheme.primaryTextColor, // Matches #060644 (Primary Text)
+            color: UserTheme.primaryTextColor, // Matches #060644 (Primary Text)
           ),
         ),
-        backgroundColor: ProviderTheme.surfaceColor, // Matches #FFFFFF (Surface)
+        backgroundColor: UserTheme.surfaceColor, // Matches #FFFFFF (Surface)
         elevation: 1,
         iconTheme: IconThemeData(
-          color: ProviderTheme.primaryTextColor, // Matches #060644 (Primary Text)
+          color: UserTheme.primaryTextColor, // Matches #060644 (Primary Text)
         ),
       ),
       body: ListView(
@@ -70,11 +70,11 @@ class _ProviderChatState extends State<UserChat> {
         margin: EdgeInsets.symmetric(vertical: 8.0),
         padding: EdgeInsets.all(16.0),
         decoration: BoxDecoration(
-          color: ProviderTheme.surfaceColor, // Matches #FFFFFF (Surface)
+          color: UserTheme.surfaceColor, // Matches #FFFFFF (Surface)
           borderRadius: BorderRadius.circular(12),
           boxShadow: [
             BoxShadow(
-              color: ProviderTheme.shadowColor, // Matches #00000029 (Shadow)
+              color: UserTheme.shadowColor, // Matches #00000029 (Shadow)
               blurRadius: 4,
               offset: Offset(0, 2),
             ),
@@ -98,14 +98,14 @@ class _ProviderChatState extends State<UserChat> {
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 16,
-                      color: ProviderTheme.primaryTextColor, // Matches #060644 (Primary Text)
+                      color: UserTheme.primaryTextColor, // Matches #060644 (Primary Text)
                     ),
                   ),
                   SizedBox(height: 4),
                   Text(
                     service,
                     style: TextStyle(
-                      color: ProviderTheme.secondaryTextColor, // Matches #6B7280 (Secondary Text)
+                      color: UserTheme.secondaryTextColor, // Matches #6B7280 (Secondary Text)
                     ),
                   ),
                 ],
@@ -116,7 +116,7 @@ class _ProviderChatState extends State<UserChat> {
                 Text(
                   time,
                   style: TextStyle(
-                    color: ProviderTheme.secondaryTextColor, // Matches #6B7280 (Secondary Text)
+                    color: UserTheme.secondaryTextColor, // Matches #6B7280 (Secondary Text)
                     fontSize: 12,
                   ),
                 ),
@@ -125,13 +125,13 @@ class _ProviderChatState extends State<UserChat> {
                     margin: EdgeInsets.only(top: 8),
                     padding: EdgeInsets.all(6),
                     decoration: BoxDecoration(
-                      color: ProviderTheme.primaryColor, // Matches #060644 (Primary)
+                      color: UserTheme.primaryColor, // Matches #060644 (Primary)
                       shape: BoxShape.circle,
                     ),
                     child: Text(
                       unreadCount.toString(),
                       style: TextStyle(
-                        color: ProviderTheme.onPrimaryTextColor, // Matches #FFFFFF (On Primary Text)
+                        color: UserTheme.onPrimaryTextColor, // Matches #FFFFFF (On Primary Text)
                         fontSize: 12,
                       ),
                     ),

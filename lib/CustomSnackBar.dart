@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:service_provider/theme.dart';
+import 'package:service_provider/User%20Panel/Usertheme.dart';
 
 
 class CustomSnackBar extends StatelessWidget {
@@ -20,15 +20,15 @@ class CustomSnackBar extends StatelessWidget {
     // Determine colors and icon based on type
     final Color backgroundColor = type == 'success'
         ? const Color(0xFFEAF3EC) // Solid light green background for success
-        : ProviderTheme.errorTextColor; // Solid crimson red background for error
+        : UserTheme.errorTextColor; // Solid crimson red background for error
 
     final Color borderColor = type == 'success'
         ? const Color(0xFFD5E0D7) // Slightly darker green border for success
-        : ProviderTheme.errorTextColor; // Crimson red border for error
+        : UserTheme.errorTextColor; // Crimson red border for error
 
     final Color iconColor = type == 'success'
-        ? ProviderTheme.successColor // Forest Green for success icon
-        : ProviderTheme.errorTextColor; // Crimson Red for error icon
+        ? UserTheme.successColor // Forest Green for success icon
+        : UserTheme.errorTextColor; // Crimson Red for error icon
 
     final IconData displayIcon = icon ??
         (type == 'success'
@@ -58,7 +58,7 @@ class CustomSnackBar extends StatelessWidget {
             child: Text(
               message,
               style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                color: ProviderTheme.primaryTextColor, // Dark text (Dark Navy Blue)
+                color: UserTheme.primaryTextColor, // Dark text (Dark Navy Blue)
                 fontWeight: FontWeight.bold,
               ),
             ),

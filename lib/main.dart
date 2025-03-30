@@ -13,7 +13,7 @@ import 'package:service_provider/Provider%20Panel/screens/main.dart'; // Provide
 import 'package:service_provider/welcome_screen.dart';
 import 'package:service_provider/notification_service.dart';
 import 'firebase_options.dart';
-import 'theme.dart'; // Import the theme file (ProviderTheme)
+import 'User Panel/Usertheme.dart'; // Import the theme file (ProviderTheme)
 
 final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
 
@@ -51,7 +51,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Service Provider App',
-      theme: ProviderTheme.themeData, // Updated to use ProviderTheme
+      theme: UserTheme.themeData, // Updated to use ProviderTheme
       home: const SplashScreen(),
       navigatorKey: navigatorKey, // Assign the navigator key
       routes: {
@@ -90,7 +90,7 @@ class _SplashScreenState extends State<SplashScreen> {
       body: Container(
         width: double.infinity,
         height: double.infinity,
-        color: ProviderTheme.primaryColor, // Matches #060644 (Primary)
+        color: UserTheme.primaryColor, // Matches #060644 (Primary)
         child: Stack(
           children: [
             Positioned(
@@ -100,7 +100,7 @@ class _SplashScreenState extends State<SplashScreen> {
                 width: 180,
                 height: 180,
                 decoration: BoxDecoration(
-                  color: ProviderTheme.secondaryColor, // Matches #8B9EB2 (Secondary)
+                  color: UserTheme.secondaryColor, // Matches #8B9EB2 (Secondary)
                   shape: BoxShape.circle,
                 ),
               ),
@@ -112,7 +112,7 @@ class _SplashScreenState extends State<SplashScreen> {
                 width: 250,
                 height: 250,
                 decoration: BoxDecoration(
-                  color: ProviderTheme.secondaryColor, // Matches #8B9EB2 (Secondary)
+                  color: UserTheme.secondaryColor, // Matches #8B9EB2 (Secondary)
                   shape: BoxShape.circle,
                 ),
               ),
@@ -132,7 +132,7 @@ class _SplashScreenState extends State<SplashScreen> {
                     'Quick Expert',
                     style: Theme.of(context).textTheme.displayLarge?.copyWith(
                       fontSize: 30.0,
-                      color: ProviderTheme.onPrimaryTextColor, // Updated to #FFFFFF (On Primary Text) for better contrast
+                      color: UserTheme.onPrimaryTextColor, // Updated to #FFFFFF (On Primary Text) for better contrast
                     ),
                   ),
                 ],
@@ -197,7 +197,7 @@ class AuthStateHandler extends StatelessWidget {
                   child: Text(
                     "Invalid user type!",
                     style: TextStyle(
-                      color: ProviderTheme.errorTextColor, // Matches #D32F2F (Error Text)
+                      color: UserTheme.errorTextColor, // Matches #D32F2F (Error Text)
                       fontSize: 18.0,
                     ),
                   ),

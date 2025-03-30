@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:service_provider/User%20Panel/service_details_screen.dart';
 import 'package:shimmer/shimmer.dart';
-import 'package:service_provider/theme.dart';
+import 'package:service_provider/User%20Panel/Usertheme.dart';
 
 class ProviderServicesPage extends StatefulWidget {
   final String providerId;
@@ -49,10 +49,10 @@ class _ProviderServicesPageState extends State<ProviderServicesPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: ProviderTheme.primaryColor,
-        title: Text('Provider Services', style: TextStyle(color: ProviderTheme.onPrimaryTextColor)),
+        backgroundColor: UserTheme.primaryColor,
+        title: Text('Provider Services', style: TextStyle(color: UserTheme.onPrimaryTextColor)),
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: ProviderTheme.onPrimaryTextColor),
+          icon: Icon(Icons.arrow_back, color: UserTheme.onPrimaryTextColor),
           onPressed: () => Navigator.pop(context),
         ),
         elevation: 4,
@@ -71,7 +71,7 @@ class _ProviderServicesPageState extends State<ProviderServicesPage> {
             return Center(
               child: Text(
                 'No services found.',
-                style: TextStyle(fontSize: 16, color: ProviderTheme.secondaryTextColor),
+                style: TextStyle(fontSize: 16, color: UserTheme.secondaryTextColor),
               ),
             );
           }
@@ -125,12 +125,12 @@ class _ProviderServicesPageState extends State<ProviderServicesPage> {
                     errorBuilder: (context, error, stackTrace) {
                       return Container(
                         height: 180,
-                        color: ProviderTheme.dividerColor,
+                        color: UserTheme.dividerColor,
                         child: Center(
                           child: Icon(
                             Icons.image_not_supported,
                             size: 40,
-                            color: ProviderTheme.secondaryTextColor,
+                            color: UserTheme.secondaryTextColor,
                           ),
                         ),
                       );
@@ -138,12 +138,12 @@ class _ProviderServicesPageState extends State<ProviderServicesPage> {
                   )
                       : Container(
                     height: 180,
-                    color: ProviderTheme.dividerColor,
+                    color: UserTheme.dividerColor,
                     child: Center(
                       child: Icon(
                         Icons.image_not_supported,
                         size: 40,
-                        color: ProviderTheme.secondaryTextColor,
+                        color: UserTheme.secondaryTextColor,
                       ),
                     ),
                   ),
@@ -176,7 +176,7 @@ class _ProviderServicesPageState extends State<ProviderServicesPage> {
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
-                      color: ProviderTheme.primaryTextColor,
+                      color: UserTheme.primaryTextColor,
                     ),
                   ),
                   SizedBox(height: 8),
@@ -188,14 +188,14 @@ class _ProviderServicesPageState extends State<ProviderServicesPage> {
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
-                          color: ProviderTheme.primaryColor,
+                          color: UserTheme.primaryColor,
                         ),
                       ),
                       Text(
                         service['category'] ?? 'Category',
                         style: TextStyle(
                           fontSize: 14,
-                          color: ProviderTheme.primaryTextColor,
+                          color: UserTheme.primaryTextColor,
                         ),
                       ),
                     ],
@@ -204,7 +204,7 @@ class _ProviderServicesPageState extends State<ProviderServicesPage> {
                   if (service['subcategory'] != null)
                     Text(
                       service['subcategory'],
-                      style: TextStyle(fontSize: 14, color: ProviderTheme.secondaryTextColor),
+                      style: TextStyle(fontSize: 14, color: UserTheme.secondaryTextColor),
                     ),
                 ],
               ),

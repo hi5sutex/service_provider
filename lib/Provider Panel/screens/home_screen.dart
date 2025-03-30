@@ -8,12 +8,32 @@ import 'package:service_provider/Provider%20Panel/provider_theme.dart';
 import 'package:intl/intl.dart';
 import 'package:shimmer/shimmer.dart';
 import 'add_service_screen.dart';
+// Import the needed pages for navigation
+import 'package:service_provider/Provider%20Panel/screens/edit_profile.dart'; // Add this import
+import 'package:service_provider/Provider%20Panel/screens/chat/provider_chat_list.dart'; // Add this import
 
 class ProviderHome extends StatefulWidget {
   @override
   _ProviderHomeState createState() => _ProviderHomeState();
 }
 
+class CurvedAppBarClipper extends CustomClipper<Path> {
+  @override
+  Path getClip(Size size) {
+    final path = Path();
+    const radius = 20.0; // Adjust the radius for curve size
+    path.lineTo(0, size.height - radius);
+    path.quadraticBezierTo(0, size.height, radius, size.height); // Bottom-left curve
+    path.lineTo(size.width - radius, size.height);
+    path.quadraticBezierTo(size.width, size.height, size.width, size.height - radius); // Bottom-right curve
+    path.lineTo(size.width, 0);
+    path.close();
+    return path;
+  }
+
+  @override
+  bool shouldReclip(CustomClipper<Path> oldClipper) => false;
+}
 class _ProviderHomeState extends State<ProviderHome> {
   int totalBookings = 0;
   double totalEarnings = 0.0;
@@ -219,63 +239,76 @@ class _ProviderHomeState extends State<ProviderHome> {
 
     return Scaffold(
       backgroundColor: ProviderTheme.backgroundColor,
-      appBar: AppBar(
-        flexibleSpace: Container(
-          decoration: const BoxDecoration(
-            gradient: ProviderTheme.primaryGradient, // Apply the gradient
-          ),
-        ),
-        elevation: 4, // Keep the elevation
-        title: Row(
-          children: [
-            CircleAvatar(
-              radius: 20,
-              backgroundImage: providerProfileImage != null ? NetworkImage(providerProfileImage!) : null,
-              backgroundColor: ProviderTheme.accentColor,
-              child: providerProfileImage == null
-                  ? Text(
-                providerName.isNotEmpty ? providerName[0].toUpperCase() : 'P',
-                style: TextStyle(
-                  color: ProviderTheme.primaryColor,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 17,
-                ),
-              )
-                  : null,
-            ),
-            SizedBox(width: 12),
-            Flexible(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Welcome, ${providerName.split(' ').length > 1 ? "Provider" : providerName}',
-                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                      color: ProviderTheme.onPrimaryTextColor,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  Text(
-                    'Dashboard',
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: ProviderTheme.onPrimaryTextColor.withOpacity(0.8),
-                    ),
-                  ),
-                ],
+      // Use a PreferredSize widget for custom app bar with curved bottom
+      appBar: PreferredSize(
+        preferredSize: Size.fromHeight(kToolbarHeight + 10), // Increased height by 20 logical pixels
+        child: ClipPath(
+          clipper: CurvedAppBarClipper(),
+          child: AppBar(
+            flexibleSpace: Container(
+              decoration: const BoxDecoration(
+                gradient: ProviderTheme.primaryGradient, // Apply the gradient
               ),
             ),
-          ],
-        ),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.notifications_outlined, size: 28),
-            color: ProviderTheme.accentColor,
-            onPressed: () {
-              Navigator.push(context, MaterialPageRoute(builder: (context) => NotificationPage()));
-            },
+            elevation: 4, // Keep the elevation
+            title: Row(
+              children: [
+                // Make profile picture tappable to navigate to EditProfile
+                GestureDetector(
+                  onTap: () {
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => EditProfile()));
+                  },
+                  child: CircleAvatar(
+                    radius: 20,
+                    backgroundImage: providerProfileImage != null ? NetworkImage(providerProfileImage!) : null,
+                    backgroundColor: ProviderTheme.accentColor,
+                    child: providerProfileImage == null
+                        ? Text(
+                      providerName.isNotEmpty ? providerName[0].toUpperCase() : 'P',
+                      style: TextStyle(
+                        color: ProviderTheme.primaryColor,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 17,
+                      ),
+                    )
+                        : null,
+                  ),
+                ),
+                SizedBox(width: 12),
+                Flexible(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Welcome, ${providerName.split(' ').length > 1 ? "Provider" : providerName}',
+                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                          color: ProviderTheme.onPrimaryTextColor,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      Text(
+                        'Dashboard',
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: ProviderTheme.onPrimaryTextColor.withOpacity(0.8),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            actions: [
+              IconButton(
+                icon: Icon(Icons.notifications_outlined, size: 28),
+                color: ProviderTheme.accentColor,
+                onPressed: () {
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => NotificationPage()));
+                },
+              ),
+            ],
           ),
-        ],
+        ),
       ),
       body: RefreshIndicator(
         onRefresh: fetchProviderData,
@@ -343,16 +376,28 @@ class _ProviderHomeState extends State<ProviderHome> {
                   ? _buildTipsShimmer()
                   : Column(
                 children: [
-                  _buildTipCard(
-                    title: 'Improve Your Profile',
-                    description: 'Complete your profile and add high-quality photos to attract more customers.',
-                    icon: Icons.person_outline,
+                  // Navigate to EditProfile when Improve Your Profile is tapped
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.push(context, MaterialPageRoute(builder: (context) => EditProfile()));
+                    },
+                    child: _buildTipCard(
+                      title: 'Improve Your Profile',
+                      description: 'Complete your profile and add high-quality photos to attract more customers.',
+                      icon: Icons.person_outline,
+                    ),
                   ),
                   SizedBox(height: 12),
-                  _buildTipCard(
-                    title: 'Respond Quickly',
-                    description: 'Fast responses lead to 50% more bookings. Try to respond within an hour.',
-                    icon: Icons.speed,
+                  // Navigate to ProviderChatListScreen when Respond Quickly is tapped
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.push(context, MaterialPageRoute(builder: (context) => ProviderChatListScreen()));
+                    },
+                    child: _buildTipCard(
+                      title: 'Respond Quickly',
+                      description: 'Fast responses lead to 50% more bookings. Try to respond within an hour.',
+                      icon: Icons.speed,
+                    ),
                   ),
                 ],
               ),
@@ -369,6 +414,7 @@ class _ProviderHomeState extends State<ProviderHome> {
     );
   }
 
+  // Custom ClipPath class for curved bottom AppBar
   // Shimmer Effects
   Widget _buildPerformanceShimmer() {
     return Shimmer.fromColors(

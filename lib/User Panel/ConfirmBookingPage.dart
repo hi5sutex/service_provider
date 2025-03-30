@@ -8,7 +8,7 @@ import 'package:razorpay_flutter/razorpay_flutter.dart';
 import 'package:googleapis_auth/auth_io.dart';
 import 'package:service_provider/notification_service.dart';
 import 'package:service_provider/secrets.dart';
-import 'package:service_provider/theme.dart';
+import 'package:service_provider/User%20Panel/Usertheme.dart';
 
 class ConfirmBookingPage extends StatefulWidget {
   final DateTime date;
@@ -87,7 +87,7 @@ class _ConfirmBookingPageState extends State<ConfirmBookingPage> {
         prefixIcon: Icon(icon),
         suffixIcon: suffix,
         filled: filled,
-        fillColor: filled ? ProviderTheme.dividerColor : null, // Matches #D1D9E1 (Divider)
+        fillColor: filled ? UserTheme.dividerColor : null, // Matches #D1D9E1 (Divider)
         // Border, label style, etc., are set by ProviderTheme.inputDecorationTheme
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
@@ -324,11 +324,11 @@ class _ConfirmBookingPageState extends State<ConfirmBookingPage> {
   Widget _buildPaymentMethodSelector() {
     return Container(
       decoration: BoxDecoration(
-        color: ProviderTheme.surfaceColor, // Matches #FFFFFF (Surface)
+        color: UserTheme.surfaceColor, // Matches #FFFFFF (Surface)
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: ProviderTheme.shadowColor, // Matches #00000029 (Shadow)
+            color: UserTheme.shadowColor, // Matches #00000029 (Shadow)
             blurRadius: 10,
             offset: Offset(0, 2),
           ),
@@ -343,7 +343,7 @@ class _ConfirmBookingPageState extends State<ConfirmBookingPage> {
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
-              color: ProviderTheme.primaryTextColor, // Matches #060644 (Primary Text)
+              color: UserTheme.primaryTextColor, // Matches #060644 (Primary Text)
             ),
           ),
           SizedBox(height: 16),
@@ -352,7 +352,7 @@ class _ConfirmBookingPageState extends State<ConfirmBookingPage> {
             child: Container(
               padding: EdgeInsets.all(16),
               decoration: BoxDecoration(
-                border: Border.all(color: ProviderTheme.dividerColor), // Matches #D1D9E1 (Divider)
+                border: Border.all(color: UserTheme.dividerColor), // Matches #D1D9E1 (Divider)
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Row(
@@ -372,14 +372,14 @@ class _ConfirmBookingPageState extends State<ConfirmBookingPage> {
                       selectedPaymentMethod,
                       style: TextStyle(
                         fontSize: 16,
-                        color: ProviderTheme.primaryTextColor, // Matches #060644 (Primary Text)
+                        color: UserTheme.primaryTextColor, // Matches #060644 (Primary Text)
                       ),
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
                   Icon(
                     Icons.arrow_drop_down,
-                    color: ProviderTheme.secondaryTextColor, // Matches #6B7280 (Secondary Text)
+                    color: UserTheme.secondaryTextColor, // Matches #6B7280 (Secondary Text)
                   ),
                 ],
               ),
@@ -397,7 +397,7 @@ class _ConfirmBookingPageState extends State<ConfirmBookingPage> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (context) => Container(
-        color: ProviderTheme.surfaceColor, // Matches #FFFFFF (Surface)
+        color: UserTheme.surfaceColor, // Matches #FFFFFF (Surface)
         padding: EdgeInsets.all(20),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -407,7 +407,7 @@ class _ConfirmBookingPageState extends State<ConfirmBookingPage> {
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
-                color: ProviderTheme.primaryTextColor, // Matches #060644 (Primary Text)
+                color: UserTheme.primaryTextColor, // Matches #060644 (Primary Text)
               ),
             ),
             SizedBox(height: 20),
@@ -415,12 +415,12 @@ class _ConfirmBookingPageState extends State<ConfirmBookingPage> {
               leading: Image.asset('android/assets/debit card.png', width: 30, height: 30),
               title: Text(
                 'Debit Card',
-                style: TextStyle(color: ProviderTheme.primaryTextColor), // Matches #060644 (Primary Text)
+                style: TextStyle(color: UserTheme.primaryTextColor), // Matches #060644 (Primary Text)
               ),
               trailing: selectedPaymentMethod == 'Debit Card'
                   ? Icon(
                 Icons.check_circle,
-                color: ProviderTheme.primaryColor, // Matches #060644 (Primary)
+                color: UserTheme.primaryColor, // Matches #060644 (Primary)
               )
                   : null,
               onTap: () {
@@ -435,12 +435,12 @@ class _ConfirmBookingPageState extends State<ConfirmBookingPage> {
               leading: Image.asset('android/assets/Gpay.png', width: 30, height: 30),
               title: Text(
                 'UPI',
-                style: TextStyle(color: ProviderTheme.primaryTextColor), // Matches #060644 (Primary Text)
+                style: TextStyle(color: UserTheme.primaryTextColor), // Matches #060644 (Primary Text)
               ),
               trailing: selectedPaymentMethod == 'UPI'
                   ? Icon(
                 Icons.check_circle,
-                color: ProviderTheme.primaryColor, // Matches #060644 (Primary)
+                color: UserTheme.primaryColor, // Matches #060644 (Primary)
               )
                   : null,
               onTap: () {
@@ -455,12 +455,12 @@ class _ConfirmBookingPageState extends State<ConfirmBookingPage> {
               leading: Image.asset('android/assets/cash-on-delivery.png', width: 30, height: 30),
               title: Text(
                 'Cash on Delivery',
-                style: TextStyle(color: ProviderTheme.primaryTextColor), // Matches #060644 (Primary Text)
+                style: TextStyle(color: UserTheme.primaryTextColor), // Matches #060644 (Primary Text)
               ),
               trailing: selectedPaymentMethod == 'Cash on Delivery'
                   ? Icon(
                 Icons.check_circle,
-                color: ProviderTheme.primaryColor, // Matches #060644 (Primary)
+                color: UserTheme.primaryColor, // Matches #060644 (Primary)
               )
                   : null,
               onTap: () {
@@ -481,7 +481,7 @@ class _ConfirmBookingPageState extends State<ConfirmBookingPage> {
     final style = TextStyle(
       fontSize: 16,
       fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
-      color: ProviderTheme.primaryTextColor, // Matches #060644 (Primary Text)
+      color: UserTheme.primaryTextColor, // Matches #060644 (Primary Text)
     );
 
     return Row(
@@ -499,11 +499,11 @@ class _ConfirmBookingPageState extends State<ConfirmBookingPage> {
   Widget _buildPaymentSummary() {
     return Container(
       decoration: BoxDecoration(
-        color: ProviderTheme.surfaceColor, // Matches #FFFFFF (Surface)
+        color: UserTheme.surfaceColor, // Matches #FFFFFF (Surface)
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: ProviderTheme.shadowColor, // Matches #00000029 (Shadow)
+            color: UserTheme.shadowColor, // Matches #00000029 (Shadow)
             blurRadius: 10,
             offset: Offset(0, 2),
           ),
@@ -518,7 +518,7 @@ class _ConfirmBookingPageState extends State<ConfirmBookingPage> {
             style: TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.bold,
-              color: ProviderTheme.primaryTextColor, // Matches #060644 (Primary Text)
+              color: UserTheme.primaryTextColor, // Matches #060644 (Primary Text)
             ),
           ),
           SizedBox(height: 24),
@@ -529,7 +529,7 @@ class _ConfirmBookingPageState extends State<ConfirmBookingPage> {
           _buildPaymentRow('Platform Fee (1%)', calculatePlatformFee()),
           Padding(
             padding: EdgeInsets.symmetric(vertical: 16),
-            child: Divider(color: ProviderTheme.dividerColor), // Matches #D1D9E1 (Divider)
+            child: Divider(color: UserTheme.dividerColor), // Matches #D1D9E1 (Divider)
           ),
           _buildPaymentRow('Total amount', calculateTotalAmount(), isBold: true),
           SizedBox(height: 16),
@@ -550,7 +550,7 @@ class _ConfirmBookingPageState extends State<ConfirmBookingPage> {
         title: Text(
           'Confirm Booking',
           style: TextStyle(
-            color: ProviderTheme.onPrimaryTextColor, // Matches #FFFFFF (On Primary Text)
+            color: UserTheme.onPrimaryTextColor, // Matches #FFFFFF (On Primary Text)
             fontSize: 20,
             fontWeight: FontWeight.w600,
           ),
@@ -569,11 +569,11 @@ class _ConfirmBookingPageState extends State<ConfirmBookingPage> {
                   children: [
                     Container(
                       decoration: BoxDecoration(
-                        color: ProviderTheme.surfaceColor, // Matches #FFFFFF (Surface)
+                        color: UserTheme.surfaceColor, // Matches #FFFFFF (Surface)
                         borderRadius: BorderRadius.circular(12),
                         boxShadow: [
                           BoxShadow(
-                            color: ProviderTheme.shadowColor, // Matches #00000029 (Shadow)
+                            color: UserTheme.shadowColor, // Matches #00000029 (Shadow)
                             blurRadius: 10,
                             offset: Offset(0, 2),
                           ),
@@ -588,7 +588,7 @@ class _ConfirmBookingPageState extends State<ConfirmBookingPage> {
                             style: TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
-                              color: ProviderTheme.primaryTextColor, // Matches #060644 (Primary Text)
+                              color: UserTheme.primaryTextColor, // Matches #060644 (Primary Text)
                             ),
                           ),
                           SizedBox(height: 16),
@@ -600,11 +600,11 @@ class _ConfirmBookingPageState extends State<ConfirmBookingPage> {
                               onPressed: _getCurrentLocation,
                               icon: Icon(
                                 Icons.my_location,
-                                color: ProviderTheme.primaryColor, // Matches #060644 (Primary)
+                                color: UserTheme.primaryColor, // Matches #060644 (Primary)
                               ),
                               label: Text(
                                 '',
-                                style: TextStyle(color: ProviderTheme.primaryColor), // Matches #060644 (Primary)
+                                style: TextStyle(color: UserTheme.primaryColor), // Matches #060644 (Primary)
                               ),
                             ),
                             validator: (value) {
@@ -640,9 +640,9 @@ class _ConfirmBookingPageState extends State<ConfirmBookingPage> {
                           backgroundColor: MaterialStateProperty.resolveWith<Color>(
                                 (states) {
                               if (states.contains(MaterialState.disabled)) {
-                                return ProviderTheme.disabledButtonColor; // Matches #E0E6ED (Disabled Button)
+                                return UserTheme.disabledButtonColor; // Matches #E0E6ED (Disabled Button)
                               }
-                              return ProviderTheme.defaultButtonColor; // Matches #060644 (Default Button)
+                              return UserTheme.defaultButtonColor; // Matches #060644 (Default Button)
                             },
                           ),
                           padding: MaterialStateProperty.all(
@@ -662,7 +662,7 @@ class _ConfirmBookingPageState extends State<ConfirmBookingPage> {
                               width: 20,
                               height: 20,
                               child: CircularProgressIndicator(
-                                color: ProviderTheme.onPrimaryTextColor, // Matches #FFFFFF (On Primary Text)
+                                color: UserTheme.onPrimaryTextColor, // Matches #FFFFFF (On Primary Text)
                                 strokeWidth: 2,
                               ),
                             ),
@@ -671,7 +671,7 @@ class _ConfirmBookingPageState extends State<ConfirmBookingPage> {
                               'Processing...',
                               style: TextStyle(
                                 fontSize: 16,
-                                color: ProviderTheme.onPrimaryTextColor, // Matches #FFFFFF (On Primary Text)
+                                color: UserTheme.onPrimaryTextColor, // Matches #FFFFFF (On Primary Text)
                               ),
                             ),
                           ],
@@ -680,7 +680,7 @@ class _ConfirmBookingPageState extends State<ConfirmBookingPage> {
                           'Request Booking',
                           style: TextStyle(
                             fontSize: 16,
-                            color: ProviderTheme.onPrimaryTextColor, // Matches #FFFFFF (On Primary Text)
+                            color: UserTheme.onPrimaryTextColor, // Matches #FFFFFF (On Primary Text)
                           ),
                         ),
                       ),
@@ -692,10 +692,10 @@ class _ConfirmBookingPageState extends State<ConfirmBookingPage> {
           ),
           if (isLoading)
             Container(
-              color: ProviderTheme.shadowColor.withOpacity(0.3), // Matches #00000029 with opacity
+              color: UserTheme.shadowColor.withOpacity(0.3), // Matches #00000029 with opacity
               child: Center(
                 child: CircularProgressIndicator(
-                  valueColor: AlwaysStoppedAnimation<Color>(ProviderTheme.primaryColor), // Matches #060644 (Primary)
+                  valueColor: AlwaysStoppedAnimation<Color>(UserTheme.primaryColor), // Matches #060644 (Primary)
                 ),
               ),
             ),

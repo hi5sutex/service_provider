@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:service_provider/User%20Panel/service_details_screen.dart';
-import 'package:service_provider/theme.dart';
+import 'package:service_provider/User%20Panel/Usertheme.dart';
 
 class SubcategoryWiseServices extends StatelessWidget {
   final String subcategoryName;
@@ -22,7 +22,7 @@ class SubcategoryWiseServices extends StatelessWidget {
         title: Text(
           subcategoryName,
           style: TextStyle(
-            color: ProviderTheme.onPrimaryTextColor, // Matches #FFFFFF (On Primary Text)
+            color: UserTheme.onPrimaryTextColor, // Matches #FFFFFF (On Primary Text)
           ),
         ),
         // foregroundColor is set by ProviderTheme.appBarTheme.foregroundColor
@@ -36,7 +36,7 @@ class SubcategoryWiseServices extends StatelessWidget {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return Center(
               child: CircularProgressIndicator(
-                color: ProviderTheme.primaryColor, // Matches #060644 (Primary)
+                color: UserTheme.primaryColor, // Matches #060644 (Primary)
               ),
             );
           }
@@ -46,7 +46,7 @@ class SubcategoryWiseServices extends StatelessWidget {
               child: Text(
                 'No services available for this subcategory',
                 style: TextStyle(
-                  color: ProviderTheme.primaryTextColor, // Matches #060644 (Primary Text)
+                  color: UserTheme.primaryTextColor, // Matches #060644 (Primary Text)
                 ),
               ),
             );
@@ -79,7 +79,7 @@ class SubcategoryWiseServices extends StatelessWidget {
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(screenWidth * 0.025),
                   ),
-                  color: ProviderTheme.surfaceColor, // Matches #FFFFFF (Surface)
+                  color: UserTheme.surfaceColor, // Matches #FFFFFF (Surface)
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -95,11 +95,11 @@ class SubcategoryWiseServices extends StatelessWidget {
                             fit: BoxFit.cover,
                             errorBuilder: (context, error, stackTrace) => Container(
                               height: screenHeight * 0.25,
-                              color: ProviderTheme.dividerColor, // Matches #D1D9E1 (Divider)
+                              color: UserTheme.dividerColor, // Matches #D1D9E1 (Divider)
                               child: Icon(
                                 Icons.image,
                                 size: screenWidth * 0.125,
-                                color: ProviderTheme.disabledTextColor, // Matches #B0B8C4 (Disabled Text)
+                                color: UserTheme.disabledTextColor, // Matches #B0B8C4 (Disabled Text)
                               ),
                             ),
                           ),
@@ -115,7 +115,7 @@ class SubcategoryWiseServices extends StatelessWidget {
                               style: TextStyle(
                                 fontSize: screenWidth * 0.045,
                                 fontWeight: FontWeight.bold,
-                                color: ProviderTheme.primaryTextColor, // Matches #060644 (Primary Text)
+                                color: UserTheme.primaryTextColor, // Matches #060644 (Primary Text)
                               ),
                             ),
                             SizedBox(height: screenHeight * 0.006),
@@ -124,7 +124,7 @@ class SubcategoryWiseServices extends StatelessWidget {
                               service['description'] ?? 'No description available',
                               style: TextStyle(
                                 fontSize: screenWidth * 0.035,
-                                color: ProviderTheme.secondaryTextColor, // Matches #6B7280 (Secondary Text)
+                                color: UserTheme.secondaryTextColor, // Matches #6B7280 (Secondary Text)
                               ),
                               maxLines: 2,
                               overflow: TextOverflow.ellipsis,
@@ -140,13 +140,13 @@ class SubcategoryWiseServices extends StatelessWidget {
                                       'Price: ',
                                       style: TextStyle(
                                         fontWeight: FontWeight.bold,
-                                        color: ProviderTheme.primaryTextColor, // Matches #060644 (Primary Text)
+                                        color: UserTheme.primaryTextColor, // Matches #060644 (Primary Text)
                                       ),
                                     ),
                                     Text(
                                       '₹${service['price'].toString()}',
                                       style: TextStyle(
-                                        color: ProviderTheme.successColor, // Matches #388E3C (Success Text)
+                                        color: UserTheme.successColor, // Matches #388E3C (Success Text)
                                         fontWeight: FontWeight.bold,
                                       ),
                                     ),
@@ -155,7 +155,7 @@ class SubcategoryWiseServices extends StatelessWidget {
                                 Icon(
                                   Icons.arrow_forward_ios,
                                   size: screenWidth * 0.04,
-                                  color: ProviderTheme.primaryColor, // Matches #060644 (Primary)
+                                  color: UserTheme.primaryColor, // Matches #060644 (Primary)
                                 ),
                               ],
                             ),
