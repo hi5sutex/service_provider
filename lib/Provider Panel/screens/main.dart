@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:service_provider/Provider%20Panel/screens/add_dummy_bookings.dart';
 import 'package:service_provider/Provider%20Panel/screens/home_screen.dart';
 import 'package:service_provider/Provider%20Panel/screens/bookings/provider_booking.dart';
 import 'package:service_provider/Provider%20Panel/screens/chat/provider_chat_list.dart';

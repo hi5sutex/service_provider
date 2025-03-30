@@ -5,6 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:service_provider/Provider%20Panel/CustomSnackBar.dart';
 import 'package:service_provider/Provider%20Panel/EarningsPage.dart';
+import 'package:service_provider/Provider%20Panel/screens/add_dummy_bookings.dart';
 import 'package:service_provider/User%20Panel/user_login.dart';
 import 'package:service_provider/Provider%20Panel/screens/edit_profile.dart';
 import 'package:service_provider/Provider%20Panel/screens/manage_services.dart';
@@ -312,6 +313,7 @@ class _ProviderProfileState extends State<ProviderProfile> {
           _buildListTile(context, Icons.analytics_outlined, 'Analytics', () => _showComingSoonSnackBar()),
           _buildListTile(context, Icons.perm_media, 'Portfolio', () => _showComingSoonSnackBar()),
           _buildListTile(context, Icons.edit, 'Edit Profile', () => _navigateTo(context, EditProfile())),
+          _buildListTile(context, Icons.edit, 'Dummy Data', () => _navigateTo(context, AddDummyData())),
           _buildListTile(context, Icons.settings, 'Settings', () => _showComingSoonSnackBar()),
           _buildListTile(context, Icons.logout, 'Logout', () => _logout(context), iconColor: ProviderTheme.canceledColor),
         ],
