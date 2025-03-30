@@ -9,7 +9,7 @@ import 'package:service_provider/Provider%20Panel/screens/register_screen.dart';
 import 'package:service_provider/Admin%20Panel/screens/main.dart';
 import 'package:service_provider/notification_service.dart';
 import 'package:service_provider/welcome_screen.dart';
-import 'package:service_provider/theme.dart';
+import 'package:service_provider/User%20Panel/Usertheme.dart';
 
 class LoginPage extends StatefulWidget {
   @override
@@ -65,19 +65,22 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   Future<void> _checkUserRole(String uid) async {
-    DocumentSnapshot adminDoc = await FirebaseFirestore.instance.collection('admins').doc(uid).get();
+    DocumentSnapshot adminDoc = await FirebaseFirestore.instance.collection(
+        'admins').doc(uid).get();
     if (adminDoc.exists) {
       await NotificationService().registerFCMToken(uid, 'admin');
       _navigateToPage(context, MainAdminPanel(), "Admin");
       return;
     }
-    DocumentSnapshot userDoc = await FirebaseFirestore.instance.collection('users').doc(uid).get();
+    DocumentSnapshot userDoc = await FirebaseFirestore.instance.collection(
+        'users').doc(uid).get();
     if (userDoc.exists) {
       await NotificationService().registerFCMToken(uid, 'user');
       _navigateToPage(context, MainHome(), "User");
       return;
     }
-    DocumentSnapshot providerDoc = await FirebaseFirestore.instance.collection('providers').doc(uid).get();
+    DocumentSnapshot providerDoc = await FirebaseFirestore.instance.collection(
+        'providers').doc(uid).get();
     if (providerDoc.exists) {
       await NotificationService().registerFCMToken(uid, 'provider');
       _navigateToPage(context, Main(), "Provider");
@@ -153,15 +156,15 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: ProviderTheme.surfaceColor, // Matches #FFFFFF (Surface)
+      backgroundColor: UserTheme.surfaceColor, // Matches #FFFFFF (Surface)
       appBar: AppBar(
-        backgroundColor: ProviderTheme.surfaceColor, // Matches #FFFFFF (Surface)
+        backgroundColor: UserTheme.surfaceColor, // Matches #FFFFFF (Surface)
         elevation: 0,
         leading: IconButton(
           padding: const EdgeInsets.all(20.0),
           icon: Icon(
             Icons.arrow_back,
-            color: ProviderTheme.primaryTextColor, // Matches #060644 (Primary Text)
+            color: UserTheme.primaryTextColor, // Matches #060644 (Primary Text)
             size: 25,
           ),
           onPressed: () {
@@ -184,7 +187,8 @@ class _LoginPageState extends State<LoginPage> {
               child: Text(
                 "Register",
                 style: TextStyle(
-                  color: ProviderTheme.primaryTextColor, // Matches #060644 (Primary Text)
+                  color: UserTheme.primaryTextColor,
+                  // Matches #060644 (Primary Text)
                   fontSize: 18,
                 ),
               ),
@@ -195,7 +199,10 @@ class _LoginPageState extends State<LoginPage> {
       body: Column(
         children: [
           Container(
-            height: MediaQuery.of(context).size.height * 0.28,
+            height: MediaQuery
+                .of(context)
+                .size
+                .height * 0.28,
             padding: const EdgeInsets.only(top: 60, left: 24, right: 24),
             alignment: Alignment.centerLeft,
             child: Column(
@@ -204,7 +211,8 @@ class _LoginPageState extends State<LoginPage> {
                 Text(
                   'Sign In',
                   style: TextStyle(
-                    color: ProviderTheme.primaryTextColor, // Matches #060644 (Primary Text)
+                    color: UserTheme.primaryTextColor,
+                    // Matches #060644 (Primary Text)
                     fontSize: 40,
                     fontWeight: FontWeight.bold,
                   ),
@@ -213,7 +221,8 @@ class _LoginPageState extends State<LoginPage> {
                 Text(
                   "Log in to access your account and explore the services!",
                   style: TextStyle(
-                    color: ProviderTheme.secondaryTextColor, // Matches #6B7280 (Secondary Text)
+                    color: UserTheme.secondaryTextColor,
+                    // Matches #6B7280 (Secondary Text)
                     fontSize: 16,
                   ),
                 ),
@@ -223,7 +232,7 @@ class _LoginPageState extends State<LoginPage> {
           Expanded(
             child: Container(
               decoration: BoxDecoration(
-                color: ProviderTheme.primaryColor, // Matches #060644 (Primary)
+                color: UserTheme.primaryColor, // Matches #060644 (Primary)
                 borderRadius: const BorderRadius.only(
                   topLeft: Radius.circular(30.0),
                   topRight: Radius.circular(30.0),
@@ -243,6 +252,7 @@ class _LoginPageState extends State<LoginPage> {
                       _buildTextField(
                         controller: emailController,
                         hintText: "Email",
+
                         isPassword: false,
                         validator: (value) {
                           if (value == null || value.isEmpty) {
@@ -270,15 +280,18 @@ class _LoginPageState extends State<LoginPage> {
                         child: isLoading
                             ? Center(
                           child: CircularProgressIndicator(
-                            color: ProviderTheme.onPrimaryTextColor, // Matches #FFFFFF (On Primary Text)
+                            color: UserTheme
+                                .onPrimaryTextColor, // Matches #FFFFFF (On Primary Text)
                           ),
                         )
                             : ElevatedButton(
                           onPressed: loginWithEmailAndPassword,
                           style: ElevatedButton.styleFrom(
                             minimumSize: const Size(double.infinity, 50),
-                            backgroundColor: ProviderTheme.surfaceColor, // Matches #FFFFFF (Surface)
-                            foregroundColor: ProviderTheme.primaryColor, // Matches #060644 (Primary)
+                            backgroundColor: UserTheme.surfaceColor,
+                            // Matches #FFFFFF (Surface)
+                            foregroundColor: UserTheme
+                                .primaryColor, // Matches #060644 (Primary)
                           ),
                           child: const Text(
                             "Login",
@@ -299,8 +312,10 @@ class _LoginPageState extends State<LoginPage> {
                             );
                           },
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: ProviderTheme.successColor, // Matches #388E3C (Success Text)
-                            foregroundColor: ProviderTheme.onPrimaryTextColor, // Matches #FFFFFF (On Primary Text)
+                            backgroundColor: UserTheme.successColor,
+                            // Matches #388E3C (Success Text)
+                            foregroundColor: UserTheme
+                                .onPrimaryTextColor, // Matches #FFFFFF (On Primary Text)
                           ),
                           child: const Text(
                             "Become a Provider",
@@ -320,6 +335,8 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
+  // ... (keep all imports and class definitions the same)
+
   Widget _buildTextField({
     required TextEditingController controller,
     required String hintText,
@@ -330,55 +347,59 @@ class _LoginPageState extends State<LoginPage> {
       controller: controller,
       obscureText: isPassword && _isObscure,
       style: TextStyle(
-        color: ProviderTheme.primaryTextColor, // Matches #060644 (Primary Text)
+        color: UserTheme.primaryTextColor,
         fontSize: 16,
       ),
       validator: validator,
       decoration: InputDecoration(
         hintText: hintText,
         hintStyle: TextStyle(
-          color: ProviderTheme.secondaryTextColor, // Matches #6B7280 (Secondary Text)
+          color: UserTheme.secondaryTextColor,
+        ),
+        prefixIcon: Icon(
+          isPassword ? Icons.lock_outline : Icons.email_outlined,
+          color: UserTheme.secondaryTextColor,
         ),
         filled: true,
-        fillColor: ProviderTheme.dividerColor, // Matches #D1D9E1 (Divider)
+        fillColor: UserTheme.dividerColor,
         errorStyle: TextStyle(
-          color: ProviderTheme.errorTextColor, // Matches #D32F2F (Error Text)
+          color: UserTheme.errorTextColor,
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(23),
           borderSide: BorderSide(
             color: controller.text.isNotEmpty
-                ? ProviderTheme.successColor // Matches #388E3C (Success Text)
-                : ProviderTheme.onPrimaryTextColor, // Matches #FFFFFF (On Primary Text)
+                ? UserTheme.successColor
+                : UserTheme.onPrimaryTextColor,
             width: 1.5,
           ),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(23),
           borderSide: BorderSide(
-            color: ProviderTheme.successColor, // Matches #388E3C (Success Text)
+            color: UserTheme.successColor,
             width: 2,
           ),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(23),
           borderSide: BorderSide(
-            color: ProviderTheme.errorTextColor, // Matches #D32F2F (Error Text)
+            color: UserTheme.errorTextColor,
             width: 1.5,
           ),
         ),
         focusedErrorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(23),
           borderSide: BorderSide(
-            color: ProviderTheme.errorTextColor, // Matches #D32F2F (Error Text)
+            color: UserTheme.errorTextColor,
             width: 2,
           ),
         ),
         suffixIcon: isPassword
             ? IconButton(
-              icon: Icon(
+          icon: Icon(
             _isObscure ? Icons.visibility : Icons.visibility_off,
-            color: ProviderTheme.primaryTextColor, // Matches #060644 (Primary Text)
+            color: UserTheme.primaryTextColor,
           ),
           onPressed: () {
             setState(() {
@@ -391,11 +412,14 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
+// ... (keep all other code exactly the same)
+
+
   Widget _buildRedirectLink(String text, Widget page) {
     return Center(
       child: TextButton(
         onPressed: () {
-          Navigator.push(
+          Navigator.pushReplacement(
             context,
             MaterialPageRoute(builder: (context) => page),
           );
@@ -403,7 +427,8 @@ class _LoginPageState extends State<LoginPage> {
         child: Text(
           text,
           style: TextStyle(
-            color: ProviderTheme.onPrimaryTextColor, // Matches #FFFFhFF (On Primary Text)
+            color: UserTheme.onPrimaryTextColor,
+            // Matches #FFFFhFF (On Primary Text)
             fontSize: 15,
           ),
         ),

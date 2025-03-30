@@ -397,6 +397,7 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
   Widget build(BuildContext context) {
 
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       theme: ProviderTheme.themeData,
       home: Scaffold(
         backgroundColor: ProviderTheme.backgroundColor,

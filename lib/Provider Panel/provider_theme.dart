@@ -6,7 +6,7 @@ class ProviderTheme {
   static const Color secondaryColor = Color(0xFF8B9EB2); // Steel Blue
   static const Color backgroundColor = Color(0xFFF5F7FA); // Light Grey-Blue
   static const Color surfaceColor = Color(0xFFFFFFFF); // White
-  static const Color accentColor = Color(0xFFFFD700); // Gold
+  static const Color accentColor = Color(0xFF008CFF); //  Electric Blu
 
   // Text Colors
   static const Color primaryTextColor = Color(0xFF060644); // Dark Navy Blue

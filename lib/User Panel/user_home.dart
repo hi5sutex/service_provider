@@ -7,12 +7,13 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:flutter/foundation.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
+import 'package:shimmer/shimmer.dart';
 import 'package:service_provider/User%20Panel/provider_services_page.dart';
 import 'package:service_provider/User%20Panel/subcategories_list.dart';
 import 'package:service_provider/User%20Panel/user_profile.dart';
 import 'package:service_provider/User%20Panel/user_setting.dart';
 import 'package:service_provider/User%20Panel/service_details_screen.dart';
-import 'package:service_provider/theme.dart';
+import 'package:service_provider/User%20Panel/Usertheme.dart';
 
 
 
@@ -23,7 +24,6 @@ class UserHome extends StatefulWidget {
 }
 
 class _UserHomeState extends State<UserHome> with AutomaticKeepAliveClientMixin {
-
   String selectedCategory = 'All';
   String userCity = 'Loading...';
   final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -35,6 +35,9 @@ class _UserHomeState extends State<UserHome> with AutomaticKeepAliveClientMixin 
   List<Service> _allServices = [];
   Timer? _searchDebounceTimer;
   bool _isLoadingServices = false;
+  bool _isLoadingCategories = true;
+  bool _isLoadingProviders = true;
+  bool _isLoadingPopularServices = true;
 
 
   Future<String> getUserName() async {
@@ -74,7 +77,7 @@ class _UserHomeState extends State<UserHome> with AutomaticKeepAliveClientMixin 
 
   void _changeStatusBarColor() {
     SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
-      statusBarColor: ProviderTheme.primaryColor,
+      statusBarColor: UserTheme.primaryColor,
       statusBarIconBrightness: Brightness.light,
     ));
   }
@@ -182,6 +185,17 @@ class _UserHomeState extends State<UserHome> with AutomaticKeepAliveClientMixin 
 
     // Prefetch services when the app starts
     _prefetchServices();
+
+    // Simulate data loading
+    Future.delayed(Duration(seconds: 2), () {
+      if (mounted) {
+        setState(() {
+          _isLoadingCategories = false;
+          _isLoadingProviders = false;
+          _isLoadingPopularServices = false;
+        });
+      }
+    });
   }
 
   @override
@@ -232,20 +246,21 @@ class _UserHomeState extends State<UserHome> with AutomaticKeepAliveClientMixin 
     final screenHeight = MediaQuery.of(context).size.height;
 
     return Scaffold(
-      backgroundColor: ProviderTheme.backgroundColor,
+      resizeToAvoidBottomInset: false,  // Add this line
+      backgroundColor: UserTheme.backgroundColor,
       body: SafeArea(
         child: Column(
           children: [
             Container(
               decoration: BoxDecoration(
-                color: ProviderTheme.primaryColor,
+                color: UserTheme.primaryColor,
                 borderRadius: BorderRadius.only(
                   bottomLeft: Radius.circular(screenWidth * 0.05),
                   bottomRight: Radius.circular(screenWidth * 0.05),
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: ProviderTheme.primaryColor.withOpacity(0.3),
+                    color: UserTheme.primaryColor.withOpacity(0.3),
                     blurRadius: 8,
                     offset: Offset(0, 4),
                   ),
@@ -259,13 +274,16 @@ class _UserHomeState extends State<UserHome> with AutomaticKeepAliveClientMixin 
                     child: FutureBuilder<String>(
                       future: getUserName(),
                       builder: (context, snapshot) {
+                        if (!snapshot.hasData) {
+                          return _buildShimmerForHeader(screenWidth, screenHeight);
+                        }
                         return Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
                               'Hello, ${snapshot.data ?? 'User'} 👋',
                               style: TextStyle(
-                                color: ProviderTheme.onPrimaryTextColor,
+                                color: UserTheme.onPrimaryTextColor,
                                 fontSize: screenWidth * 0.05,
                                 fontWeight: FontWeight.w600,
                                 letterSpacing: 0.4,
@@ -276,7 +294,7 @@ class _UserHomeState extends State<UserHome> with AutomaticKeepAliveClientMixin 
                               padding: EdgeInsets.symmetric(
                                   horizontal: screenWidth * 0.025, vertical: screenHeight * 0.005),
                               decoration: BoxDecoration(
-                                color: ProviderTheme.onPrimaryTextColor.withOpacity(0.2),
+                                color: UserTheme.onPrimaryTextColor.withOpacity(0.2),
                                 borderRadius: BorderRadius.circular(screenWidth * 0.04),
                               ),
                               child: Row(
@@ -284,14 +302,14 @@ class _UserHomeState extends State<UserHome> with AutomaticKeepAliveClientMixin 
                                 children: [
                                   Icon(
                                     Icons.location_on,
-                                    color: ProviderTheme.onPrimaryTextColor,
+                                    color: UserTheme.onPrimaryTextColor,
                                     size: screenWidth * 0.035,
                                   ),
                                   SizedBox(width: screenWidth * 0.008),
                                   Text(
                                     userCity,
                                     style: TextStyle(
-                                      color: ProviderTheme.onPrimaryTextColor,
+                                      color: UserTheme.onPrimaryTextColor,
                                       fontSize: screenWidth * 0.032,
                                       fontWeight: FontWeight.w500,
                                     ),
@@ -308,7 +326,7 @@ class _UserHomeState extends State<UserHome> with AutomaticKeepAliveClientMixin 
                     width: screenWidth * 0.09,
                     height: screenWidth * 0.09,
                     decoration: BoxDecoration(
-                      color: ProviderTheme.onPrimaryTextColor.withOpacity(0.2),
+                      color: UserTheme.onPrimaryTextColor.withOpacity(0.2),
                       borderRadius: BorderRadius.circular(screenWidth * 0.012),
                     ),
                     child: IconButton(
@@ -318,11 +336,11 @@ class _UserHomeState extends State<UserHome> with AutomaticKeepAliveClientMixin 
                           ? CircleAvatar(
                         radius: screenWidth * 0.035,
                         backgroundImage: NetworkImage(_profileImageUrl!),
-                        backgroundColor: ProviderTheme.dividerColor,
+                        backgroundColor: UserTheme.dividerColor,
                       )
                           : Icon(
                         Icons.account_circle,
-                        color: ProviderTheme.onPrimaryTextColor,
+                        color: UserTheme.onPrimaryTextColor,
                         size: screenWidth * 0.06,
                       ),
                       onPressed: () {
@@ -336,7 +354,6 @@ class _UserHomeState extends State<UserHome> with AutomaticKeepAliveClientMixin 
                 ],
               ),
             ),
-            // In your UserHome class's build method, modify the search section:
 
             Container(
               margin: EdgeInsets.fromLTRB(
@@ -345,11 +362,11 @@ class _UserHomeState extends State<UserHome> with AutomaticKeepAliveClientMixin 
                 children: [
                   Container(
                     decoration: BoxDecoration(
-                      color: ProviderTheme.surfaceColor,
+                      color: UserTheme.surfaceColor,
                       borderRadius: BorderRadius.circular(screenWidth * 0.037),
                       boxShadow: [
                         BoxShadow(
-                          color: ProviderTheme.primaryColor.withOpacity(0.1),
+                          color: UserTheme.primaryColor.withOpacity(0.1),
                           blurRadius: 15,
                           offset: Offset(0, 6),
                           spreadRadius: 2,
@@ -360,20 +377,20 @@ class _UserHomeState extends State<UserHome> with AutomaticKeepAliveClientMixin 
                       controller: _searchController,
                       focusNode: _searchFocusNode,
                       style: TextStyle(
-                        color: ProviderTheme.primaryTextColor,
+                        color: UserTheme.primaryTextColor,
                         fontSize: screenWidth * 0.04,
                       ),
                       decoration: InputDecoration(
                         hintText: 'Search for services, providers...',
                         hintStyle: TextStyle(
-                          color: ProviderTheme.secondaryTextColor.withOpacity(0.7),
+                          color: UserTheme.secondaryTextColor.withOpacity(0.7),
                           fontSize: screenWidth * 0.035,
                         ),
                         prefixIcon: Container(
                           margin: EdgeInsets.only(left: screenWidth * 0.02, right: screenWidth * 0.02),
                           child: Icon(
                             Icons.search,
-                            color: ProviderTheme.primaryColor,
+                            color: UserTheme.primaryColor,
                             size: screenWidth * 0.06,
                           ),
                         ),
@@ -381,7 +398,7 @@ class _UserHomeState extends State<UserHome> with AutomaticKeepAliveClientMixin 
                             ? IconButton(
                           icon: Icon(
                             Icons.clear,
-                            color: ProviderTheme.secondaryTextColor,
+                            color: UserTheme.secondaryTextColor,
                             size: screenWidth * 0.05,
                           ),
                           onPressed: () {
@@ -402,7 +419,7 @@ class _UserHomeState extends State<UserHome> with AutomaticKeepAliveClientMixin 
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(screenWidth * 0.037),
                           borderSide: BorderSide(
-                            color: ProviderTheme.primaryColor.withOpacity(0.5),
+                            color: UserTheme.primaryColor.withOpacity(0.5),
                             width: 1.5,
                           ),
                         ),
@@ -443,25 +460,18 @@ class _UserHomeState extends State<UserHome> with AutomaticKeepAliveClientMixin 
                         maxHeight: screenHeight * 0.3,
                       ),
                       decoration: BoxDecoration(
-                        color: ProviderTheme.surfaceColor,
+                        color: UserTheme.surfaceColor,
                         borderRadius: BorderRadius.circular(screenWidth * 0.037),
                         boxShadow: [
                           BoxShadow(
-                            color: ProviderTheme.shadowColor.withOpacity(0.2),
+                            color: UserTheme.shadowColor.withOpacity(0.2),
                             blurRadius: 10,
                             offset: Offset(0, 4),
                           ),
                         ],
                       ),
                       child: _isLoadingServices
-                          ? Center(
-                        child: Padding(
-                          padding: EdgeInsets.all(screenWidth * 0.05),
-                          child: CircularProgressIndicator(
-                            color: ProviderTheme.primaryColor,
-                          ),
-                        ),
-                      )
+                          ? _buildShimmerSearchResults(screenWidth, screenHeight)
                           : _searchResults.isEmpty
                           ? Center(
                         child: Padding(
@@ -469,7 +479,7 @@ class _UserHomeState extends State<UserHome> with AutomaticKeepAliveClientMixin 
                           child: Text(
                             'No services found',
                             style: TextStyle(
-                              color: ProviderTheme.secondaryTextColor,
+                              color: UserTheme.secondaryTextColor,
                               fontSize: screenWidth * 0.035,
                             ),
                           ),
@@ -480,7 +490,7 @@ class _UserHomeState extends State<UserHome> with AutomaticKeepAliveClientMixin 
                         physics: ClampingScrollPhysics(),
                         itemCount: _searchResults.length,
                         separatorBuilder: (context, index) => Divider(
-                          color: ProviderTheme.dividerColor.withOpacity(0.3),
+                          color: UserTheme.dividerColor.withOpacity(0.3),
                           height: 1,
                           indent: screenWidth * 0.05,
                           endIndent: screenWidth * 0.05,
@@ -504,20 +514,20 @@ class _UserHomeState extends State<UserHome> with AutomaticKeepAliveClientMixin 
                                 )
                                     : null,
                                 color: service.imageUrl.isEmpty
-                                    ? ProviderTheme.dividerColor
+                                    ? UserTheme.dividerColor
                                     : null,
                               ),
                               child: service.imageUrl.isEmpty
                                   ? Icon(
                                 Icons.image,
-                                color: ProviderTheme.secondaryTextColor,
+                                color: UserTheme.secondaryTextColor,
                               )
                                   : null,
                             ),
                             title: Text(
                               service.title,
                               style: TextStyle(
-                                color: ProviderTheme.primaryTextColor,
+                                color: UserTheme.primaryTextColor,
                                 fontWeight: FontWeight.w600,
                                 fontSize: screenWidth * 0.04,
                               ),
@@ -525,14 +535,14 @@ class _UserHomeState extends State<UserHome> with AutomaticKeepAliveClientMixin 
                             subtitle: Text(
                               service.category,
                               style: TextStyle(
-                                color: ProviderTheme.secondaryTextColor,
+                                color: UserTheme.secondaryTextColor,
                                 fontSize: screenWidth * 0.035,
                               ),
                             ),
                             trailing: Text(
                               '\$${service.price}/hr',
                               style: TextStyle(
-                                color: ProviderTheme.primaryColor,
+                                color: UserTheme.primaryColor,
                                 fontWeight: FontWeight.bold,
                                 fontSize: screenWidth * 0.035,
                               ),
@@ -562,16 +572,13 @@ class _UserHomeState extends State<UserHome> with AutomaticKeepAliveClientMixin 
 
             Container(
               margin: EdgeInsets.only(top: 0),
-              height: screenHeight * 0.05,
+              height: screenHeight * 0.08,
+              padding: EdgeInsets.only(bottom: screenHeight * 0.015), // Added bottom padding
               child: StreamBuilder<QuerySnapshot>(
                 stream: FirebaseFirestore.instance.collection('categories').snapshots(),
                 builder: (context, snapshot) {
-                  if (!snapshot.hasData) {
-                    return Center(
-                      child: CircularProgressIndicator(
-                        color: ProviderTheme.primaryColor,
-                      ),
-                    );
+                  if (!snapshot.hasData || _isLoadingCategories) {
+                    return _buildShimmerCategoryChips(screenWidth, screenHeight);
                   }
 
                   List<String> categories = ['All'];
@@ -584,7 +591,7 @@ class _UserHomeState extends State<UserHome> with AutomaticKeepAliveClientMixin 
                     itemCount: categories.length,
                     itemBuilder: (context, index) {
                       return Padding(
-                        padding: EdgeInsets.only(right: screenWidth * 0.03),
+                        padding: EdgeInsets.only(right: screenWidth * 0.05),
                         child: GestureDetector(
                           onTap: () {
                             setState(() => selectedCategory = categories[index]);
@@ -592,11 +599,11 @@ class _UserHomeState extends State<UserHome> with AutomaticKeepAliveClientMixin 
                           child: Container(
                             decoration: BoxDecoration(
                               color: categories[index] == selectedCategory
-                                  ? ProviderTheme.primaryColor
+                                  ? UserTheme.primaryColor
                                   : Colors.transparent,
                               borderRadius: BorderRadius.circular(screenWidth * 0.05),
                               border: Border.all(
-                                color: ProviderTheme.primaryColor,
+                                color: UserTheme.primaryColor,
                                 width: 1,
                               ),
                             ),
@@ -607,8 +614,8 @@ class _UserHomeState extends State<UserHome> with AutomaticKeepAliveClientMixin 
                                 categories[index],
                                 style: TextStyle(
                                   color: categories[index] == selectedCategory
-                                      ? ProviderTheme.onPrimaryTextColor
-                                      : ProviderTheme.primaryColor,
+                                      ? UserTheme.onPrimaryTextColor
+                                      : UserTheme.primaryColor,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
@@ -621,19 +628,19 @@ class _UserHomeState extends State<UserHome> with AutomaticKeepAliveClientMixin 
                 },
               ),
             ),
+
             Expanded(
               child: SingleChildScrollView(
                 child: Padding(
                   padding: EdgeInsets.only(bottom: MediaQuery.of(context).padding.bottom + screenHeight * 0.04),
-
                   child: Column(
                     children: [
                       _buildSectionHeader('Popular Services'),
-                      _buildPopularServices(),
+                      _buildPopularServices(),  // No more conditional with shimmer
                       _buildSectionHeader('Top Rated Providers'),
-                      _buildProviders(),
+                      _buildProviders(),  // No more conditional with shimmer
                       _buildSectionHeader('All Categories'),
-                      _buildCategories(),
+                      _buildCategories(),  // No more conditional with shimmer
                       SizedBox(height: screenHeight * 0.025),
                     ],
                   ),
@@ -645,6 +652,331 @@ class _UserHomeState extends State<UserHome> with AutomaticKeepAliveClientMixin 
       ),
     );
   }
+
+  // Shimmer effect widgets
+
+  Widget _buildShimmerForHeader(double screenWidth, double screenHeight) {
+    return Shimmer.fromColors(
+      baseColor: Colors.white.withOpacity(0.4),
+      highlightColor: Colors.white.withOpacity(0.8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: screenWidth * 0.5,
+            height: screenHeight * 0.02,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(4),
+            ),
+          ),
+          SizedBox(height: screenHeight * 0.01),
+          Container(
+            width: screenWidth * 0.3,
+            height: screenHeight * 0.015,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(4),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildShimmerSearchResults(double screenWidth, double screenHeight) {
+    return Shimmer.fromColors(
+      baseColor: Colors.grey[300]!,
+      highlightColor: Colors.grey[100]!,
+      child: ListView.separated(
+        shrinkWrap: true,
+        physics: ClampingScrollPhysics(),
+        itemCount: 3,
+        separatorBuilder: (context, index) => Divider(
+          color: Colors.transparent,
+          height: 1,
+        ),
+        itemBuilder: (context, index) {
+          return ListTile(
+            contentPadding: EdgeInsets.symmetric(
+              horizontal: screenWidth * 0.05,
+              vertical: screenHeight * 0.01,
+            ),
+            leading: Container(
+              width: screenWidth * 0.12,
+              height: screenWidth * 0.12,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(screenWidth * 0.02),
+                color: Colors.white,
+              ),
+            ),
+            title: Container(
+              width: double.infinity,
+              height: screenHeight * 0.018,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(4),
+              ),
+            ),
+            subtitle: Container(
+              width: screenWidth * 0.3,
+              height: screenHeight * 0.014,
+              margin: EdgeInsets.only(top: 5),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(4),
+              ),
+            ),
+            trailing: Container(
+              width: screenWidth * 0.15,
+              height: screenHeight * 0.016,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(4),
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildShimmerCategoryChips(double screenWidth, double screenHeight) {
+    return Shimmer.fromColors(
+      baseColor: Colors.grey[300]!,
+      highlightColor: Colors.grey[100]!,
+      child: ListView.builder(
+        padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.05),
+        scrollDirection: Axis.horizontal,
+        itemCount: 6,
+        itemBuilder: (context, index) {
+          return Padding(
+            padding: EdgeInsets.only(right: screenWidth * 0.03),
+            child: Container(
+              width: screenWidth * 0.2,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(screenWidth * 0.05),
+              ),
+              padding: EdgeInsets.symmetric(
+                  vertical: screenHeight * 0.012,
+                  horizontal: screenWidth * 0.05
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildShimmerPopularServices(double screenWidth, double screenHeight) {
+    return Container(
+      height: screenHeight * 0.28,
+      child: Shimmer.fromColors(
+        baseColor: Colors.grey[300]!,
+        highlightColor: Colors.grey[100]!,
+        child: ListView.builder(
+          padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.05),
+          scrollDirection: Axis.horizontal,
+          itemCount: 3,
+          itemBuilder: (context, index) {
+            return Container(
+              width: screenWidth * 0.45,
+              margin: EdgeInsets.only(right: screenWidth * 0.04),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(screenWidth * 0.037),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    height: screenHeight * 0.15,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.vertical(
+                        top: Radius.circular(screenWidth * 0.037),
+                      ),
+                    ),
+                  ),
+                  Padding(
+                    padding: EdgeInsets.all(screenWidth * 0.037),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Container(
+                          width: screenWidth * 0.35,
+                          height: screenHeight * 0.018,
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                        ),
+                        SizedBox(height: screenWidth * 0.025),
+                        Container(
+                          width: screenWidth * 0.25,
+                          height: screenHeight * 0.016,
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                        ),
+                        SizedBox(height: screenWidth * 0.02),
+                        Container(
+                          width: screenWidth * 0.15,
+                          height: screenHeight * 0.014,
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        ),
+      ),
+    );
+  }
+
+  Widget _buildShimmerProviders(double screenWidth, double screenHeight) {
+    return Shimmer.fromColors(
+      baseColor: Colors.grey[300]!,
+      highlightColor: Colors.grey[100]!,
+      child: ListView.builder(
+        padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.05),
+        shrinkWrap: true,
+        physics: NeverScrollableScrollPhysics(),
+        itemCount: 3,
+        itemBuilder: (context, index) {
+          return Container(
+            margin: EdgeInsets.only(bottom: screenWidth * 0.04),
+            height: screenWidth * 0.24,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(screenWidth * 0.037),
+            ),
+            child: Padding(
+              padding: EdgeInsets.all(screenWidth * 0.03),
+              child: Row(
+                children: [
+                  Container(
+                    width: screenWidth * 0.18,
+                    height: screenWidth * 0.18,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(screenWidth * 0.03),
+                      color: Colors.white,
+                    ),
+                  ),
+                  SizedBox(width: screenWidth * 0.04),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Container(
+                          width: screenWidth * 0.4,
+                          height: screenHeight * 0.018,
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                        ),
+                        SizedBox(height: screenWidth * 0.02),
+                        Container(
+                          width: screenWidth * 0.25,
+                          height: screenHeight * 0.014,
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                        ),
+                        SizedBox(height: screenWidth * 0.02),
+                        Container(
+                          width: screenWidth * 0.3,
+                          height: screenHeight * 0.012,
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Container(
+                    width: screenWidth * 0.1,
+                    height: screenWidth * 0.1,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(screenWidth * 0.02),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildShimmerCategories(double screenWidth, double screenHeight) {
+    return Shimmer.fromColors(
+      baseColor: Colors.grey[300]!,
+      highlightColor: Colors.grey[100]!,
+      child: GridView.builder(
+        padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.05),
+        shrinkWrap: true,
+        physics: NeverScrollableScrollPhysics(),
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 2,
+          crossAxisSpacing: screenWidth * 0.04,
+          mainAxisSpacing: screenHeight * 0.02,
+          childAspectRatio: 3 / 4,
+        ),
+        itemCount: 4,
+        itemBuilder: (context, index) {
+          return Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(screenWidth * 0.025),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Expanded(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.vertical(
+                        top: Radius.circular(screenWidth * 0.025),
+                      ),
+                    ),
+                  ),
+                ),
+                Padding(
+                  padding: EdgeInsets.all(screenWidth * 0.02),
+                  child: Container(
+                    width: double.infinity,
+                    height: screenHeight * 0.02,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+// ... (keep all other methods the same)
 
   Widget _buildSectionHeader(String title) {
     final screenWidth = MediaQuery.of(context).size.width;
@@ -660,7 +992,7 @@ class _UserHomeState extends State<UserHome> with AutomaticKeepAliveClientMixin 
             style: TextStyle(
               fontSize: screenWidth * 0.05,
               fontWeight: FontWeight.bold,
-              color: ProviderTheme.primaryColor,
+              color: UserTheme.primaryColor,
             ),
           ),
           TextButton(
@@ -668,7 +1000,7 @@ class _UserHomeState extends State<UserHome> with AutomaticKeepAliveClientMixin 
             child: Text(
               'See All',
               style: TextStyle(
-                color: ProviderTheme.primaryColor,
+                color: UserTheme.primaryColor,
                 fontSize: screenWidth * 0.035,
               ),
             ),
@@ -687,11 +1019,7 @@ class _UserHomeState extends State<UserHome> with AutomaticKeepAliveClientMixin 
         stream: getServices(selectedCategory),
         builder: (context, snapshot) {
           if (!snapshot.hasData) {
-            return Center(
-              child: CircularProgressIndicator(
-                color: ProviderTheme.primaryColor,
-              ),
-            );
+            return _buildShimmerPopularServices(screenWidth, screenHeight);
           }
           return ListView.builder(
             padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.05),
@@ -700,7 +1028,7 @@ class _UserHomeState extends State<UserHome> with AutomaticKeepAliveClientMixin 
             itemBuilder: (context, index) {
               Service service = snapshot.data![index];
               return ServiceCard(
-                id: service.id, // Add this
+                id: service.id,
                 title: service.title,
                 price: '\$${service.price}/hr',
                 imageUrl: service.imageUrl,
@@ -715,15 +1043,12 @@ class _UserHomeState extends State<UserHome> with AutomaticKeepAliveClientMixin 
 
   Widget _buildProviders() {
     final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
     return StreamBuilder<QuerySnapshot>(
       stream: FirebaseFirestore.instance.collection('providers').snapshots(),
       builder: (context, snapshot) {
         if (!snapshot.hasData) {
-          return Center(
-            child: CircularProgressIndicator(
-              color: ProviderTheme.primaryColor,
-            ),
-          );
+          return _buildShimmerProviders(screenWidth, screenHeight);
         }
         return ListView.builder(
           padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.05),
@@ -733,7 +1058,7 @@ class _UserHomeState extends State<UserHome> with AutomaticKeepAliveClientMixin 
           itemBuilder: (context, index) {
             final provider = Provider.fromFirestore(snapshot.data!.docs[index]);
             return ProviderCard(
-              id: provider.id, // Add this
+              id: provider.id,
               name: provider.name,
               phoneNumber: provider.phoneNumber,
               profilePicUrl: provider.profilePicUrl,
@@ -751,11 +1076,7 @@ class _UserHomeState extends State<UserHome> with AutomaticKeepAliveClientMixin 
       stream: FirebaseFirestore.instance.collection('categories').snapshots(),
       builder: (context, snapshot) {
         if (!snapshot.hasData) {
-          return Center(
-            child: CircularProgressIndicator(
-              color: ProviderTheme.primaryColor,
-            ),
-          );
+          return _buildShimmerCategories(screenWidth, screenHeight);
         }
 
         final categories = snapshot.data!.docs
@@ -824,19 +1145,19 @@ class CategoryChip extends StatelessWidget {
         padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.05, vertical: screenHeight * 0.012),
         decoration: BoxDecoration(
           color: selected
-              ? ProviderTheme.primaryColor
-              : ProviderTheme.surfaceColor,
+              ? UserTheme.primaryColor
+              : UserTheme.surfaceColor,
           borderRadius: BorderRadius.circular(screenWidth * 0.06),
           border: Border.all(
             color: selected
-                ? ProviderTheme.primaryColor
-                : ProviderTheme.dividerColor,
+                ? UserTheme.primaryColor
+                : UserTheme.dividerColor,
             width: 1,
           ),
           boxShadow: selected
               ? [
             BoxShadow(
-              color: ProviderTheme.primaryColor.withOpacity(0.3),
+              color: UserTheme.primaryColor.withOpacity(0.3),
               blurRadius: 8,
               offset: Offset(0, 4),
             )
@@ -847,8 +1168,8 @@ class CategoryChip extends StatelessWidget {
           label,
           style: TextStyle(
             color: selected
-                ? ProviderTheme.onPrimaryTextColor
-                : ProviderTheme.secondaryTextColor,
+                ? UserTheme.onPrimaryTextColor
+                : UserTheme.secondaryTextColor,
             fontWeight: selected ? FontWeight.bold : FontWeight.normal,
             fontSize: screenWidth * 0.035,
           ),
@@ -889,11 +1210,11 @@ class ServiceCard extends StatelessWidget {
         width: screenWidth * 0.45,
         margin: EdgeInsets.only(right: screenWidth * 0.04),
         decoration: BoxDecoration(
-          color: ProviderTheme.surfaceColor,
+          color: UserTheme.surfaceColor,
           borderRadius: BorderRadius.circular(screenWidth * 0.037),
           boxShadow: [
             BoxShadow(
-              color: ProviderTheme.shadowColor,
+              color: UserTheme.shadowColor,
               blurRadius: 15,
               offset: Offset(0, 5),
             ),
@@ -912,19 +1233,19 @@ class ServiceCard extends StatelessWidget {
                   width: double.infinity,
                   errorBuilder: (context, error, stackTrace) {
                     return Container(
-                      color: ProviderTheme.dividerColor,
+                      color: UserTheme.dividerColor,
                       child: Icon(
                         Icons.error,
-                        color: ProviderTheme.disabledTextColor,
+                        color: UserTheme.disabledTextColor,
                       ),
                     );
                   },
                 )
                     : Container(
-                  color: ProviderTheme.dividerColor,
+                  color: UserTheme.dividerColor,
                   child: Icon(
                     Icons.image,
-                    color: ProviderTheme.disabledTextColor,
+                    color: UserTheme.disabledTextColor,
                   ),
                 ),
               ),
@@ -939,14 +1260,14 @@ class ServiceCard extends StatelessWidget {
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: screenWidth * 0.04,
-                      color: ProviderTheme.primaryTextColor,
+                      color: UserTheme.primaryTextColor,
                     ),
                   ),
                   SizedBox(height: screenWidth * 0.015),
                   Text(
                     price,
                     style: TextStyle(
-                      color: ProviderTheme.primaryColor,
+                      color: UserTheme.primaryColor,
                       fontWeight: FontWeight.w600,
                       fontSize: screenWidth * 0.037,
                     ),
@@ -956,7 +1277,7 @@ class ServiceCard extends StatelessWidget {
                     children: [
                       Icon(
                         Icons.star,
-                        color: ProviderTheme.warningColor,
+                        color: UserTheme.warningColor,
                         size: screenWidth * 0.04,
                       ),
                       SizedBox(width: screenWidth * 0.01),
@@ -964,7 +1285,7 @@ class ServiceCard extends StatelessWidget {
                         "4.5",
                         style: TextStyle(
                           fontWeight: FontWeight.w500,
-                          color: ProviderTheme.secondaryTextColor,
+                          color: UserTheme.secondaryTextColor,
                           fontSize: screenWidth * 0.035,
                         ),
                       ),
@@ -1003,11 +1324,11 @@ class ProviderCard extends StatelessWidget {
       child: Container(
         margin: EdgeInsets.only(bottom: screenWidth * 0.04),
         decoration: BoxDecoration(
-          color: ProviderTheme.surfaceColor,
+          color: UserTheme.surfaceColor,
           borderRadius: BorderRadius.circular(screenWidth * 0.037),
           boxShadow: [
             BoxShadow(
-              color: ProviderTheme.shadowColor,
+              color: UserTheme.shadowColor,
               blurRadius: 12,
               offset: Offset(0, 4),
             ),
@@ -1022,7 +1343,7 @@ class ProviderCard extends StatelessWidget {
                 height: screenWidth * 0.18,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(screenWidth * 0.03),
-                  color: ProviderTheme.dividerColor,
+                  color: UserTheme.dividerColor,
                 ),
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(screenWidth * 0.03),
@@ -1033,14 +1354,14 @@ class ProviderCard extends StatelessWidget {
                     errorBuilder: (context, error, stackTrace) {
                       return Icon(
                         Icons.person,
-                        color: ProviderTheme.secondaryTextColor,
+                        color: UserTheme.secondaryTextColor,
                         size: screenWidth * 0.09,
                       );
                     },
                   )
                       : Icon(
                     Icons.person,
-                    color: ProviderTheme.secondaryTextColor,
+                    color: UserTheme.secondaryTextColor,
                     size: screenWidth * 0.09,
                   ),
                 ),
@@ -1055,14 +1376,14 @@ class ProviderCard extends StatelessWidget {
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: screenWidth * 0.04,
-                        color: ProviderTheme.primaryTextColor,
+                        color: UserTheme.primaryTextColor,
                       ),
                     ),
                     SizedBox(height: screenWidth * 0.01),
                     Text(
                       phoneNumber,
                       style: TextStyle(
-                        color: ProviderTheme.primaryColor,
+                        color: UserTheme.primaryColor,
                         fontSize: screenWidth * 0.035,
                         fontWeight: FontWeight.w500,
                       ),
@@ -1072,7 +1393,7 @@ class ProviderCard extends StatelessWidget {
                       children: [
                         Icon(
                           Icons.star,
-                          color: ProviderTheme.warningColor,
+                          color: UserTheme.warningColor,
                           size: screenWidth * 0.04,
                         ),
                         SizedBox(width: screenWidth * 0.01),
@@ -1081,13 +1402,13 @@ class ProviderCard extends StatelessWidget {
                           style: TextStyle(
                             fontWeight: FontWeight.w600,
                             fontSize: screenWidth * 0.032,
-                            color: ProviderTheme.primaryTextColor,
+                            color: UserTheme.primaryTextColor,
                           ),
                         ),
                         Text(
                           " (120 reviews)",
                           style: TextStyle(
-                            color: ProviderTheme.secondaryTextColor,
+                            color: UserTheme.secondaryTextColor,
                             fontSize: screenWidth * 0.032,
                           ),
                         ),
@@ -1098,14 +1419,14 @@ class ProviderCard extends StatelessWidget {
               ),
               Container(
                 decoration: BoxDecoration(
-                  color: ProviderTheme.primaryColor.withOpacity(0.1),
+                  color: UserTheme.primaryColor.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(screenWidth * 0.02),
                 ),
                 child: IconButton(
                   icon: Icon(
                     Icons.arrow_forward_ios,
                     size: screenWidth * 0.04,
-                    color: ProviderTheme.primaryColor,
+                    color: UserTheme.primaryColor,
                   ),
                   onPressed: () {
                     _navigateToProviderServices(context);
@@ -1148,7 +1469,7 @@ class GridCategoryCard extends StatelessWidget {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(screenWidth * 0.025),
         ),
-        color: ProviderTheme.surfaceColor,
+        color: UserTheme.surfaceColor,
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -1163,7 +1484,7 @@ class GridCategoryCard extends StatelessWidget {
                     if (loadingProgress == null) return child;
                     return Center(
                       child: CircularProgressIndicator(
-                        color: ProviderTheme.onPrimaryTextColor,
+                        color: UserTheme.onPrimaryTextColor,
                       ),
                     );
                   },
@@ -1177,7 +1498,7 @@ class GridCategoryCard extends StatelessWidget {
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: screenWidth * 0.04,
-                  color: ProviderTheme.primaryTextColor,
+                  color: UserTheme.primaryTextColor,
                 ),
               ),
             ),
@@ -1240,3 +1561,4 @@ class Provider {
     );
   }
 }
+

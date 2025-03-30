@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:service_provider/theme.dart'; // Import ProviderTheme
+import 'package:service_provider/User%20Panel/Usertheme.dart'; // Import ProviderTheme
 
 class Provider {
   final String id;
@@ -59,7 +59,7 @@ class AvailableProvidersPage extends StatelessWidget {
         title: Text(
           'Available Service Providers',
           style: TextStyle(
-            color: ProviderTheme.onPrimaryTextColor, // Matches #FFFFFF (On Primary Text)
+            color: UserTheme.onPrimaryTextColor, // Matches #FFFFFF (On Primary Text)
           ),
         ),
       ),
@@ -69,7 +69,7 @@ class AvailableProvidersPage extends StatelessWidget {
           if (!snapshot.hasData) {
             return Center(
               child: CircularProgressIndicator(
-                color: ProviderTheme.primaryColor, // Matches #060644 (Primary)
+                color: UserTheme.primaryColor, // Matches #060644 (Primary)
               ),
             );
           }
@@ -79,7 +79,7 @@ class AvailableProvidersPage extends StatelessWidget {
               child: Text(
                 'No providers available for this service',
                 style: TextStyle(
-                  color: ProviderTheme.primaryTextColor, // Matches #060644 (Primary Text)
+                  color: UserTheme.primaryTextColor, // Matches #060644 (Primary Text)
                 ),
               ),
             );
@@ -90,7 +90,7 @@ class AvailableProvidersPage extends StatelessWidget {
             itemBuilder: (context, index) {
               Provider provider = snapshot.data![index];
               return Card(
-                color: ProviderTheme.surfaceColor, // Matches #FFFFFF (Surface)
+                color: UserTheme.surfaceColor, // Matches #FFFFFF (Surface)
                 margin: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
                 child: ListTile(
                   leading: CircleAvatar(
@@ -100,20 +100,20 @@ class AvailableProvidersPage extends StatelessWidget {
                     child: provider.profileImage.isEmpty
                         ? Icon(
                       Icons.person,
-                      color: ProviderTheme.primaryColor, // Matches #060644 (Primary)
+                      color: UserTheme.primaryColor, // Matches #060644 (Primary)
                     )
                         : null,
                   ),
                   title: Text(
                     provider.name,
                     style: TextStyle(
-                      color: ProviderTheme.primaryTextColor, // Matches #060644 (Primary Text)
+                      color: UserTheme.primaryTextColor, // Matches #060644 (Primary Text)
                     ),
                   ),
                   subtitle: Text(
                     provider.address,
                     style: TextStyle(
-                      color: ProviderTheme.secondaryTextColor, // Matches #6B7280 (Secondary Text)
+                      color: UserTheme.secondaryTextColor, // Matches #6B7280 (Secondary Text)
                     ),
                   ),
                   trailing: ElevatedButton(

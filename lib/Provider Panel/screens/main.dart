@@ -143,6 +143,7 @@ class _MainState extends State<Main> with SingleTickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false,  // Add this line to remove debug banner
       theme: ProviderTheme.themeData,
       scaffoldMessengerKey: _scaffoldMessengerKey,
       home: WillPopScope(

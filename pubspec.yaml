@@ -141,6 +141,7 @@ flutter:
     - android/assets/logo.png
     - android/assets/app logo.jpg
     - android/assets/Gpay.png
+    - android/assets/otp_icon.png
     - android/assets/cash-on-delivery.png
     - android/assets/debit card.png
     - android/assets/location.json

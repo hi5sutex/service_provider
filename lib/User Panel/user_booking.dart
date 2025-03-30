@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:service_provider/User%20Panel/BookingTrackingPage.dart';
-import 'package:service_provider/theme.dart';
+import 'package:service_provider/User%20Panel/Usertheme.dart';
 
 class UserBooking extends StatefulWidget {
   const UserBooking({super.key});
@@ -226,14 +226,14 @@ class _UserBookingState extends State<UserBooking> {
 
     return Scaffold(
       resizeToAvoidBottomInset: false,
-      backgroundColor: ProviderTheme.primaryColor, // Matches #060644 (Primary)
+      backgroundColor: UserTheme.primaryColor, // Matches #060644 (Primary)
       appBar: AppBar(
-        backgroundColor: ProviderTheme.primaryColor, // Matches #060644 (Primary)
+        backgroundColor: UserTheme.primaryColor, // Matches #060644 (Primary)
         elevation: 0,
         leading: IconButton(
           icon: Icon(
             Icons.arrow_back_ios,
-            color: ProviderTheme.onPrimaryTextColor, // Matches #FFFFFF (On Primary Text)
+            color: UserTheme.onPrimaryTextColor, // Matches #FFFFFF (On Primary Text)
             size: screenWidth * 0.06,
           ),
           onPressed: () => Navigator.pop(context),
@@ -241,7 +241,7 @@ class _UserBookingState extends State<UserBooking> {
         title: Text(
           'My Bookings',
           style: TextStyle(
-            color: ProviderTheme.onPrimaryTextColor, // Matches #FFFFFF (On Primary Text)
+            color: UserTheme.onPrimaryTextColor, // Matches #FFFFFF (On Primary Text)
             fontSize: screenWidth * 0.06,
             fontWeight: FontWeight.bold,
           ),
@@ -259,30 +259,30 @@ class _UserBookingState extends State<UserBooking> {
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8.0),
                   borderSide: BorderSide(
-                    color: ProviderTheme.onPrimaryTextColor, // Matches #FFFFFF (On Primary Text)
+                    color: UserTheme.onPrimaryTextColor, // Matches #FFFFFF (On Primary Text)
                   ),
                 ),
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8.0),
                   borderSide: BorderSide(
-                    color: ProviderTheme.onPrimaryTextColor, // Matches #FFFFFF (On Primary Text)
+                    color: UserTheme.onPrimaryTextColor, // Matches #FFFFFF (On Primary Text)
                   ),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8.0),
                   borderSide: BorderSide(
-                    color: ProviderTheme.onPrimaryTextColor, // Matches #FFFFFF (On Primary Text)
+                    color: UserTheme.onPrimaryTextColor, // Matches #FFFFFF (On Primary Text)
                   ),
                 ),
                 prefixIcon: Icon(
                   Icons.search,
-                  color: ProviderTheme.onPrimaryTextColor, // Matches #FFFFFF (On Primary Text)
+                  color: UserTheme.onPrimaryTextColor, // Matches #FFFFFF (On Primary Text)
                 ),
                 suffixIcon: _searchQuery.isNotEmpty
                     ? IconButton(
                   icon: Icon(
                     Icons.clear,
-                    color: ProviderTheme.onPrimaryTextColor, // Matches #FFFFFF (On Primary Text)
+                    color: UserTheme.onPrimaryTextColor, // Matches #FFFFFF (On Primary Text)
                   ),
                   onPressed: () {
                     _searchController.clear();
@@ -290,14 +290,14 @@ class _UserBookingState extends State<UserBooking> {
                 )
                     : null,
                 hintStyle: TextStyle(
-                  color: ProviderTheme.onPrimaryTextColor.withOpacity(0.7), // Matches #FFFFFF with opacity
+                  color: UserTheme.onPrimaryTextColor.withOpacity(0.7), // Matches #FFFFFF with opacity
                 ),
                 filled: true,
-                fillColor: ProviderTheme.onPrimaryTextColor.withOpacity(0.1), // Matches #FFFFFF with opacity
+                fillColor: UserTheme.onPrimaryTextColor.withOpacity(0.1), // Matches #FFFFFF with opacity
               ),
               style: TextStyle(
                 fontSize: screenWidth * 0.035,
-                color: ProviderTheme.onPrimaryTextColor, // Matches #FFFFFF (On Primary Text)
+                color: UserTheme.onPrimaryTextColor, // Matches #FFFFFF (On Primary Text)
               ),
             ),
           ),
@@ -318,11 +318,11 @@ class _UserBookingState extends State<UserBooking> {
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: isSelected
-                            ? ProviderTheme.surfaceColor // Matches #FFFFFF (Surface)
-                            : ProviderTheme.primaryColor, // Matches #060644 (Primary)
+                            ? UserTheme.surfaceColor // Matches #FFFFFF (Surface)
+                            : UserTheme.primaryColor, // Matches #060644 (Primary)
                         foregroundColor: isSelected
-                            ? ProviderTheme.primaryColor // Matches #060644 (Primary)
-                            : ProviderTheme.onPrimaryTextColor, // Matches #FFFFFF (On Primary Text)
+                            ? UserTheme.primaryColor // Matches #060644 (Primary)
+                            : UserTheme.onPrimaryTextColor, // Matches #FFFFFF (On Primary Text)
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
@@ -338,8 +338,8 @@ class _UserBookingState extends State<UserBooking> {
                             filter['icon'],
                             size: screenWidth * 0.045,
                             color: isSelected
-                                ? ProviderTheme.primaryColor // Matches #060644 (Primary)
-                                : ProviderTheme.onPrimaryTextColor, // Matches #FFFFFF (On Primary Text)
+                                ? UserTheme.primaryColor // Matches #060644 (Primary)
+                                : UserTheme.onPrimaryTextColor, // Matches #FFFFFF (On Primary Text)
                           ),
                           SizedBox(width: screenWidth * 0.02),
                           Text(
@@ -348,8 +348,8 @@ class _UserBookingState extends State<UserBooking> {
                               fontSize: screenWidth * 0.035,
                               fontWeight: FontWeight.bold,
                               color: isSelected
-                                  ? ProviderTheme.primaryColor // Matches #060644 (Primary)
-                                  : ProviderTheme.onPrimaryTextColor, // Matches #FFFFFF (On Primary Text)
+                                  ? UserTheme.primaryColor // Matches #060644 (Primary)
+                                  : UserTheme.onPrimaryTextColor, // Matches #FFFFFF (On Primary Text)
                             ),
                           ),
                         ],
@@ -363,7 +363,7 @@ class _UserBookingState extends State<UserBooking> {
           Expanded(
             child: Container(
               decoration: BoxDecoration(
-                color: ProviderTheme.surfaceColor, // Matches #FFFFFF (Surface)
+                color: UserTheme.surfaceColor, // Matches #FFFFFF (Surface)
                 borderRadius: const BorderRadius.only(
                   topLeft: Radius.circular(20),
                   topRight: Radius.circular(20),
@@ -433,7 +433,7 @@ class _UserBookingState extends State<UserBooking> {
           Icon(
             Icons.bookmark_border,
             size: MediaQuery.of(context).size.width * 0.15,
-            color: ProviderTheme.secondaryTextColor, // Matches #6B7280 (Secondary Text)
+            color: UserTheme.secondaryTextColor, // Matches #6B7280 (Secondary Text)
           ),
           SizedBox(height: MediaQuery.of(context).size.height * 0.02),
           Text(
@@ -441,7 +441,7 @@ class _UserBookingState extends State<UserBooking> {
             style: TextStyle(
               fontSize: MediaQuery.of(context).size.width * 0.045,
               fontWeight: FontWeight.w500,
-              color: ProviderTheme.primaryTextColor, // Matches #060644 (Primary Text)
+              color: UserTheme.primaryTextColor, // Matches #060644 (Primary Text)
             ),
           ),
           if (subtitle != null) ...[
@@ -450,7 +450,7 @@ class _UserBookingState extends State<UserBooking> {
               subtitle,
               style: TextStyle(
                 fontSize: MediaQuery.of(context).size.width * 0.035,
-                color: ProviderTheme.secondaryTextColor, // Matches #6B7280 (Secondary Text)
+                color: UserTheme.secondaryTextColor, // Matches #6B7280 (Secondary Text)
               ),
             ),
           ]
@@ -476,10 +476,10 @@ class ShimmerBookingCard extends StatelessWidget {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
       ),
-      color: ProviderTheme.surfaceColor, // Matches #FFFFFF (Surface)
+      color: UserTheme.surfaceColor,
       child: Shimmer.fromColors(
-        baseColor: ProviderTheme.secondaryTextColor, // Matches #6B7280 (Secondary Text)
-        highlightColor: ProviderTheme.dividerColor, // Matches #D1D9E1 (Divider)
+        baseColor: Colors.grey.shade200,  // Lighter base color
+        highlightColor: Colors.grey.shade100,  // Even lighter highlight
         child: Padding(
           padding: EdgeInsets.all(screenWidth * 0.03),
           child: Column(
@@ -488,7 +488,7 @@ class ShimmerBookingCard extends StatelessWidget {
               Container(
                 width: double.infinity,
                 height: screenHeight * 0.025,
-                color: ProviderTheme.surfaceColor, // Matches #FFFFFF (Surface)
+                color: Colors.white,
               ),
               SizedBox(height: screenHeight * 0.01),
               Row(
@@ -496,13 +496,13 @@ class ShimmerBookingCard extends StatelessWidget {
                   Container(
                     width: screenWidth * 0.035,
                     height: screenWidth * 0.035,
-                    color: ProviderTheme.surfaceColor, // Matches #FFFFFF (Surface)
+                    color: Colors.white,
                   ),
                   SizedBox(width: screenWidth * 0.01),
                   Container(
                     width: screenWidth * 0.4,
                     height: screenHeight * 0.015,
-                    color: ProviderTheme.surfaceColor, // Matches #FFFFFF (Surface)
+                    color: Colors.white,
                   ),
                 ],
               ),
@@ -512,13 +512,13 @@ class ShimmerBookingCard extends StatelessWidget {
                   Container(
                     width: screenWidth * 0.035,
                     height: screenWidth * 0.035,
-                    color: ProviderTheme.surfaceColor, // Matches #FFFFFF (Surface)
+                    color: Colors.white,
                   ),
                   SizedBox(width: screenWidth * 0.01),
                   Container(
                     width: screenWidth * 0.25,
                     height: screenHeight * 0.015,
-                    color: ProviderTheme.surfaceColor, // Matches #FFFFFF (Surface)
+                    color: Colors.white,
                   ),
                 ],
               ),
@@ -528,13 +528,13 @@ class ShimmerBookingCard extends StatelessWidget {
                   Container(
                     width: screenWidth * 0.035,
                     height: screenWidth * 0.035,
-                    color: ProviderTheme.surfaceColor, // Matches #FFFFFF (Surface)
+                    color: Colors.white,
                   ),
                   SizedBox(width: screenWidth * 0.01),
                   Container(
                     width: screenWidth * 0.5,
                     height: screenHeight * 0.015,
-                    color: ProviderTheme.surfaceColor, // Matches #FFFFFF (Surface)
+                    color: Colors.white,
                   ),
                 ],
               ),
@@ -543,7 +543,7 @@ class ShimmerBookingCard extends StatelessWidget {
                 children: [
                   CircleAvatar(
                     radius: screenWidth * 0.05,
-                    backgroundColor: ProviderTheme.surfaceColor, // Matches #FFFFFF (Surface)
+                    backgroundColor: Colors.white,
                   ),
                   SizedBox(width: screenWidth * 0.02),
                   Column(
@@ -552,13 +552,13 @@ class ShimmerBookingCard extends StatelessWidget {
                       Container(
                         width: screenWidth * 0.3,
                         height: screenHeight * 0.017,
-                        color: ProviderTheme.surfaceColor, // Matches #FFFFFF (Surface)
+                        color: Colors.white,
                       ),
                       SizedBox(height: screenHeight * 0.005),
                       Container(
                         width: screenWidth * 0.2,
                         height: screenHeight * 0.015,
-                        color: ProviderTheme.surfaceColor, // Matches #FFFFFF (Surface)
+                        color: Colors.white,
                       ),
                     ],
                   ),
@@ -570,13 +570,13 @@ class ShimmerBookingCard extends StatelessWidget {
                   Container(
                     width: screenWidth * 0.035,
                     height: screenWidth * 0.035,
-                    color: ProviderTheme.surfaceColor, // Matches #FFFFFF (Surface)
+                    color: Colors.white,
                   ),
                   SizedBox(width: screenWidth * 0.01),
                   Container(
                     width: screenWidth * 0.55,
                     height: screenHeight * 0.015,
-                    color: ProviderTheme.surfaceColor, // Matches #FFFFFF (Surface)
+                    color: Colors.white,
                   ),
                 ],
               ),
@@ -584,7 +584,7 @@ class ShimmerBookingCard extends StatelessWidget {
               Container(
                 width: screenWidth * 0.2,
                 height: screenHeight * 0.017,
-                color: ProviderTheme.surfaceColor, // Matches #FFFFFF (Surface)
+                color: Colors.white,
               ),
               SizedBox(height: screenHeight * 0.015),
               Row(
@@ -593,17 +593,17 @@ class ShimmerBookingCard extends StatelessWidget {
                   Container(
                     width: screenWidth * 0.2,
                     height: screenHeight * 0.015,
-                    color: ProviderTheme.surfaceColor, // Matches #FFFFFF (Surface)
+                    color: Colors.white,
                   ),
                   Container(
                     width: screenWidth * 0.2,
                     height: screenHeight * 0.015,
-                    color: ProviderTheme.surfaceColor, // Matches #FFFFFF (Surface)
+                    color: Colors.white,
                   ),
                   Container(
                     width: screenWidth * 0.2,
                     height: screenHeight * 0.015,
-                    color: ProviderTheme.surfaceColor, // Matches #FFFFFF (Surface)
+                    color: Colors.white,
                   ),
                 ],
               ),
@@ -653,7 +653,7 @@ class BookingCard extends StatelessWidget {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
       ),
-      color: ProviderTheme.surfaceColor, // Matches #FFFFFF (Surface)
+      color: UserTheme.surfaceColor, // Matches #FFFFFF (Surface)
       child: Padding(
         padding: EdgeInsets.all(screenWidth * 0.03),
         child: Column(
@@ -664,7 +664,7 @@ class BookingCard extends StatelessWidget {
               style: TextStyle(
                 fontSize: screenWidth * 0.04,
                 fontWeight: FontWeight.bold,
-                color: ProviderTheme.primaryColor, // Matches #060644 (Primary)
+                color: UserTheme.primaryColor, // Matches #060644 (Primary)
               ),
             ),
             SizedBox(height: screenHeight * 0.01),
@@ -673,14 +673,14 @@ class BookingCard extends StatelessWidget {
                 Icon(
                   Icons.calendar_today,
                   size: screenWidth * 0.035,
-                  color: ProviderTheme.secondaryTextColor, // Matches #6B7280 (Secondary Text)
+                  color: UserTheme.secondaryTextColor, // Matches #6B7280 (Secondary Text)
                 ),
                 SizedBox(width: screenWidth * 0.01),
                 Text(
                   'Service Date: $serviceDate',
                   style: TextStyle(
                     fontSize: screenWidth * 0.03,
-                    color: ProviderTheme.secondaryTextColor, // Matches #6B7280 (Secondary Text)
+                    color: UserTheme.secondaryTextColor, // Matches #6B7280 (Secondary Text)
                   ),
                 ),
               ],
@@ -690,14 +690,14 @@ class BookingCard extends StatelessWidget {
                 Icon(
                   Icons.access_time,
                   size: screenWidth * 0.035,
-                  color: ProviderTheme.secondaryTextColor, // Matches #6B7280 (Secondary Text)
+                  color: UserTheme.secondaryTextColor, // Matches #6B7280 (Secondary Text)
                 ),
                 SizedBox(width: screenWidth * 0.01),
                 Text(
                   'Time: $serviceTime',
                   style: TextStyle(
                     fontSize: screenWidth * 0.03,
-                    color: ProviderTheme.secondaryTextColor, // Matches #6B7280 (Secondary Text)
+                    color: UserTheme.secondaryTextColor, // Matches #6B7280 (Secondary Text)
                   ),
                 ),
               ],
@@ -707,14 +707,14 @@ class BookingCard extends StatelessWidget {
                 Icon(
                   Icons.event_note,
                   size: screenWidth * 0.035,
-                  color: ProviderTheme.secondaryTextColor, // Matches #6B7280 (Secondary Text)
+                  color: UserTheme.secondaryTextColor, // Matches #6B7280 (Secondary Text)
                 ),
                 SizedBox(width: screenWidth * 0.01),
                 Text(
                   'Booking Date: $bookingDate',
                   style: TextStyle(
                     fontSize: screenWidth * 0.03,
-                    color: ProviderTheme.secondaryTextColor, // Matches #6B7280 (Secondary Text)
+                    color: UserTheme.secondaryTextColor, // Matches #6B7280 (Secondary Text)
                   ),
                 ),
               ],
@@ -725,7 +725,7 @@ class BookingCard extends StatelessWidget {
                 CircleAvatar(
                   backgroundImage: NetworkImage(providerImage),
                   radius: screenWidth * 0.05,
-                  backgroundColor: ProviderTheme.secondaryTextColor, // Matches #6B7280 (Secondary Text)
+                  backgroundColor: UserTheme.secondaryTextColor, // Matches #6B7280 (Secondary Text)
                 ),
                 SizedBox(width: screenWidth * 0.02),
                 Column(
@@ -736,14 +736,14 @@ class BookingCard extends StatelessWidget {
                       style: TextStyle(
                         fontSize: screenWidth * 0.035,
                         fontWeight: FontWeight.w500,
-                        color: ProviderTheme.primaryTextColor, // Matches #060644 (Primary Text)
+                        color: UserTheme.primaryTextColor, // Matches #060644 (Primary Text)
                       ),
                     ),
                     Text(
                       'Service Provider',
                       style: TextStyle(
                         fontSize: screenWidth * 0.03,
-                        color: ProviderTheme.secondaryTextColor, // Matches #6B7280 (Secondary Text)
+                        color: UserTheme.secondaryTextColor, // Matches #6B7280 (Secondary Text)
                       ),
                     ),
                   ],
@@ -756,7 +756,7 @@ class BookingCard extends StatelessWidget {
                 Icon(
                   Icons.location_on,
                   size: screenWidth * 0.035,
-                  color: ProviderTheme.secondaryTextColor, // Matches #6B7280 (Secondary Text)
+                  color: UserTheme.secondaryTextColor, // Matches #6B7280 (Secondary Text)
                 ),
                 SizedBox(width: screenWidth * 0.01),
                 Expanded(
@@ -764,7 +764,7 @@ class BookingCard extends StatelessWidget {
                     location,
                     style: TextStyle(
                       fontSize: screenWidth * 0.03,
-                      color: ProviderTheme.secondaryTextColor, // Matches #6B7280 (Secondary Text)
+                      color: UserTheme.secondaryTextColor, // Matches #6B7280 (Secondary Text)
                     ),
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -777,7 +777,7 @@ class BookingCard extends StatelessWidget {
               style: TextStyle(
                 fontSize: screenWidth * 0.035,
                 fontWeight: FontWeight.bold,
-                color: ProviderTheme.primaryColor, // Matches #060644 (Primary)
+                color: UserTheme.primaryColor, // Matches #060644 (Primary)
               ),
             ),
             SizedBox(height: screenHeight * 0.015),
@@ -787,39 +787,39 @@ class BookingCard extends StatelessWidget {
                 TextButton(
                   onPressed: onViewDetails,
                   style: TextButton.styleFrom(
-                    foregroundColor: ProviderTheme.primaryColor, // Matches #060644 (Primary)
+                    foregroundColor: UserTheme.primaryColor, // Matches #060644 (Primary)
                   ),
                   child: Text(
                     'View Details',
                     style: TextStyle(
                       fontSize: screenWidth * 0.03,
-                      color: ProviderTheme.primaryColor, // Matches #060644 (Primary)
+                      color: UserTheme.primaryColor, // Matches #060644 (Primary)
                     ),
                   ),
                 ),
                 TextButton(
                   onPressed: () {},
                   style: TextButton.styleFrom(
-                    foregroundColor: ProviderTheme.primaryColor, // Matches #060644 (Primary)
+                    foregroundColor: UserTheme.primaryColor, // Matches #060644 (Primary)
                   ),
                   child: Text(
                     'Reschedule',
                     style: TextStyle(
                       fontSize: screenWidth * 0.03,
-                      color: ProviderTheme.primaryColor, // Matches #060644 (Primary)
+                      color: UserTheme.primaryColor, // Matches #060644 (Primary)
                     ),
                   ),
                 ),
                 TextButton(
                   onPressed: () {},
                   style: TextButton.styleFrom(
-                    foregroundColor: ProviderTheme.errorTextColor, // Matches #D32F2F (Error Text)
+                    foregroundColor: UserTheme.errorTextColor, // Matches #D32F2F (Error Text)
                   ),
                   child: Text(
                     'Cancel',
                     style: TextStyle(
                       fontSize: screenWidth * 0.03,
-                      color: ProviderTheme.errorTextColor, // Matches #D32F2F (Error Text)
+                      color: UserTheme.errorTextColor, // Matches #D32F2F (Error Text)
                     ),
                   ),
                 ),

@@ -7,7 +7,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 import 'chat_funtionality/ChatListScreen.dart';
-import 'package:service_provider/theme.dart';
+import 'package:service_provider/User%20Panel/Usertheme.dart';
 
 class EditUserProfile extends StatefulWidget {
   @override
@@ -148,7 +148,7 @@ class _EditUserProfileState extends State<EditUserProfile> {
       body: isLoading
           ? Center(
         child: CircularProgressIndicator(
-          color: ProviderTheme.primaryColor, // Matches #060644 (Primary)
+          color: UserTheme.primaryColor, // Matches #060644 (Primary)
         ),
       )
           : CustomScrollView(
@@ -161,7 +161,7 @@ class _EditUserProfileState extends State<EditUserProfile> {
               title: Text(
                 "Edit Profile",
                 style: TextStyle(
-                  color: ProviderTheme.onPrimaryTextColor, // Matches #FFFFFF (On Primary Text)
+                  color: UserTheme.onPrimaryTextColor, // Matches #FFFFFF (On Primary Text)
                   fontSize: screenWidth * 0.045,
                   fontWeight: FontWeight.bold,
                 ),
@@ -178,7 +178,7 @@ class _EditUserProfileState extends State<EditUserProfile> {
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                       colors: [
-                        ProviderTheme.primaryColor, // Matches #060644 (Primary)
+                        UserTheme.primaryColor, // Matches #060644 (Primary)
                         Color(0xFF2A2A6F), // Retain the gradient end color
                       ],
                     ),
@@ -189,7 +189,7 @@ class _EditUserProfileState extends State<EditUserProfile> {
             leading: IconButton(
               icon: Icon(
                 Icons.arrow_back,
-                color: ProviderTheme.onPrimaryTextColor, // Matches #FFFFFF (On Primary Text)
+                color: UserTheme.onPrimaryTextColor, // Matches #FFFFFF (On Primary Text)
                 size: screenWidth * 0.06,
               ),
               onPressed: () => Navigator.pop(context),
@@ -198,7 +198,7 @@ class _EditUserProfileState extends State<EditUserProfile> {
               IconButton(
                 icon: Icon(
                   Icons.check,
-                  color: ProviderTheme.onPrimaryTextColor, // Matches #FFFFFF (On Primary Text)
+                  color: UserTheme.onPrimaryTextColor, // Matches #FFFFFF (On Primary Text)
                   size: screenWidth * 0.06,
                 ),
                 onPressed: _saveChanges,
@@ -225,13 +225,13 @@ class _EditUserProfileState extends State<EditUserProfile> {
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
                               border: Border.all(
-                                color: ProviderTheme.surfaceColor, // Matches #FFFFFF (Surface)
+                                color: UserTheme.surfaceColor, // Matches #FFFFFF (Surface)
                                 width: 4,
                               ),
                               boxShadow: [
                                 BoxShadow(
                                   blurRadius: 10,
-                                  color: ProviderTheme.shadowColor, // Matches #00000029 (Shadow)
+                                  color: UserTheme.shadowColor, // Matches #00000029 (Shadow)
                                   spreadRadius: 5,
                                 ),
                               ],
@@ -248,17 +248,17 @@ class _EditUserProfileState extends State<EditUserProfile> {
                               width: screenWidth * 0.08,
                               height: screenWidth * 0.08,
                               decoration: BoxDecoration(
-                                color: ProviderTheme.primaryColor, // Matches #060644 (Primary)
+                                color: UserTheme.primaryColor, // Matches #060644 (Primary)
                                 shape: BoxShape.circle,
                                 border: Border.all(
-                                  color: ProviderTheme.surfaceColor, // Matches #FFFFFF (Surface)
+                                  color: UserTheme.surfaceColor, // Matches #FFFFFF (Surface)
                                   width: 2,
                                 ),
                               ),
                               child: IconButton(
                                 icon: Icon(
                                   Icons.camera_alt,
-                                  color: ProviderTheme.onPrimaryTextColor, // Matches #FFFFFF (On Primary Text)
+                                  color: UserTheme.onPrimaryTextColor, // Matches #FFFFFF (On Primary Text)
                                   size: screenWidth * 0.04,
                                 ),
                                 onPressed: () {
@@ -315,7 +315,7 @@ class _EditUserProfileState extends State<EditUserProfile> {
                       suffix: IconButton(
                         icon: Icon(
                           Icons.my_location,
-                          color: ProviderTheme.primaryColor, // Matches #060644 (Primary)
+                          color: UserTheme.primaryColor, // Matches #060644 (Primary)
                           size: screenWidth * 0.06,
                         ),
                         onPressed: _getCurrentLocation,
@@ -346,7 +346,7 @@ class _EditUserProfileState extends State<EditUserProfile> {
                           child: CircularProgressIndicator(
                             strokeWidth: 2,
                             valueColor: AlwaysStoppedAnimation<Color>(
-                              ProviderTheme.onPrimaryTextColor, // Matches #FFFFFF (On Primary Text)
+                              UserTheme.onPrimaryTextColor, // Matches #FFFFFF (On Primary Text)
                             ),
                           ),
                         )
@@ -355,7 +355,7 @@ class _EditUserProfileState extends State<EditUserProfile> {
                           style: TextStyle(
                             fontSize: screenWidth * 0.04,
                             fontWeight: FontWeight.bold,
-                            color: ProviderTheme.onPrimaryTextColor, // Matches #FFFFFF (On Primary Text)
+                            color: UserTheme.onPrimaryTextColor, // Matches #FFFFFF (On Primary Text)
                           ),
                         ),
                       ),
@@ -395,7 +395,7 @@ class _EditUserProfileState extends State<EditUserProfile> {
         prefixIcon: Icon(icon),
         suffixIcon: suffix,
         filled: filled,
-        fillColor: filled ? ProviderTheme.dividerColor : null, // Matches #D1D9E1 (Divider)
+        fillColor: filled ? UserTheme.dividerColor : null, // Matches #D1D9E1 (Divider)
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
         ),
