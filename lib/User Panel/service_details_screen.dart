@@ -452,40 +452,85 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
       builder: (context) {
         return StatefulBuilder(
           builder: (context, setModalState) {
-            List<DateTime> availableDates = List.generate(
-              DateTime(DateTime.now().year, DateTime.now().month + 2, 0).day -
-                  DateTime.now().day +
-                  1,
-                  (index) => DateTime.now().add(Duration(days: index)),
-            );
+            // Generate dates for exactly one month from today
+            List<DateTime> generateAvailableDates() {
+              DateTime now = DateTime.now();
+
+              // Create a date exactly one month from now
+              DateTime oneMonthLater;
+              if (now.month == 12) {
+                oneMonthLater = DateTime(now.year + 1, 1, now.day);
+              } else {
+                oneMonthLater = DateTime(now.year, now.month + 1, now.day);
+              }
+
+              // Handle cases where the day doesn't exist in the target month
+              // (e.g., Jan 31 → Feb 28/29)
+              if (oneMonthLater.day != now.day) {
+                // This means we went to the 1st of the month after
+                // So go back to the last day of the target month
+                oneMonthLater = DateTime(oneMonthLater.year, oneMonthLater.month, 0);
+              }
+
+              List<DateTime> dates = [];
+              DateTime current = now;
+
+              while (current.isBefore(oneMonthLater) ||
+                  (current.day == oneMonthLater.day &&
+                      current.month == oneMonthLater.month &&
+                      current.year == oneMonthLater.year)) {
+                dates.add(current);
+                current = current.add(Duration(days: 1));
+              }
+
+              return dates;
+            }
+
+            List<DateTime> availableDates = generateAvailableDates();
 
             List<String> getTimeSlots() {
               List<String> timeSlots = [];
               DateTime now = DateTime.now();
               DateTime startTime;
 
+              // If selected date is today, start from next available time slot
               if (selectedDate != null &&
                   selectedDate!.year == now.year &&
                   selectedDate!.month == now.month &&
                   selectedDate!.day == now.day) {
+                // Round up to next 30-minute slot
                 int nextMinute = now.minute >= 30 ? 0 : 30;
                 int nextHour = now.minute >= 30 ? now.hour + 1 : now.hour;
-                startTime =
-                    DateTime(now.year, now.month, now.day, nextHour, nextMinute);
+                startTime = DateTime(now.year, now.month, now.day, nextHour, nextMinute);
+              } else if (selectedDate != null) {
+                // For future dates, start from 9 AM
+                startTime = DateTime(
+                    selectedDate!.year,
+                    selectedDate!.month,
+                    selectedDate!.day,
+                    9, 0
+                );
               } else {
-                startTime = DateTime(now.year, now.month, now.day, 9, 0);
+                // Default case (shouldn't happen if UI flow is correct)
+                return [];
               }
 
-              DateTime endTime = DateTime(now.year, now.month, now.day, 19, 30);
+              // End time is 7:30 PM on selected date
+              DateTime endTime = DateTime(
+                  selectedDate!.year,
+                  selectedDate!.month,
+                  selectedDate!.day,
+                  19, 30
+              );
 
+              // Generate 30-minute slots
               while (startTime.isBefore(endTime)) {
                 String formattedTime =
-                    '${startTime.hour > 12 ? startTime.hour - 12 : startTime.hour}:${startTime.minute == 0 ? '00' : '30'} ${startTime.hour >= 12 ? 'PM' : 'AM'}';
-                if (!timeSlots.contains(formattedTime)) {
-                  timeSlots.add(formattedTime);
-                }
+                    '${startTime.hour > 12 ? startTime.hour - 12 : startTime.hour == 0 ? 12 : startTime.hour}:${startTime.minute == 0 ? '00' : '30'} ${startTime.hour >= 12 ? 'PM' : 'AM'}';
+                timeSlots.add(formattedTime);
                 startTime = startTime.add(Duration(minutes: 30));
               }
+
               return timeSlots;
             }
 

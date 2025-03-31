@@ -179,7 +179,7 @@ class _LoginPageState extends State<LoginPage> {
             padding: const EdgeInsets.only(right: 12.0),
             child: TextButton(
               onPressed: () {
-                Navigator.push(
+                Navigator.pushReplacement(
                   context,
                   MaterialPageRoute(builder: (context) => RegistrationPage()),
                 );

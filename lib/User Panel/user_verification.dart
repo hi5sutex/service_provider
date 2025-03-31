@@ -36,6 +36,47 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
   void initState() {
     super.initState();
     _startTimer();
+    _sendOtpOnInit();
+  }
+
+  void _sendOtpOnInit() async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final EmailOTP _emailOTP = EmailOTP();
+      _emailOTP.setConfig(
+        appEmail: "youremail@example.com",
+        appName: "Your App Name",
+        otpLength: 6,
+        otpType: OTPType.numeric,
+      );
+
+
+      print("Sending OTP to: ${widget.email}");
+      bool result = await EmailOTP.sendOTP(email: widget.email);
+      print("OTP Send Result: $result");
+
+      if (result) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("OTP sent to your email")),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Failed to send OTP")),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Error: ${e.toString()}")),
+      );
+      print("Error occurred while sending OTP: $e");
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
   }
 
   @override
@@ -319,4 +360,13 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
       ),
     );
   }
+}
+
+extension on EmailOTP {
+  void setConfig({
+    required String appEmail,
+    required String appName,
+    required int otpLength,
+    required OTPType otpType,
+  }) {}
 }
