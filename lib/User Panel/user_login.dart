@@ -29,10 +29,8 @@ class _LoginPageState extends State<LoginPage> {
   @override
   void initState() {
     super.initState();
-    // Optional: Configure FCM for background messages (for providers)
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
       print('Foreground message received: ${message.notification?.title}');
-      // You can show a local notification here if desired
     });
   }
 
@@ -65,22 +63,22 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   Future<void> _checkUserRole(String uid) async {
-    DocumentSnapshot adminDoc = await FirebaseFirestore.instance.collection(
-        'admins').doc(uid).get();
+    DocumentSnapshot adminDoc =
+    await FirebaseFirestore.instance.collection('admins').doc(uid).get();
     if (adminDoc.exists) {
       await NotificationService().registerFCMToken(uid, 'admin');
       _navigateToPage(context, MainAdminPanel(), "Admin");
       return;
     }
-    DocumentSnapshot userDoc = await FirebaseFirestore.instance.collection(
-        'users').doc(uid).get();
+    DocumentSnapshot userDoc =
+    await FirebaseFirestore.instance.collection('users').doc(uid).get();
     if (userDoc.exists) {
       await NotificationService().registerFCMToken(uid, 'user');
       _navigateToPage(context, MainHome(), "User");
       return;
     }
-    DocumentSnapshot providerDoc = await FirebaseFirestore.instance.collection(
-        'providers').doc(uid).get();
+    DocumentSnapshot providerDoc =
+    await FirebaseFirestore.instance.collection('providers').doc(uid).get();
     if (providerDoc.exists) {
       await NotificationService().registerFCMToken(uid, 'provider');
       _navigateToPage(context, Main(), "Provider");
@@ -94,8 +92,6 @@ class _LoginPageState extends State<LoginPage> {
   Future<bool> _registerFCMToken(String providerId) async {
     try {
       FirebaseMessaging messaging = FirebaseMessaging.instance;
-
-      // Request permission for notifications
       NotificationSettings settings = await messaging.requestPermission(
         alert: true,
         badge: true,
@@ -103,18 +99,14 @@ class _LoginPageState extends State<LoginPage> {
       );
 
       if (settings.authorizationStatus == AuthorizationStatus.authorized) {
-        // Get the FCM token
         String? token = await messaging.getToken();
         print('FCM Token: $token');
         if (token != null) {
-          // Store the token in Firestore
           await FirebaseFirestore.instance
               .collection('providers')
               .doc(providerId)
               .set({'fcmToken': token}, SetOptions(merge: true));
           print('FCM Token registered for provider: $providerId');
-
-          // Handle token refresh
           FirebaseMessaging.instance.onTokenRefresh.listen((newToken) async {
             await FirebaseFirestore.instance
                 .collection('providers')
@@ -147,24 +139,26 @@ class _LoginPageState extends State<LoginPage> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text("Login Successful as $role!")),
     );
-    Navigator.pushReplacement(
+    // Use pushAndRemoveUntil to clear the navigation stack
+    Navigator.pushAndRemoveUntil(
       context,
       MaterialPageRoute(builder: (context) => page),
+          (Route<dynamic> route) => false, // Removes all previous routes
     );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: UserTheme.surfaceColor, // Matches #FFFFFF (Surface)
+      backgroundColor: UserTheme.surfaceColor,
       appBar: AppBar(
-        backgroundColor: UserTheme.surfaceColor, // Matches #FFFFFF (Surface)
+        backgroundColor: UserTheme.surfaceColor,
         elevation: 0,
         leading: IconButton(
           padding: const EdgeInsets.all(20.0),
           icon: Icon(
             Icons.arrow_back,
-            color: UserTheme.primaryTextColor, // Matches #060644 (Primary Text)
+            color: UserTheme.primaryTextColor,
             size: 25,
           ),
           onPressed: () {
@@ -188,7 +182,6 @@ class _LoginPageState extends State<LoginPage> {
                 "Register",
                 style: TextStyle(
                   color: UserTheme.primaryTextColor,
-                  // Matches #060644 (Primary Text)
                   fontSize: 18,
                 ),
               ),
@@ -199,10 +192,7 @@ class _LoginPageState extends State<LoginPage> {
       body: Column(
         children: [
           Container(
-            height: MediaQuery
-                .of(context)
-                .size
-                .height * 0.28,
+            height: MediaQuery.of(context).size.height * 0.28,
             padding: const EdgeInsets.only(top: 60, left: 24, right: 24),
             alignment: Alignment.centerLeft,
             child: Column(
@@ -212,7 +202,6 @@ class _LoginPageState extends State<LoginPage> {
                   'Sign In',
                   style: TextStyle(
                     color: UserTheme.primaryTextColor,
-                    // Matches #060644 (Primary Text)
                     fontSize: 40,
                     fontWeight: FontWeight.bold,
                   ),
@@ -222,7 +211,6 @@ class _LoginPageState extends State<LoginPage> {
                   "Log in to access your account and explore the services!",
                   style: TextStyle(
                     color: UserTheme.secondaryTextColor,
-                    // Matches #6B7280 (Secondary Text)
                     fontSize: 16,
                   ),
                 ),
@@ -232,7 +220,7 @@ class _LoginPageState extends State<LoginPage> {
           Expanded(
             child: Container(
               decoration: BoxDecoration(
-                color: UserTheme.primaryColor, // Matches #060644 (Primary)
+                color: UserTheme.primaryColor,
                 borderRadius: const BorderRadius.only(
                   topLeft: Radius.circular(30.0),
                   topRight: Radius.circular(30.0),
@@ -252,7 +240,6 @@ class _LoginPageState extends State<LoginPage> {
                       _buildTextField(
                         controller: emailController,
                         hintText: "Email",
-
                         isPassword: false,
                         validator: (value) {
                           if (value == null || value.isEmpty) {
@@ -280,8 +267,7 @@ class _LoginPageState extends State<LoginPage> {
                         child: isLoading
                             ? Center(
                           child: CircularProgressIndicator(
-                            color: UserTheme
-                                .onPrimaryTextColor, // Matches #FFFFFF (On Primary Text)
+                            color: UserTheme.onPrimaryTextColor,
                           ),
                         )
                             : ElevatedButton(
@@ -289,9 +275,7 @@ class _LoginPageState extends State<LoginPage> {
                           style: ElevatedButton.styleFrom(
                             minimumSize: const Size(double.infinity, 50),
                             backgroundColor: UserTheme.surfaceColor,
-                            // Matches #FFFFFF (Surface)
-                            foregroundColor: UserTheme
-                                .primaryColor, // Matches #060644 (Primary)
+                            foregroundColor: UserTheme.primaryColor,
                           ),
                           child: const Text(
                             "Login",
@@ -313,9 +297,7 @@ class _LoginPageState extends State<LoginPage> {
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: UserTheme.successColor,
-                            // Matches #388E3C (Success Text)
-                            foregroundColor: UserTheme
-                                .onPrimaryTextColor, // Matches #FFFFFF (On Primary Text)
+                            foregroundColor: UserTheme.onPrimaryTextColor,
                           ),
                           child: const Text(
                             "Become a Provider",
@@ -334,8 +316,6 @@ class _LoginPageState extends State<LoginPage> {
       ),
     );
   }
-
-  // ... (keep all imports and class definitions the same)
 
   Widget _buildTextField({
     required TextEditingController controller,
@@ -412,9 +392,6 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
-// ... (keep all other code exactly the same)
-
-
   Widget _buildRedirectLink(String text, Widget page) {
     return Center(
       child: TextButton(
@@ -428,7 +405,6 @@ class _LoginPageState extends State<LoginPage> {
           text,
           style: TextStyle(
             color: UserTheme.onPrimaryTextColor,
-            // Matches #FFFFhFF (On Primary Text)
             fontSize: 15,
           ),
         ),

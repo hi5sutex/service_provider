@@ -48,19 +48,21 @@ class _DashboardScreenState extends State<DashboardScreen> {
     final pendingServicesSnapshot = await FirebaseFirestore.instance.collection('pending_services').get();
     final bookingsSnapshot = await FirebaseFirestore.instance.collection('bookings').get();
     final categoriesSnapshot = await FirebaseFirestore.instance.collection('categories').get();
-    final earningsSnapshot = await FirebaseFirestore.instance.collection('earnings').get();
+    // Commented out earnings collection as it's not needed
+    // final earningsSnapshot = await FirebaseFirestore.instance.collection('earnings').get();
 
-    double totalRevenue = 0.0;
-    List<Map<String, dynamic>> allEarningsRecords = [];
-    for (var providerDoc in earningsSnapshot.docs) {
-      final recordsSnapshot = await providerDoc.reference.collection('records').get();
-      for (var recordDoc in recordsSnapshot.docs) {
-        final recordData = recordDoc.data();
-        final platformFee = (recordData['platformFee'] as num?)?.toDouble() ?? 0.0;
-        totalRevenue += platformFee;
-        allEarningsRecords.add(recordData);
-      }
-    }
+    // Commented out revenue calculation as it's not needed
+    // double totalRevenue = 0.0;
+    // List<Map<String, dynamic>> allEarningsRecords = [];
+    // for (var providerDoc in earningsSnapshot.docs) {
+    //   final recordsSnapshot = await providerDoc.reference.collection('records').get();
+    //   for (var recordDoc in recordsSnapshot.docs) {
+    //     final recordData = recordDoc.data();
+    //     final platformFee = (recordData['platformFee'] as num?)?.toDouble() ?? 0.0;
+    //     totalRevenue += platformFee;
+    //     allEarningsRecords.add(recordData);
+    //   }
+    // }
 
     Map<String, dynamic> processGrowthData(List<QueryDocumentSnapshot> docs, String dateField) {
       final Map<String, int> countByMonthYear = {};
@@ -134,33 +136,35 @@ class _DashboardScreenState extends State<DashboardScreen> {
       return countByStatus;
     }
 
-    Map<String, double> processEarningsStatus(List<Map<String, dynamic>> records) {
-      final Map<String, double> sumByStatus = {};
-      for (var record in records) {
-        final status = record['earningStatus'] as String? ?? 'Unknown';
-        final fee = (record['platformFee'] as num?)?.toDouble() ?? 0.0;
-        sumByStatus[status] = (sumByStatus[status] ?? 0) + fee;
-      }
-      return sumByStatus;
-    }
+    // Commented out earnings status processing as it's not needed
+    // Map<String, double> processEarningsStatus(List<Map<String, dynamic>> records) {
+    //   final Map<String, double> sumByStatus = {};
+    //   for (var record in records) {
+    //     final status = record['earningStatus'] as String? ?? 'Unknown';
+    //     final fee = (record['platformFee'] as num?)?.toDouble() ?? 0.0;
+    //     sumByStatus[status] = (sumByStatus[status] ?? 0) + fee;
+    //   }
+    //   return sumByStatus;
+    // }
 
-    List<Map<String, dynamic>> processRevenueOverTime(List<Map<String, dynamic>> records) {
-      final Map<String, double> revenueByDate = {};
-      for (var record in records) {
-        if (record['earningStatus'] == 'Completed') {
-          final timestamp = record['completedAt'] as Timestamp? ?? record['paymentAt'] as Timestamp?;
-          if (timestamp != null) {
-            final date = DateTime.fromMillisecondsSinceEpoch(timestamp.millisecondsSinceEpoch)
-                .toIso8601String()
-                .substring(0, 10);
-            final fee = (record['platformFee'] as num?)?.toDouble() ?? 0.0;
-            revenueByDate[date] = (revenueByDate[date] ?? 0) + fee;
-          }
-        }
-      }
-      final sortedDates = revenueByDate.keys.toList()..sort();
-      return sortedDates.map((date) => {'date': date, 'revenue': revenueByDate[date]!}).toList();
-    }
+    // Commented out revenue over time processing as it's not needed
+    // List<Map<String, dynamic>> processRevenueOverTime(List<Map<String, dynamic>> records) {
+    //   final Map<String, double> revenueByDate = {};
+    //   for (var record in records) {
+    //     if (record['earningStatus'] == 'Completed') {
+    //       final timestamp = record['completedAt'] as Timestamp? ?? record['paymentAt'] as Timestamp?;
+    //       if (timestamp != null) {
+    //         final date = DateTime.fromMillisecondsSinceEpoch(timestamp.millisecondsSinceEpoch)
+    //             .toIso8601String()
+    //             .substring(0, 10);
+    //         final fee = (record['platformFee'] as num?)?.toDouble() ?? 0.0;
+    //         revenueByDate[date] = (revenueByDate[date] ?? 0) + fee;
+    //       }
+    //     }
+    //   }
+    //   final sortedDates = revenueByDate.keys.toList()..sort();
+    //   return sortedDates.map((date) => {'date': date, 'revenue': revenueByDate[date]!}).toList();
+    // }
 
     final userGrowthData = processGrowthData(usersSnapshot.docs, 'createdAt');
     final providerGrowthData = processGrowthData(providersSnapshot.docs, 'createdAt');
@@ -172,7 +176,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
       'totalPendingServices': pendingServicesSnapshot.docs.length,
       'totalBookings': bookingsSnapshot.docs.length,
       'completedBookings': bookingsSnapshot.docs.where((doc) => doc['status'] == 'Completed').length,
-      'totalRevenue': totalRevenue,
+      // Commented out total revenue as it's not needed
+      // 'totalRevenue': totalRevenue,
       'totalCategories': categoriesSnapshot.docs.length,
       'userGrowth': userGrowthData['data'],
       'userGrowthYear': userGrowthData['year'],
@@ -182,8 +187,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
       'pendingServicesByCategory': processCategoryData(pendingServicesSnapshot.docs, 'category'),
       'topServices': processTopServices(bookingsSnapshot.docs, servicesSnapshot.docs),
       'bookingStatuses': processBookingStatuses(bookingsSnapshot.docs),
-      'earningsStatus': processEarningsStatus(allEarningsRecords),
-      'revenueOverTime': processRevenueOverTime(allEarningsRecords),
+      // Commented out earnings status as it's not needed
+      // 'earningsStatus': processEarningsStatus(allEarningsRecords),
+      // Commented out revenue over time as it's not needed
+      // 'revenueOverTime': processRevenueOverTime(allEarningsRecords),
     };
   }
 
@@ -242,8 +249,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   _buildChartSection("Pending Services by Category", _buildPendingServicesByCategoryChart(data['pendingServicesByCategory'])),
                   _buildChartSection("Top Services by Bookings", _buildTopServicesChart(data['topServices'])),
                   _buildChartSection("Booking Statuses", _buildBookingStatusesChart(data['bookingStatuses'])),
-                  _buildChartSection("Earnings Status", _buildEarningsStatusChart(data['earningsStatus'])),
-                  _buildChartSection("Revenue Over Time", _buildRevenueOverTimeChart(data['revenueOverTime'])),
+                  // Commented out Earnings Status chart
+                  // _buildChartSection("Earnings Status", _buildEarningsStatusChart(data['earningsStatus'])),
+                  // Commented out Revenue Over Time chart
+                  // _buildChartSection("Revenue Over Time", _buildRevenueOverTimeChart(data['revenueOverTime'])),
                 ],
               ),
             );
@@ -282,8 +291,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
         const SizedBox(height: 10),
         Row(
           children: [
-            Expanded(child: _buildStatCard("Revenue", currencyFormat.format(data['totalRevenue']), Icons.attach_money, chartColors[4], context, () => navigateOrShowMessage(context, "Revenue", () => PaymentsScreen()))),
-            const SizedBox(width: 10),
+            // Commented out the Revenue card
+            // Expanded(child: _buildStatCard("Revenue", currencyFormat.format(data['totalRevenue']), Icons.attach_money, chartColors[4], context, () => navigateOrShowMessage(context, "Revenue", () => PaymentsScreen()))),
+            // const SizedBox(width: 10),
             Expanded(child: _buildStatCard("Categories", "${data['totalCategories']}", Icons.category, chartColors[7], context, () => navigateOrShowMessage(context, "Manage Categories", () => ManageCategoriesScreen()))),
           ],
         ),
@@ -304,10 +314,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ],
         ),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.center, // Changed from start to center
+          mainAxisAlignment: MainAxisAlignment.center, // Added to center vertically
           children: [
             Row(
-              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.center, // Center the icon and title
               children: [
                 Icon(icon, size: 20, color: color),
                 const SizedBox(width: 8),
@@ -509,12 +520,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Widget _buildServicesByCategoryChart(Map<String, int> servicesByCategory) {
     if (servicesByCategory.isEmpty) return _buildEmptyChart();
 
-    // Calculate total services to compute percentages
     final totalServices = servicesByCategory.values.reduce((a, b) => a + b);
     final sortedCategories = servicesByCategory.entries.toList()
-      ..sort((a, b) => b.value.compareTo(a.value)); // Sort by value (descending)
+      ..sort((a, b) => b.value.compareTo(a.value));
 
-    // Convert to a list of maps with percentage and color
     final List<Map<String, dynamic>> categoryData = sortedCategories.asMap().entries.map((entry) {
       final index = entry.key;
       final category = entry.value;
@@ -523,17 +532,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
         'name': category.key,
         'count': category.value,
         'percentage': percentage,
-        'color': chartColors[index % chartColors.length].withOpacity(0.2), // Lighter opacity for circles
+        'color': chartColors[index % chartColors.length].withOpacity(0.2),
       };
     }).toList();
 
-    // Calculate circle sizes based on percentages
-    const double maxRadius = 60.0; // Reduced max radius for better fit
-    const double minRadius = 30.0; // Minimum radius for the smallest circle
+    const double maxRadius = 60.0;
+    const double minRadius = 30.0;
     final maxPercentage = categoryData.map((e) => e['percentage'] as int).reduce(math.max);
     final minPercentage = categoryData.map((e) => e['percentage'] as int).reduce(math.min);
 
-    // Map percentages to radius sizes
     for (var data in categoryData) {
       final percentage = data['percentage'] as int;
       if (maxPercentage == minPercentage) {
@@ -544,16 +551,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
       }
     }
 
-    // Calculate total width needed for all circles
-    const double spacing = 20.0; // Space between circles
+    const double spacing = 20.0;
     double totalWidth = 0.0;
     for (var data in categoryData) {
       final radius = data['radius'] as double;
-      totalWidth += (radius * 2) + spacing; // Diameter + spacing
+      totalWidth += (radius * 2) + spacing;
     }
-    totalWidth -= spacing; // Remove the last spacing
-
-    // Ensure the total width is at least the screen width for small datasets
+    totalWidth -= spacing;
     totalWidth = math.max(totalWidth, MediaQuery.of(context).size.width - 64);
 
     return SingleChildScrollView(
@@ -563,7 +567,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         children: [
           Container(
             width: totalWidth,
-            height: 200, // Adjusted height to fit circles and leave space for legend
+            height: 200,
             child: Stack(
               children: () {
                 double currentX = 0.0;
@@ -572,7 +576,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   final radius = data['radius'] as double;
                   final circleWidget = Positioned(
                     left: currentX,
-                    top: 100 - radius, // Center vertically within the 200px height
+                    top: 100 - radius,
                     child: GestureDetector(
                       onTap: () {
                         ScaffoldMessenger.of(context).showSnackBar(
@@ -598,7 +602,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             '${data['percentage']}%',
                             style: TextStyle(
                               color: Colors.black,
-                              fontSize: radius < 40 ? 12 : 16, // Adjust font size based on circle size
+                              fontSize: radius < 40 ? 12 : 16,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
@@ -606,14 +610,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       ),
                     ),
                   );
-                  currentX += (radius * 2) + spacing; // Move to the next position
+                  currentX += (radius * 2) + spacing;
                   return circleWidget;
                 }).toList();
               }(),
             ),
           ),
           const SizedBox(height: 16),
-          // Legend (also scrollable if needed)
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             child: Container(
@@ -657,12 +660,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Widget _buildPendingServicesByCategoryChart(Map<String, int> pendingServicesByCategory) {
     if (pendingServicesByCategory.isEmpty) return _buildEmptyChart();
 
-    // Calculate total pending services to compute percentages
     final totalPendingServices = pendingServicesByCategory.values.reduce((a, b) => a + b);
     final sortedCategories = pendingServicesByCategory.entries.toList()
-      ..sort((a, b) => b.value.compareTo(a.value)); // Sort by value (descending)
+      ..sort((a, b) => b.value.compareTo(a.value));
 
-    // Convert to a list of maps with percentage and color
     final List<Map<String, dynamic>> categoryData = sortedCategories.asMap().entries.map((entry) {
       final index = entry.key;
       final category = entry.value;
@@ -671,17 +672,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
         'name': category.key,
         'count': category.value,
         'percentage': percentage,
-        'color': chartColors[index % chartColors.length].withOpacity(0.2), // Lighter opacity for circles
+        'color': chartColors[index % chartColors.length].withOpacity(0.2),
       };
     }).toList();
 
-    // Calculate circle sizes based on percentages
-    const double maxRadius = 60.0; // Reduced max radius for better fit
-    const double minRadius = 30.0; // Minimum radius for the smallest circle
+    const double maxRadius = 60.0;
+    const double minRadius = 30.0;
     final maxPercentage = categoryData.map((e) => e['percentage'] as int).reduce(math.max);
     final minPercentage = categoryData.map((e) => e['percentage'] as int).reduce(math.min);
 
-    // Map percentages to radius sizes
     for (var data in categoryData) {
       final percentage = data['percentage'] as int;
       if (maxPercentage == minPercentage) {
@@ -692,16 +691,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
       }
     }
 
-    // Calculate total width needed for all circles
-    const double spacing = 20.0; // Space between circles
+    const double spacing = 20.0;
     double totalWidth = 0.0;
     for (var data in categoryData) {
       final radius = data['radius'] as double;
-      totalWidth += (radius * 2) + spacing; // Diameter + spacing
+      totalWidth += (radius * 2) + spacing;
     }
-    totalWidth -= spacing; // Remove the last spacing
-
-    // Ensure the total width is at least the screen width for small datasets
+    totalWidth -= spacing;
     totalWidth = math.max(totalWidth, MediaQuery.of(context).size.width - 64);
 
     return SingleChildScrollView(
@@ -711,7 +707,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         children: [
           Container(
             width: totalWidth,
-            height: 200, // Adjusted height to fit circles and leave space for legend
+            height: 200,
             child: Stack(
               children: () {
                 double currentX = 0.0;
@@ -720,7 +716,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   final radius = data['radius'] as double;
                   final circleWidget = Positioned(
                     left: currentX,
-                    top: 100 - radius, // Center vertically within the 200px height
+                    top: 100 - radius,
                     child: GestureDetector(
                       onTap: () {
                         ScaffoldMessenger.of(context).showSnackBar(
@@ -746,7 +742,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             '${data['percentage']}%',
                             style: TextStyle(
                               color: Colors.black,
-                              fontSize: radius < 40 ? 12 : 16, // Adjust font size based on circle size
+                              fontSize: radius < 40 ? 12 : 16,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
@@ -754,14 +750,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       ),
                     ),
                   );
-                  currentX += (radius * 2) + spacing; // Move to the next position
+                  currentX += (radius * 2) + spacing;
                   return circleWidget;
                 }).toList();
               }(),
             ),
           ),
           const SizedBox(height: 16),
-          // Legend (also scrollable if needed)
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             child: Container(
@@ -807,20 +802,18 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
     final maxBookings = topServices.map((e) => e['bookings'] as num).reduce((a, b) => a > b ? a : b).toDouble();
 
-    // Calculate total width needed for all bars
     const double barWidth = 20.0;
-    const double spacing = 40.0; // Space between bars
-    double totalWidth = topServices.length * (barWidth + spacing) - spacing; // Remove the last spacing
+    const double spacing = 40.0;
+    double totalWidth = topServices.length * (barWidth + spacing) - spacing;
     totalWidth = math.max(totalWidth, MediaQuery.of(context).size.width - 64);
 
-    // Prepare data for the legend
     final List<Map<String, dynamic>> serviceData = topServices.asMap().entries.map((entry) {
       final index = entry.key;
       final service = entry.value;
       return {
         'name': service['name'],
         'bookings': service['bookings'],
-        'color': chartColors[index % chartColors.length], // Use the same color as the bar
+        'color': chartColors[index % chartColors.length],
       };
     }).toList();
 
@@ -831,7 +824,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         children: [
           Container(
             width: totalWidth,
-            height: 200, // Adjusted height to fit the chart and leave space for legend
+            height: 200,
             child: FlChartLib.BarChart(
               FlChartLib.BarChartData(
                 alignment: FlChartLib.BarChartAlignment.spaceAround,
@@ -858,7 +851,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 }).toList(),
                 titlesData: FlChartLib.FlTitlesData(
                   bottomTitles: const FlChartLib.AxisTitles(
-                    sideTitles: FlChartLib.SideTitles(showTitles: false), // Hide x-axis titles
+                    sideTitles: FlChartLib.SideTitles(showTitles: false),
                   ),
                   leftTitles: FlChartLib.AxisTitles(
                     sideTitles: FlChartLib.SideTitles(
@@ -895,7 +888,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
             ),
           ),
           const SizedBox(height: 16),
-          // Legend (also scrollable if needed)
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             child: Container(
@@ -911,7 +903,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         width: 12,
                         height: 12,
                         decoration: BoxDecoration(
-                          shape: BoxShape.rectangle, // Use a rectangle to match the bar shape
+                          shape: BoxShape.rectangle,
                           color: data['color'],
                         ),
                       ),
@@ -969,113 +961,115 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  Widget _buildEarningsStatusChart(Map<String, double> earningsStatus) {
-    if (earningsStatus.isEmpty) return _buildEmptyChart();
-    final dataMap = earningsStatus;
-    final colorList = earningsStatus.keys.map((key) => chartColors[earningsStatus.keys.toList().indexOf(key) % chartColors.length]).toList();
-    return PieChartLib.PieChart(
-      dataMap: dataMap,
-      animationDuration: const Duration(milliseconds: 800),
-      chartLegendSpacing: 32,
-      colorList: colorList,
-      chartType: PieChartLib.ChartType.ring,
-      centerText: "Earnings",
-      legendOptions: const PieChartLib.LegendOptions(
-        showLegends: true,
-        legendPosition: PieChartLib.LegendPosition.bottom,
-        showLegendsInRow: false,
-        legendTextStyle: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: primaryColor),
-      ),
-      chartValuesOptions: const PieChartLib.ChartValuesOptions(
-        showChartValuesInPercentage: true,
-        showChartValuesOutside: true,
-        decimalPlaces: 1,
-        chartValueStyle: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.black87),
-      ),
-      ringStrokeWidth: 25,
-      chartRadius: MediaQuery.of(context).size.width / 2.5,
-      gradientList: earningsStatus.keys.map((key) {
-        final index = earningsStatus.keys.toList().indexOf(key);
-        final color = chartColors[index % chartColors.length];
-        return [color, color.withOpacity(0.8)];
-      }).toList(),
-    );
-  }
+  // Commented out the earnings status chart as it's not needed
+  // Widget _buildEarningsStatusChart(Map<String, double> earningsStatus) {
+  //   if (earningsStatus.isEmpty) return _buildEmptyChart();
+  //   final dataMap = earningsStatus;
+  //   final colorList = earningsStatus.keys.map((key) => chartColors[earningsStatus.keys.toList().indexOf(key) % chartColors.length]).toList();
+  //   return PieChartLib.PieChart(
+  //     dataMap: dataMap,
+  //     animationDuration: const Duration(milliseconds: 800),
+  //     chartLegendSpacing: 32,
+  //     colorList: colorList,
+  //     chartType: PieChartLib.ChartType.ring,
+  //     centerText: "Earnings",
+  //     legendOptions: const PieChartLib.LegendOptions(
+  //       showLegends: true,
+  //       legendPosition: PieChartLib.LegendPosition.bottom,
+  //       showLegendsInRow: false,
+  //       legendTextStyle: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: primaryColor),
+  //     ),
+  //     chartValuesOptions: const PieChartLib.ChartValuesOptions(
+  //       showChartValuesInPercentage: true,
+  //       showChartValuesOutside: true,
+  //       decimalPlaces: 1,
+  //       chartValueStyle: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.black87),
+  //     ),
+  //     ringStrokeWidth: 25,
+  //     chartRadius: MediaQuery.of(context).size.width / 2.5,
+  //     gradientList: earningsStatus.keys.map((key) {
+  //       final index = earningsStatus.keys.toList().indexOf(key);
+  //       final color = chartColors[index % chartColors.length];
+  //       return [color, color.withOpacity(0.8)];
+  //     }).toList(),
+  //   );
+  // }
 
-  Widget _buildRevenueOverTimeChart(List<Map<String, dynamic>> revenueOverTime) {
-    if (revenueOverTime.isEmpty) return _buildEmptyChart();
-    final maxRevenue = revenueOverTime.map((e) => e['revenue'] as num).reduce((a, b) => a > b ? a : b).toDouble();
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: Container(
-        width: max(MediaQuery.of(context).size.width - 64, revenueOverTime.length * 40.0),
-        child: FlChartLib.LineChart(
-          FlChartLib.LineChartData(
-            lineBarsData: [
-              FlChartLib.LineChartBarData(
-                spots: revenueOverTime.map((point) => FlChartLib.FlSpot(
-                  DateTime.parse(point['date']).millisecondsSinceEpoch.toDouble(),
-                  point['revenue'].toDouble(),
-                )).toList(),
-                isCurved: true,
-                color: chartColors[4],
-                dotData: const FlChartLib.FlDotData(show: false),
-                belowBarData: FlChartLib.BarAreaData(
-                  show: true,
-                  gradient: LinearGradient(
-                    colors: [chartColors[4].withOpacity(0.4), chartColors[4].withOpacity(0.0)],
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                  ),
-                ),
-              ),
-            ],
-            minY: 0,
-            maxY: maxRevenue * 1.2,
-            titlesData: FlChartLib.FlTitlesData(
-              bottomTitles: FlChartLib.AxisTitles(sideTitles: FlChartLib.SideTitles(
-                showTitles: true,
-                reservedSize: 40,
-                getTitlesWidget: _dateTitles,
-                interval: 86400000 * 5,
-              )),
-              leftTitles: FlChartLib.AxisTitles(sideTitles: FlChartLib.SideTitles(
-                showTitles: true,
-                reservedSize: 40,
-                getTitlesWidget: _currencyTitles,
-                interval: maxRevenue / 5,
-              )),
-              topTitles: const FlChartLib.AxisTitles(sideTitles: FlChartLib.SideTitles(showTitles: false)),
-              rightTitles: const FlChartLib.AxisTitles(sideTitles: FlChartLib.SideTitles(showTitles: false)),
-            ),
-            gridData: FlChartLib.FlGridData(
-              show: true,
-              drawVerticalLine: true,
-              horizontalInterval: maxRevenue / 5,
-              verticalInterval: 86400000 * 5,
-              getDrawingHorizontalLine: (value) => FlChartLib.FlLine(color: Colors.grey.withOpacity(0.2), strokeWidth: 1),
-              getDrawingVerticalLine: (value) => FlChartLib.FlLine(color: Colors.grey.withOpacity(0.1), strokeWidth: 1, dashArray: [5, 5]),
-            ),
-            borderData: FlChartLib.FlBorderData(show: false),
-            lineTouchData: FlChartLib.LineTouchData(
-              touchTooltipData: FlChartLib.LineTouchTooltipData(
-                getTooltipColor: (_) => Colors.white.withOpacity(0.9),
-                tooltipRoundedRadius: 8,
-                getTooltipItems: (touchedSpots) => touchedSpots.map((spot) {
-                  final date = DateTime.fromMillisecondsSinceEpoch(spot.x.toInt());
-                  return FlChartLib.LineTooltipItem(
-                    '${date.month}/${date.day}/${date.year}\n${currencyFormat.format(spot.y)}',
-                    const TextStyle(color: primaryColor, fontSize: 12, fontWeight: FontWeight.bold),
-                  );
-                }).toList(),
-              ),
-              handleBuiltInTouches: true,
-            ),
-          ),
-        ),
-      ),
-    );
-  }
+  // Commented out the revenue over time chart as it's not needed
+  // Widget _buildRevenueOverTimeChart(List<Map<String, dynamic>> revenueOverTime) {
+  //   if (revenueOverTime.isEmpty) return _buildEmptyChart();
+  //   final maxRevenue = revenueOverTime.map((e) => e['revenue'] as num).reduce((a, b) => a > b ? a : b).toDouble();
+  //   return SingleChildScrollView(
+  //     scrollDirection: Axis.horizontal,
+  //     child: Container(
+  //       width: max(MediaQuery.of(context).size.width - 64, revenueOverTime.length * 40.0),
+  //       child: FlChartLib.LineChart(
+  //         FlChartLib.LineChartData(
+  //           lineBarsData: [
+  //             FlChartLib.LineChartBarData(
+  //               spots: revenueOverTime.map((point) => FlChartLib.FlSpot(
+  //                 DateTime.parse(point['date']).millisecondsSinceEpoch.toDouble(),
+  //                 point['revenue'].toDouble(),
+  //               )).toList(),
+  //               isCurved: true,
+  //               color: chartColors[4],
+  //               dotData: const FlChartLib.FlDotData(show: false),
+  //               belowBarData: FlChartLib.BarAreaData(
+  //                 show: true,
+  //                 gradient: LinearGradient(
+  //                   colors: [chartColors[4].withOpacity(0.4), chartColors[4].withOpacity(0.0)],
+  //                   begin: Alignment.topCenter,
+  //                   end: Alignment.bottomCenter,
+  //                 ),
+  //               ),
+  //             ),
+  //           ],
+  //           minY: 0,
+  //           maxY: maxRevenue * 1.2,
+  //           titlesData: FlChartLib.FlTitlesData(
+  //             bottomTitles: FlChartLib.AxisTitles(sideTitles: FlChartLib.SideTitles(
+  //               showTitles: true,
+  //               reservedSize: 40,
+  //               getTitlesWidget: _dateTitles,
+  //               interval: 86400000 * 5,
+  //             )),
+  //             leftTitles: FlChartLib.AxisTitles(sideTitles: FlChartLib.SideTitles(
+  //               showTitles: true,
+  //               reservedSize: 40,
+  //               getTitlesWidget: _currencyTitles,
+  //               interval: maxRevenue / 5,
+  //             )),
+  //             topTitles: const FlChartLib.AxisTitles(sideTitles: FlChartLib.SideTitles(showTitles: false)),
+  //             rightTitles: const FlChartLib.AxisTitles(sideTitles: FlChartLib.SideTitles(showTitles: false)),
+  //           ),
+  //           gridData: FlChartLib.FlGridData(
+  //             show: true,
+  //             drawVerticalLine: true,
+  //             horizontalInterval: maxRevenue / 5,
+  //             verticalInterval: 86400000 * 5,
+  //             getDrawingHorizontalLine: (value) => FlChartLib.FlLine(color: Colors.grey.withOpacity(0.2), strokeWidth: 1),
+  //             getDrawingVerticalLine: (value) => FlChartLib.FlLine(color: Colors.grey.withOpacity(0.1), strokeWidth: 1, dashArray: [5, 5]),
+  //           ),
+  //           borderData: FlChartLib.FlBorderData(show: false),
+  //           lineTouchData: FlChartLib.LineTouchData(
+  //             touchTooltipData: FlChartLib.LineTouchTooltipData(
+  //               getTooltipColor: (_) => Colors.white.withOpacity(0.9),
+  //               tooltipRoundedRadius: 8,
+  //               getTooltipItems: (touchedSpots) => touchedSpots.map((spot) {
+  //                 final date = DateTime.fromMillisecondsSinceEpoch(spot.x.toInt());
+  //                 return FlChartLib.LineTooltipItem(
+  //                   '${date.month}/${date.day}/${date.year}\n${currencyFormat.format(spot.y)}',
+  //                   const TextStyle(color: primaryColor, fontSize: 12, fontWeight: FontWeight.bold),
+  //                 );
+  //               }).toList(),
+  //             ),
+  //             handleBuiltInTouches: true,
+  //           ),
+  //         ),
+  //       ),
+  //     ),
+  //   );
+  // }
 
   Widget _buildEmptyChart() {
     return Center(

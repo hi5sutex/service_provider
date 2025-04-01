@@ -10,7 +10,8 @@ import 'bookings_screen.dart';
 import 'payments_screen.dart';
 import 'analytics_screen.dart';
 import 'notifications_screen.dart';
-import 'manage_categories.dart'; // Import ManageCategories page
+import 'manage_categories.dart';
+import 'admin_theme.dart'; // Import your theme file
 
 class MainAdminPanel extends StatefulWidget {
   @override
@@ -55,10 +56,10 @@ class _MainAdminPanelState extends State<MainAdminPanel> {
     {'title': 'Providers', 'widget': ProvidersScreen()},
     {'title': 'Services', 'widget': ServicesScreen()},
     {'title': 'Bookings', 'widget': BookingsScreen()},
-    {'title': 'Payments', 'widget': PaymentsScreen()},
-    {'title': 'Analytics', 'widget': AnalyticsScreen()},
-    {'title': 'Notifications', 'widget': NotificationsScreen()},
-    {'title': 'Manage Categories', 'widget': ManageCategoriesScreen()}, // Added Manage Categories
+    //{'title': 'Payments', 'widget': PaymentsScreen()},
+    //{'title': 'Analytics', 'widget': AnalyticsScreen()},
+    //{'title': 'Notifications', 'widget': NotificationsScreen()},
+    {'title': 'Manage Categories', 'widget': ManageCategoriesScreen()},
   ];
 
   void _onItemTapped(int index) {
@@ -80,58 +81,189 @@ class _MainAdminPanelState extends State<MainAdminPanel> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(_pages[_selectedIndex]['title']),
+        title: Text(
+          _pages[_selectedIndex]['title'],
+          style: AdminTheme.themeData.textTheme.titleLarge?.copyWith(
+            color: AdminTheme.onPrimaryTextColor,
+          ),
+        ),
+        backgroundColor: AdminTheme.primaryColor,
+        iconTheme: IconThemeData(color: AdminTheme.onPrimaryTextColor),
       ),
-      drawer: Drawer(
-        child: ListView(
+      drawer: _buildDrawer(context),
+      body: _pages[_selectedIndex]['widget'],
+    );
+  }
+
+  Widget _buildDrawer(BuildContext context) {
+    return Drawer(
+      width: MediaQuery.of(context).size.width * 0.75,
+      elevation: 16,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.horizontal(right: Radius.circular(16)),
+      ),
+      child: Container(
+        decoration: BoxDecoration(
+          gradient: AdminTheme.primaryGradient,
+        ),
+        child: Column(
           children: [
-            if (adminName != null && adminEmail != null)
-              UserAccountsDrawerHeader(
-                accountName: Text(adminName!),
-                accountEmail: Text(adminEmail!),
-                currentAccountPicture: CircleAvatar(
-                  backgroundImage: NetworkImage(
-                    adminProfileUrl ?? 'https://avatar.iran.liara.run/public',
+            _buildDrawerHeader(),
+            Expanded(
+              child: Container(
+                decoration: BoxDecoration(
+                  color: AdminTheme.backgroundColor,
+                  borderRadius: const BorderRadius.only(
+                    bottomRight: Radius.circular(16),
                   ),
                 ),
+                child: ListView(
+                  padding: EdgeInsets.zero,
+                  children: [
+                    _buildDrawerItem(Icons.dashboard_outlined, 'Dashboard', 0),
+                    if (permissions['viewUsers'] ?? false)
+                      _buildDrawerItem(Icons.people_outlined, 'Users', 1),
+                    if (permissions['viewProviders'] ?? false)
+                      _buildDrawerItem(Icons.business_outlined, 'Providers', 2),
+                    if (permissions['viewServices'] ?? false)
+                      _buildDrawerItem(Icons.design_services_outlined, 'Services', 3),
+                    if (permissions['viewBookings'] ?? false)
+                      _buildDrawerItem(Icons.book_online_outlined, 'Bookings', 4),
+                    //if (permissions['viewPayments'] ?? false)
+                      //_buildDrawerItem(Icons.payment_outlined, 'Payments', 5),
+                   // if (permissions['viewAnalytics'] ?? false)
+                     // _buildDrawerItem(Icons.analytics_outlined, 'Analytics', 6),
+                   // if (permissions['sendNotifications'] ?? false)
+                      //_buildDrawerItem(Icons.notifications_outlined, 'Notifications', 7),
+                    if (permissions['manageCategories'] ?? true)
+                      _buildDrawerItem(Icons.category_outlined, 'Manage Categories', 8),
+                    const Divider(
+                      color: AdminTheme.dividerColor,
+                      thickness: 1,
+                      indent: 16,
+                      endIndent: 16,
+                    ),
+                    _buildLogoutItem(),
+                  ],
+                ),
               ),
-            _buildDrawerItem(Icons.dashboard_outlined, 'Dashboard', 0),
-            if (permissions['viewUsers'] ?? false)
-              _buildDrawerItem(Icons.people_outline, 'Users', 1),
-            if (permissions['viewProviders'] ?? false)
-              _buildDrawerItem(Icons.business_outlined, 'Providers', 2),
-            if (permissions['viewServices'] ?? false)
-              _buildDrawerItem(Icons.design_services_outlined, 'Services', 3),
-            if (permissions['viewBookings'] ?? false)
-              _buildDrawerItem(Icons.book_online_outlined, 'Bookings', 4),
-            if (permissions['viewPayments'] ?? false)
-              _buildDrawerItem(Icons.payment_outlined, 'Payments', 5),
-            if (permissions['viewAnalytics'] ?? false)
-              _buildDrawerItem(Icons.analytics_outlined, 'Analytics', 6),
-            if (permissions['sendNotifications'] ?? false)
-              _buildDrawerItem(Icons.notifications_outlined, 'Notifications', 7),
-            if (permissions['manageCategories'] ?? true)
-              _buildDrawerItem(Icons.category_outlined, 'Manage Categories', 8), // Drawer Item
-            const Divider(),
-            ListTile(
-              leading: const Icon(Icons.logout),
-              title: const Text('Logout'),
-              onTap: _logout,
             ),
           ],
         ),
       ),
-      body: _pages[_selectedIndex]['widget'], // Directly display the selected widget
     );
   }
 
-  ListTile _buildDrawerItem(IconData icon, String title, int index) {
-    return ListTile(
-      leading: Icon(icon),
-      title: Text(title),
-      selected: _selectedIndex == index,
-      selectedTileColor: Colors.grey.shade300,
-      onTap: () => _onItemTapped(index),
+  Widget _buildDrawerHeader() {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AdminTheme.primaryColor.withOpacity(0.9),
+        borderRadius: const BorderRadius.only(
+          topRight: Radius.circular(16),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const SizedBox(height: 20),
+          Center(
+            child: CircleAvatar(
+              radius: 40,
+              backgroundColor: AdminTheme.secondaryColor,
+              backgroundImage: NetworkImage(
+                adminProfileUrl ?? 'https://avatar.iran.liara.run/public',
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+          Center(
+            child: Text(
+              adminName ?? 'Admin',
+              style: AdminTheme.themeData.textTheme.titleLarge?.copyWith(
+                color: AdminTheme.onPrimaryTextColor,
+              ),
+            ),
+          ),
+          const SizedBox(height: 4),
+          Center(
+            child: Text(
+              adminEmail ?? 'admin@example.com',
+              style: AdminTheme.themeData.textTheme.bodyMedium?.copyWith(
+                color: AdminTheme.onPrimaryTextColor.withOpacity(0.8),
+              ),
+            ),
+          ),
+          const SizedBox(height: 8),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDrawerItem(IconData icon, String title, int index) {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(8),
+        color: _selectedIndex == index
+            ? AdminTheme.primaryColor.withOpacity(0.1)
+            : Colors.transparent,
+      ),
+      child: ListTile(
+        leading: Icon(
+          icon,
+          color: _selectedIndex == index
+              ? AdminTheme.primaryColor
+              : AdminTheme.secondaryTextColor,
+        ),
+        title: Text(
+          title,
+          style: AdminTheme.themeData.textTheme.bodyLarge?.copyWith(
+            color: _selectedIndex == index
+                ? AdminTheme.primaryTextColor
+                : AdminTheme.secondaryTextColor,
+            fontWeight: _selectedIndex == index ? FontWeight.bold : FontWeight.normal,
+          ),
+        ),
+        trailing: _selectedIndex == index
+            ? Icon(
+          Icons.arrow_forward_ios,
+          size: 16,
+          color: AdminTheme.primaryColor,
+        )
+            : null,
+        onTap: () => _onItemTapped(index),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(8),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLogoutItem() {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(8),
+        color: AdminTheme.errorTextColor.withOpacity(0.1),
+      ),
+      child: ListTile(
+        leading: Icon(
+          Icons.logout,
+          color: AdminTheme.errorTextColor,
+        ),
+        title: Text(
+          'Logout',
+          style: AdminTheme.themeData.textTheme.bodyLarge?.copyWith(
+            color: AdminTheme.errorTextColor,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        onTap: _logout,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(8),
+        ),
+      ),
     );
   }
 }

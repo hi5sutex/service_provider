@@ -47,52 +47,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
 
     setState(() => isLoading = true);
 
-    // after this
-    // try {
-    //   _emailOTP.setConfig(
-    //     appEmail: "youremail@example.com",
-    //     appName: "Your App Name",
-    //     otpLength: 6,
-    //     otpType: OTPType.numeric,
-    //   );
-    //
-    //   print("Sending OTP to: ${emailController.text.trim()}");
-    //   bool result = await EmailOTP.sendOTP(email: emailController.text.trim());
-    //   print("OTP Send Result: $result");
-    //
-    //   if (result) {
-    //     ScaffoldMessenger.of(context).showSnackBar(
-    //       const SnackBar(content: Text("OTP sent to your email")),
-    //     );
-    //
-    //     await FirebaseFirestore.instance
-    //         .collection('user_chatroom')
-    //         .doc(emailController.text.trim())
-    //         .set({
-    //       'name': nameController.text.trim(),
-    //       'phone': phoneController.text.trim(),
-    //       'email': emailController.text.trim(),
-    //       'createdAt': FieldValue.serverTimestamp(),
-    //       'role': 'user',
-    //     });
-    //
-    //     Navigator.pushReplacement(
-    //       context,
-    //       MaterialPageRoute(
-    //         builder: (context) => OtpVerificationPage(
-    //           name: nameController.text.trim(),
-    //           phone: phoneController.text.trim(),
-    //           email: emailController.text.trim(),
-    //           password: passwordController.text.trim(),
-    //         ),
-    //       ),
-    //     );
-    //   } else {
-    //     ScaffoldMessenger.of(context).showSnackBar(
-    //       const SnackBar(content: Text("Failed to send OTP")),
-    //     );
-    //   }
-    // } catch (e) {
+
     try {
       Navigator.push(
         context,

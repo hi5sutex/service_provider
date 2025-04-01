@@ -540,7 +540,7 @@ class _UserHomeState extends State<UserHome> with AutomaticKeepAliveClientMixin 
                               ),
                             ),
                             trailing: Text(
-                              '\$${service.price}/hr',
+                              '${service.price}',
                               style: TextStyle(
                                 color: UserTheme.primaryColor,
                                 fontWeight: FontWeight.bold,
@@ -1030,7 +1030,7 @@ class _UserHomeState extends State<UserHome> with AutomaticKeepAliveClientMixin 
               return ServiceCard(
                 id: service.id,
                 title: service.title,
-                price: '\$${service.price}/hr',
+                price: '${service.price}',
                 imageUrl: service.imageUrl,
                 category: service.category,
               );
