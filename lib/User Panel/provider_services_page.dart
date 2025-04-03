@@ -184,11 +184,11 @@ class _ProviderServicesPageState extends State<ProviderServicesPage> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        '\$${service['price'] ?? '0'}/hr',
+                        '₹${service['price'] ?? '0'}',
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
-                          color: UserTheme.primaryColor,
+                          color: UserTheme.successColor,
                         ),
                       ),
                       Text(

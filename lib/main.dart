@@ -4,6 +4,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:lottie/lottie.dart';
 import 'package:service_provider/Admin%20Panel/screens/PendingServicesScreen.dart';
 import 'package:service_provider/Admin%20Panel/screens/main.dart';
 import 'package:service_provider/Provider%20Panel/screens/booking_screen.dart';
@@ -24,11 +25,9 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   print('Body: ${message.notification?.body}');
   print('Data: ${message.data}');
   await NotificationService.showBackgroundNotification(message);  // Use NotificationService
-
 }
 
 void main() async {
-
   WidgetsFlutterBinding.ensureInitialized();
 
   // Initialize Firebase
@@ -156,8 +155,11 @@ class AuthStateHandler extends StatelessWidget {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return Scaffold(
             body: Center(
-              child: CircularProgressIndicator(
-                // Color is already set by ProviderTheme.progressIndicatorTheme (Primary #060644)
+              child: Lottie.asset(
+                'android/assets/location.json',
+                width: 200,
+                height: 200,
+                fit: BoxFit.contain,
               ),
             ),
           );
@@ -173,8 +175,11 @@ class AuthStateHandler extends StatelessWidget {
             if (userTypeSnapshot.connectionState == ConnectionState.waiting) {
               return Scaffold(
                 body: Center(
-                  child: CircularProgressIndicator(
-                    // Color is already set by ProviderTheme.progressIndicatorTheme (Primary #060644)
+                  child: Lottie.asset(
+                    'android/assets/location.json',
+                    width: 200,
+                    height: 200,
+                    fit: BoxFit.contain,
                   ),
                 ),
               );

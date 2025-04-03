@@ -540,9 +540,9 @@ class _UserHomeState extends State<UserHome> with AutomaticKeepAliveClientMixin 
                               ),
                             ),
                             trailing: Text(
-                              '${service.price}',
+                              '₹${service.price}',
                               style: TextStyle(
-                                color: UserTheme.primaryColor,
+                                color: UserTheme.successColor,
                                 fontWeight: FontWeight.bold,
                                 fontSize: screenWidth * 0.035,
                               ),
@@ -1030,10 +1030,11 @@ class _UserHomeState extends State<UserHome> with AutomaticKeepAliveClientMixin 
               return ServiceCard(
                 id: service.id,
                 title: service.title,
-                price: '${service.price}',
+                price: '₹${service.price}',
                 imageUrl: service.imageUrl,
                 category: service.category,
               );
+
             },
           );
         },
@@ -1267,7 +1268,7 @@ class ServiceCard extends StatelessWidget {
                   Text(
                     price,
                     style: TextStyle(
-                      color: UserTheme.primaryColor,
+                      color: UserTheme.successColor,
                       fontWeight: FontWeight.w600,
                       fontSize: screenWidth * 0.037,
                     ),

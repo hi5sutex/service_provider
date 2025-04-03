@@ -40,27 +40,24 @@ class _ConfirmBookingPageState extends State<ConfirmBookingPage> {
   String get providerId => widget.serviceData['createdBy'] ?? '';
   String get serviceId => widget.serviceId;
 
-  // Razorpay instance
   late Razorpay _razorpay;
 
   @override
   void initState() {
     super.initState();
-    // Initialize Razorpay
     _razorpay = Razorpay();
     _razorpay.on(Razorpay.EVENT_PAYMENT_SUCCESS, _handlePaymentSuccess);
     _razorpay.on(Razorpay.EVENT_PAYMENT_ERROR, _handlePaymentError);
     _razorpay.on(Razorpay.EVENT_EXTERNAL_WALLET, _handleExternalWallet);
 
-    // Listen to address field changes to enable/disable button
     addressController.addListener(() {
-      setState(() {}); // Rebuild UI when address changes
+      setState(() {});
     });
   }
 
   @override
   void dispose() {
-    _razorpay.clear(); // Clear Razorpay listeners
+    _razorpay.clear();
     addressController.dispose();
     super.dispose();
   }
@@ -82,38 +79,97 @@ class _ConfirmBookingPageState extends State<ConfirmBookingPage> {
       maxLines: maxLines,
       keyboardType: keyboardType,
       validator: validator,
+      style: TextStyle(
+        fontSize: 16,
+        color: UserTheme.primaryTextColor,
+      ),
       decoration: InputDecoration(
         labelText: label,
-        prefixIcon: Icon(icon),
+        labelStyle: TextStyle(
+          color: UserTheme.secondaryTextColor,
+          fontSize: 14,
+        ),
+        prefixIcon: Icon(
+          icon,
+          color: UserTheme.primaryColor,
+          size: 22,
+        ),
         suffixIcon: suffix,
         filled: filled,
-        fillColor: filled ? UserTheme.dividerColor : null, // Matches #D1D9E1 (Divider)
-        // Border, label style, etc., are set by ProviderTheme.inputDecorationTheme
-        border: OutlineInputBorder(
+        fillColor: filled ? UserTheme.dividerColor.withOpacity(0.5) : Colors.transparent,
+        enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: UserTheme.dividerColor, width: 1.5),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: UserTheme.primaryColor, width: 2),
+        ),
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: Colors.red.shade300, width: 1.5),
+        ),
+        focusedErrorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: Colors.red.shade400, width: 2),
         ),
         contentPadding: EdgeInsets.symmetric(
           horizontal: 16,
-          vertical: maxLines > 1 ? 16 : 0,
+          vertical: maxLines > 1 ? 16 : 12,
         ),
       ),
     );
   }
 
   Future<void> _getCurrentLocation() async {
-    setState(() => isLoading = true);
+    // Show loading dialog
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              CircularProgressIndicator(
+                valueColor: AlwaysStoppedAnimation<Color>(UserTheme.primaryColor),
+              ),
+              SizedBox(height: 16),
+              Text(
+                "Current Location Fetching...",
+                style: TextStyle(
+                  color: UserTheme.primaryTextColor,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+
     try {
       LocationPermission permission = await Geolocator.checkPermission();
       if (permission == LocationPermission.denied) {
         permission = await Geolocator.requestPermission();
         if (permission == LocationPermission.denied) {
-          _showSnackBar("Location permission denied");
+          if (mounted) {
+            Navigator.pop(context); // Close dialog
+            _showSnackBar("Location permission denied");
+          }
           return;
         }
       }
 
       if (permission == LocationPermission.deniedForever) {
-        _showSnackBar("Location permission permanently denied");
+        if (mounted) {
+          Navigator.pop(context); // Close dialog
+          _showSnackBar("Location permission permanently denied");
+        }
         return;
       }
 
@@ -123,20 +179,28 @@ class _ConfirmBookingPageState extends State<ConfirmBookingPage> {
       _longitude = position.longitude;
 
       String address = await _getHumanReadableAddress(_latitude!, _longitude!);
-      setState(() {
-        addressController.text = address;
-      });
+
+      if (mounted) {
+        Navigator.pop(context); // Close dialog
+        setState(() {
+          addressController.text = address;
+        });
+      }
     } catch (e) {
-      _showSnackBar("Error fetching location: $e");
+      if (mounted) {
+        Navigator.pop(context); // Close dialog
+        _showSnackBar("Error fetching location: $e");
+      }
     }
-    setState(() => isLoading = false);
   }
 
   Future<String> _getHumanReadableAddress(double lat, double lon) async {
     final url = Uri.parse(
         "https://nominatim.openstreetmap.org/reverse?format=json&lat=$lat&lon=$lon");
     try {
-      final response = await http.get(url);
+      final response = await http.get(url, headers: {
+        "User-Agent": "ServiceProviderApp/1.0"
+      });
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         return data['display_name'] ?? "Unknown Location";
@@ -163,8 +227,8 @@ class _ConfirmBookingPageState extends State<ConfirmBookingPage> {
 
   void _openRazorpayCheckout() {
     var options = {
-      'key': 'rzp_test_8MwbMjCkPlKzhh', // Replace with your Razorpay Test Key ID
-      'amount': (calculateTotalAmount() * 100).toInt(), // Amount in paise
+      'key': 'rzp_test_8MwbMjCkPlKzhh',
+      'amount': (calculateTotalAmount() * 100).toInt(),
       'name': 'Service Booking',
       'description': 'Payment for ${widget.serviceData['name'] ?? 'Service'}',
       'prefill': {
@@ -185,7 +249,7 @@ class _ConfirmBookingPageState extends State<ConfirmBookingPage> {
   }
 
   void _handlePaymentSuccess(PaymentSuccessResponse response) {
-    _showSnackBar("Payment Successful! Payment ID: ${response.paymentId}");
+    _showSnackBar("Payment Successful!");
     _saveBooking(response.paymentId);
   }
 
@@ -232,7 +296,7 @@ class _ConfirmBookingPageState extends State<ConfirmBookingPage> {
           'userId': user.uid,
           'providerId': providerId,
           'serviceId': serviceId,
-          'serviceName': widget.serviceData['name'], // For notification
+          'serviceName': widget.serviceData['name'],
           'serviceDate': Timestamp.fromDate(serviceDateTime),
           'bookingDate': FieldValue.serverTimestamp(),
           'location': {
@@ -264,71 +328,176 @@ class _ConfirmBookingPageState extends State<ConfirmBookingPage> {
           'paymentAt': FieldValue.serverTimestamp(),
         });
 
-        // Send FCM notification to provider using V1 API
-        await _sendFCMNotificationToProvider(
-          providerId: providerId,
-          bookingId: bookingId,
-          serviceName: widget.serviceData['name'],
+        await NotificationService().sendNotification(
+          toUserId: providerId,
+          toRole: 'provider',
+          title: 'New Booking Request',
+          body: 'A new booking for ${widget.serviceData['name']} has been requested!',
+          type: 'booking',
+          data: {'bookingId': bookingId},
         );
 
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              "Booking Confirmed!\n"
-                  "Date: ${widget.date.toString().substring(0, 10)}\n"
-                  "Time: ${widget.time.format(context)}\n"
-                  "Service: ${widget.serviceData['name'] ?? 'Unknown'}",
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text("Booking confirmed successfully!"),
+              backgroundColor: Colors.green,
+              behavior: SnackBarBehavior.floating,
+              duration: Duration(seconds: 3),
             ),
-            duration: Duration(seconds: 5),
-          ),
-        );
+          );
 
-        _showSnackBar("Booking created successfully!");
-        Navigator.pop(context);
+          Future.delayed(Duration(milliseconds: 1500), () {
+            if (mounted) Navigator.pop(context);
+          });
+        }
       }
     } catch (e) {
       _showSnackBar("Error creating booking: $e");
+      setState(() => isLoading = false);
     }
-    setState(() => isLoading = false);
-  }
-
-  Future<void> _sendFCMNotificationToProvider({
-    required String providerId,
-    required String bookingId,
-    required String serviceName,
-  }) async {
-    await NotificationService().sendNotification(
-      toUserId: providerId,
-      toRole: 'provider',
-      title: 'New Booking Request',
-      body: 'A new booking for $serviceName has been requested!',
-      type: 'booking',
-      data: {'bookingId': bookingId},
-    );
   }
 
   void _showSnackBar(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(10),
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(message),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
+          backgroundColor: UserTheme.primaryColor.withOpacity(0.9),
+          margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         ),
-      ),
-    );
+      );
+    }
   }
 
   String? selectedPaymentImage;
 
-  Widget _buildPaymentMethodSelector() {
+  Widget _buildBookingSummary() {
+    String formattedDate = "${widget.date.day}/${widget.date.month}/${widget.date.year}";
+    String formattedTime = widget.time.format(context);
+
     return Container(
       decoration: BoxDecoration(
-        color: UserTheme.surfaceColor, // Matches #FFFFFF (Surface)
+        color: UserTheme.surfaceColor,
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: UserTheme.shadowColor, // Matches #00000029 (Shadow)
+            color: UserTheme.shadowColor.withOpacity(0.1),
+            blurRadius: 10,
+            offset: Offset(0, 2),
+          ),
+        ],
+      ),
+      padding: EdgeInsets.all(20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Booking Details',
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              color: UserTheme.primaryColor,
+            ),
+          ),
+          SizedBox(height: 16),
+          Row(
+            children: [
+              Container(
+                padding: EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: UserTheme.primaryColor.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(
+                  Icons.calendar_today_rounded,
+                  color: UserTheme.primaryColor,
+                  size: 24,
+                ),
+              ),
+              SizedBox(width: 16),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Date & Time',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: UserTheme.secondaryTextColor,
+                    ),
+                  ),
+                  SizedBox(height: 4),
+                  Text(
+                    '$formattedDate - $formattedTime',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: UserTheme.primaryTextColor,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+          SizedBox(height: 16),
+          Row(
+            children: [
+              Container(
+                padding: EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: UserTheme.primaryColor.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(
+                  Icons.handyman_rounded,
+                  color: UserTheme.primaryColor,
+                  size: 24,
+                ),
+              ),
+              SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Service',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: UserTheme.secondaryTextColor,
+                      ),
+                    ),
+                    SizedBox(height: 4),
+                    Text(
+                      widget.serviceData['name'] ?? 'Service',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: UserTheme.primaryTextColor,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPaymentMethodSelector() {
+    return Container(
+      decoration: BoxDecoration(
+        color: UserTheme.surfaceColor,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: UserTheme.shadowColor.withOpacity(0.1),
             blurRadius: 10,
             offset: Offset(0, 2),
           ),
@@ -343,7 +512,7 @@ class _ConfirmBookingPageState extends State<ConfirmBookingPage> {
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
-              color: UserTheme.primaryTextColor, // Matches #060644 (Primary Text)
+              color: UserTheme.primaryColor,
             ),
           ),
           SizedBox(height: 16),
@@ -352,11 +521,10 @@ class _ConfirmBookingPageState extends State<ConfirmBookingPage> {
             child: Container(
               padding: EdgeInsets.all(16),
               decoration: BoxDecoration(
-                border: Border.all(color: UserTheme.dividerColor), // Matches #D1D9E1 (Divider)
-                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: UserTheme.dividerColor),
+                borderRadius: BorderRadius.circular(12),
               ),
               child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   SizedBox(
                     width: 30,
@@ -366,20 +534,21 @@ class _ConfirmBookingPageState extends State<ConfirmBookingPage> {
                       fit: BoxFit.contain,
                     ),
                   ),
-                  SizedBox(width: 12),
+                  SizedBox(width: 16),
                   Expanded(
                     child: Text(
                       selectedPaymentMethod,
                       style: TextStyle(
                         fontSize: 16,
-                        color: UserTheme.primaryTextColor, // Matches #060644 (Primary Text)
+                        fontWeight: FontWeight.w500,
+                        color: UserTheme.primaryTextColor,
                       ),
-                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
                   Icon(
-                    Icons.arrow_drop_down,
-                    color: UserTheme.secondaryTextColor, // Matches #6B7280 (Secondary Text)
+                    Icons.keyboard_arrow_down_rounded,
+                    color: UserTheme.primaryColor,
+                    size: 24,
                   ),
                 ],
               ),
@@ -393,36 +562,39 @@ class _ConfirmBookingPageState extends State<ConfirmBookingPage> {
   void _showPaymentMethodSelector() {
     showModalBottomSheet(
       context: context,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
       builder: (context) => Container(
-        color: UserTheme.surfaceColor, // Matches #FFFFFF (Surface)
-        padding: EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: UserTheme.surfaceColor,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        padding: EdgeInsets.symmetric(vertical: 24),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
+            Container(
+              width: 40,
+              height: 4,
+              margin: EdgeInsets.only(bottom: 20),
+              decoration: BoxDecoration(
+                color: UserTheme.dividerColor,
+                borderRadius: BorderRadius.circular(4),
+              ),
+            ),
             Text(
               'Select Payment Method',
               style: TextStyle(
-                fontSize: 18,
+                fontSize: 20,
                 fontWeight: FontWeight.bold,
-                color: UserTheme.primaryTextColor, // Matches #060644 (Primary Text)
+                color: UserTheme.primaryColor,
               ),
             ),
-            SizedBox(height: 20),
-            ListTile(
-              leading: Image.asset('android/assets/debit card.png', width: 30, height: 30),
-              title: Text(
-                'Debit Card',
-                style: TextStyle(color: UserTheme.primaryTextColor), // Matches #060644 (Primary Text)
-              ),
-              trailing: selectedPaymentMethod == 'Debit Card'
-                  ? Icon(
-                Icons.check_circle,
-                color: UserTheme.primaryColor, // Matches #060644 (Primary)
-              )
-                  : null,
+            SizedBox(height: 24),
+            _buildPaymentOption(
+              title: 'Debit Card',
+              imagePath: 'android/assets/debit card.png',
+              isSelected: selectedPaymentMethod == 'Debit Card',
               onTap: () {
                 setState(() {
                   selectedPaymentMethod = 'Debit Card';
@@ -431,18 +603,11 @@ class _ConfirmBookingPageState extends State<ConfirmBookingPage> {
                 Navigator.pop(context);
               },
             ),
-            ListTile(
-              leading: Image.asset('android/assets/Gpay.png', width: 30, height: 30),
-              title: Text(
-                'UPI',
-                style: TextStyle(color: UserTheme.primaryTextColor), // Matches #060644 (Primary Text)
-              ),
-              trailing: selectedPaymentMethod == 'UPI'
-                  ? Icon(
-                Icons.check_circle,
-                color: UserTheme.primaryColor, // Matches #060644 (Primary)
-              )
-                  : null,
+            Divider(height: 1, thickness: 1, color: UserTheme.dividerColor.withOpacity(0.3)),
+            _buildPaymentOption(
+              title: 'UPI',
+              imagePath: 'android/assets/Gpay.png',
+              isSelected: selectedPaymentMethod == 'UPI',
               onTap: () {
                 setState(() {
                   selectedPaymentMethod = 'UPI';
@@ -451,18 +616,11 @@ class _ConfirmBookingPageState extends State<ConfirmBookingPage> {
                 Navigator.pop(context);
               },
             ),
-            ListTile(
-              leading: Image.asset('android/assets/cash-on-delivery.png', width: 30, height: 30),
-              title: Text(
-                'Cash on Delivery',
-                style: TextStyle(color: UserTheme.primaryTextColor), // Matches #060644 (Primary Text)
-              ),
-              trailing: selectedPaymentMethod == 'Cash on Delivery'
-                  ? Icon(
-                Icons.check_circle,
-                color: UserTheme.primaryColor, // Matches #060644 (Primary)
-              )
-                  : null,
+            Divider(height: 1, thickness: 1, color: UserTheme.dividerColor.withOpacity(0.3)),
+            _buildPaymentOption(
+              title: 'Cash on Delivery',
+              imagePath: 'android/assets/cash-on-delivery.png',
+              isSelected: selectedPaymentMethod == 'Cash on Delivery',
               onTap: () {
                 setState(() {
                   selectedPaymentMethod = 'Cash on Delivery';
@@ -477,33 +635,86 @@ class _ConfirmBookingPageState extends State<ConfirmBookingPage> {
     );
   }
 
+  Widget _buildPaymentOption({
+    required String title,
+    required String imagePath,
+    required bool isSelected,
+    required VoidCallback onTap,
+  }) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        child: Padding(
+          padding: EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+          child: Row(
+            children: [
+              Image.asset(
+                imagePath,
+                width: 36,
+                height: 36,
+              ),
+              SizedBox(width: 16),
+              Expanded(
+                child: Text(
+                  title,
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                    color: UserTheme.primaryTextColor,
+                  ),
+                ),
+              ),
+              if (isSelected)
+                Container(
+                  padding: EdgeInsets.all(4),
+                  decoration: BoxDecoration(
+                    color: UserTheme.primaryColor,
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    Icons.check,
+                    color: Colors.white,
+                    size: 18,
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildPaymentRow(String label, double amount, {bool isBold = false}) {
     final style = TextStyle(
-      fontSize: 16,
+      fontSize: isBold ? 18 : 16,
       fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
-      color: UserTheme.primaryTextColor, // Matches #060644 (Primary Text)
+      color: isBold ? UserTheme.primaryColor : UserTheme.primaryTextColor,
     );
 
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(label, style: style),
-        Text(
-          '₹${amount.round()}',
-          style: style,
-        ),
-      ],
+    return Padding(
+      padding: EdgeInsets.symmetric(vertical: 8),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(label, style: style),
+          Text(
+            '₹${amount.toStringAsFixed(2)}',
+            style: style,
+          ),
+        ],
+      ),
     );
   }
 
   Widget _buildPaymentSummary() {
     return Container(
       decoration: BoxDecoration(
-        color: UserTheme.surfaceColor, // Matches #FFFFFF (Surface)
+        color: UserTheme.surfaceColor,
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: UserTheme.shadowColor, // Matches #00000029 (Shadow)
+            color: UserTheme.shadowColor.withOpacity(0.1),
             blurRadius: 10,
             offset: Offset(0, 2),
           ),
@@ -514,26 +725,22 @@ class _ConfirmBookingPageState extends State<ConfirmBookingPage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Payment summary',
+            'Payment Summary',
             style: TextStyle(
-              fontSize: 24,
+              fontSize: 18,
               fontWeight: FontWeight.bold,
-              color: UserTheme.primaryTextColor, // Matches #060644 (Primary Text)
+              color: UserTheme.primaryColor,
             ),
           ),
-          SizedBox(height: 24),
-          _buildPaymentRow('Item total', servicePrice),
           SizedBox(height: 16),
+          _buildPaymentRow('Service Price', servicePrice),
           _buildPaymentRow('Tax (11%)', calculateTaxAmount()),
-          SizedBox(height: 16),
           _buildPaymentRow('Platform Fee (1%)', calculatePlatformFee()),
           Padding(
-            padding: EdgeInsets.symmetric(vertical: 16),
-            child: Divider(color: UserTheme.dividerColor), // Matches #D1D9E1 (Divider)
+            padding: EdgeInsets.symmetric(vertical: 12),
+            child: Divider(color: UserTheme.dividerColor),
           ),
-          _buildPaymentRow('Total amount', calculateTotalAmount(), isBold: true),
-          SizedBox(height: 16),
-          _buildPaymentRow('Amount to pay', calculateTotalAmount(), isBold: true),
+          _buildPaymentRow('Total Amount', calculateTotalAmount(), isBold: true),
         ],
       ),
     );
@@ -544,162 +751,137 @@ class _ConfirmBookingPageState extends State<ConfirmBookingPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // Background color is set by ProviderTheme.scaffoldBackgroundColor (#F5F7FA)
+      backgroundColor: Color(0xFFF8F9FC),
       appBar: AppBar(
-        // Background color is set by ProviderTheme.appBarTheme (Primary #060644)
+        backgroundColor: UserTheme.primaryColor,
+        elevation: 0,
         title: Text(
           'Confirm Booking',
           style: TextStyle(
-            color: UserTheme.onPrimaryTextColor, // Matches #FFFFFF (On Primary Text)
+            color: Colors.white,
             fontSize: 20,
             fontWeight: FontWeight.w600,
           ),
         ),
-        elevation: 0,
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white),
+          onPressed: () => Navigator.pop(context),
+        ),
       ),
-      body: Stack(
-        children: [
-          Form(
-            key: _formKey,
-            child: SingleChildScrollView(
-              child: Padding(
-                padding: EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Container(
-                      decoration: BoxDecoration(
-                        color: UserTheme.surfaceColor, // Matches #FFFFFF (Surface)
-                        borderRadius: BorderRadius.circular(12),
-                        boxShadow: [
-                          BoxShadow(
-                            color: UserTheme.shadowColor, // Matches #00000029 (Shadow)
-                            blurRadius: 10,
-                            offset: Offset(0, 2),
-                          ),
-                        ],
+      body: Form(
+        key: _formKey,
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildBookingSummary(),
+                SizedBox(height: 20),
+                Container(
+                  decoration: BoxDecoration(
+                    color: UserTheme.surfaceColor,
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [
+                      BoxShadow(
+                        color: UserTheme.shadowColor.withOpacity(0.1),
+                        blurRadius: 10,
+                        offset: Offset(0, 2),
                       ),
-                      padding: EdgeInsets.all(16),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Delivery Address',
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              color: UserTheme.primaryTextColor, // Matches #060644 (Primary Text)
+                    ],
+                  ),
+                  padding: EdgeInsets.all(20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Delivery Address',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: UserTheme.primaryColor,
+                        ),
+                      ),
+                      SizedBox(height: 16),
+                      _buildTextField(
+                        controller: addressController,
+                        label: 'Enter service location',
+                        icon: Icons.location_on_rounded,
+                        suffix: InkWell(
+                          onTap: _getCurrentLocation,
+                          child: Padding(
+                            padding: EdgeInsets.all(8),
+                            child: Icon(
+                              Icons.my_location_rounded,
+                              color: UserTheme.primaryColor,
+                              size: 24,
                             ),
                           ),
-                          SizedBox(height: 16),
-                          _buildTextField(
-                            controller: addressController,
-                            label: 'Enter Address',
-                            icon: Icons.location_on,
-                            suffix: TextButton.icon(
-                              onPressed: _getCurrentLocation,
-                              icon: Icon(
-                                Icons.my_location,
-                                color: UserTheme.primaryColor, // Matches #060644 (Primary)
-                              ),
-                              label: Text(
-                                '',
-                                style: TextStyle(color: UserTheme.primaryColor), // Matches #060644 (Primary)
-                              ),
-                            ),
-                            validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return 'Please enter an address';
-                              }
-                              return null;
-                            },
-                          ),
-                        ],
-                      ),
-                    ),
-                    SizedBox(height: 20),
-                    _buildPaymentSummary(),
-                    SizedBox(height: 20),
-                    _buildPaymentMethodSelector(),
-                    SizedBox(height: 24),
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        onPressed: _isAddressFilled && !isLoading
-                            ? () {
-                          setState(() => isLoading = true);
-                          if (selectedPaymentMethod == 'Cash on Delivery') {
-                            _saveBooking(null);
-                          } else {
-                            _openRazorpayCheckout();
+                        ),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please enter an address';
                           }
-                        }
-                            : null,
-                        style: Theme.of(context).elevatedButtonTheme.style?.copyWith(
-                          // Background and text colors are set by ProviderTheme.elevatedButtonTheme
-                          backgroundColor: MaterialStateProperty.resolveWith<Color>(
-                                (states) {
-                              if (states.contains(MaterialState.disabled)) {
-                                return UserTheme.disabledButtonColor; // Matches #E0E6ED (Disabled Button)
-                              }
-                              return UserTheme.defaultButtonColor; // Matches #060644 (Default Button)
-                            },
-                          ),
-                          padding: MaterialStateProperty.all(
-                            EdgeInsets.symmetric(vertical: 16),
-                          ),
-                          shape: MaterialStateProperty.all(
-                            RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                          ),
-                        ),
-                        child: isLoading
-                            ? Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            SizedBox(
-                              width: 20,
-                              height: 20,
-                              child: CircularProgressIndicator(
-                                color: UserTheme.onPrimaryTextColor, // Matches #FFFFFF (On Primary Text)
-                                strokeWidth: 2,
-                              ),
-                            ),
-                            SizedBox(width: 10),
-                            Text(
-                              'Processing...',
-                              style: TextStyle(
-                                fontSize: 16,
-                                color: UserTheme.onPrimaryTextColor, // Matches #FFFFFF (On Primary Text)
-                              ),
-                            ),
-                          ],
-                        )
-                            : Text(
-                          'Request Booking',
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: UserTheme.onPrimaryTextColor, // Matches #FFFFFF (On Primary Text)
-                          ),
-                        ),
+                          return null;
+                        },
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
+                SizedBox(height: 20),
+                _buildPaymentSummary(),
+                SizedBox(height: 20),
+                _buildPaymentMethodSelector(),
+                SizedBox(height: 30),
+              ],
             ),
           ),
-          if (isLoading)
-            Container(
-              color: UserTheme.shadowColor.withOpacity(0.3), // Matches #00000029 with opacity
-              child: Center(
-                child: CircularProgressIndicator(
-                  valueColor: AlwaysStoppedAnimation<Color>(UserTheme.primaryColor), // Matches #060644 (Primary)
-                ),
-              ),
+        ),
+      ),
+      bottomNavigationBar: SafeArea(
+        minimum: EdgeInsets.fromLTRB(16, 0, 16, 16),
+        child: ElevatedButton(
+          onPressed: _isAddressFilled && !isLoading
+              ? () {
+            setState(() => isLoading = true);
+            if (selectedPaymentMethod == 'Cash on Delivery') {
+              _saveBooking(null);
+            } else {
+              _openRazorpayCheckout();
+            }
+          }
+              : null,
+          style: ElevatedButton.styleFrom(
+            backgroundColor: _isAddressFilled
+                ? UserTheme.primaryColor
+                : UserTheme.disabledButtonColor,
+            foregroundColor: Colors.white,
+            padding: EdgeInsets.symmetric(vertical: 16),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
             ),
-        ],
+            elevation: 0,
+          ),
+          child: isLoading
+              ? SizedBox(
+            width: 20,
+            height: 20,
+            child: CircularProgressIndicator(
+              strokeWidth: 2.5,
+              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+            ),
+          )
+              : Text(
+            'Confirm Booking',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+              color: _isAddressFilled
+                  ? Colors.white
+                  : UserTheme.secondaryTextColor,
+            ),
+          ),
+        ),
       ),
     );
   }
