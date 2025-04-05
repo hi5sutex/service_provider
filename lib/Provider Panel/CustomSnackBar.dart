@@ -5,13 +5,15 @@ import 'package:service_provider/Provider%20Panel/provider_theme.dart';
 class CustomSnackBar extends StatelessWidget {
   final String message;
   final IconData? icon;
-  final String type; // 'success', 'error', etc.
+  final String type;
+  final bool isError;// 'success', 'error', etc.
 
   const CustomSnackBar({
     super.key,
     required this.message,
     this.icon,
     this.type = 'success',
+    this.isError = false,
   });
 
   @override

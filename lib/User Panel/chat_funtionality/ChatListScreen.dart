@@ -21,6 +21,12 @@ class _ChatListScreenState extends State<ChatListScreen> {
   String? currentUserEmail;
   String? currentUserId;
 
+  // Default values
+  static const String defaultProfileImage = 'https://avatar.iran.liara.run/public';
+  static const String defaultProviderName = 'Unknown Provider';
+  static const String defaultLastMessage = 'No messages yet';
+  static const String defaultTime = 'Unknown';
+
   @override
   void initState() {
     super.initState();
@@ -41,7 +47,7 @@ class _ChatListScreenState extends State<ChatListScreen> {
     final currentUser = _auth.currentUser;
     if (currentUser != null) {
       setState(() {
-        currentUserEmail = currentUser.email;
+        currentUserEmail = currentUser.email ?? 'unknown@example.com';
         currentUserId = currentUser.uid;
       });
     }
@@ -323,20 +329,20 @@ class _ChatListScreenState extends State<ChatListScreen> {
     final List<Map<String, dynamic>> chatContacts = [];
 
     for (var doc in docs) {
-      final List<dynamic> participants = doc['participants'];
+      final List<dynamic> participants = doc['participants'] ?? [];
       final String providerEmail = participants
           .map((e) => e.toString())
-          .firstWhere((email) => email != currentUserEmail);
+          .firstWhere((email) => email != currentUserEmail, orElse: () => 'unknown@example.com');
 
       if (uniqueProviderEmails.add(providerEmail)) {
         final timestamp = doc['timestamp'] as Timestamp?;
         chatContacts.add({
           'email': providerEmail,
-          'chatRoomId': doc.id,
-          'lastMessage': doc['lastMessage'] ?? 'No messages yet',
+          'chatRoomId': doc.id ?? 'unknown_chatroom',
+          'lastMessage': doc['lastMessage'] as String? ?? defaultLastMessage,
           'timestamp': timestamp,
           'unreadCount': doc['unreadCounts'] != null
-              ? (doc['unreadCounts'][currentUserId] ?? 0)
+              ? (doc['unreadCounts'][currentUserId] as int? ?? 0)
               : 0,
         });
       }
@@ -358,19 +364,19 @@ class _ChatListScreenState extends State<ChatListScreen> {
       stream: _firestore
           .collection('providers')
           .doc(contact['chatRoomId']
-              .split('-')
-              .firstWhere((id) => id != currentUserId))
+          .split('-')
+          .firstWhere((id) => id != currentUserId, orElse: () => ''))
           .snapshots(),
       builder: (context, userSnapshot) {
-        String providerName = 'Provider';
+        String providerName = defaultProviderName;
         String providerId = '';
-        String profileImage = 'https://avatar.iran.liara.run/public';
+        String profileImage = defaultProfileImage;
 
         if (userSnapshot.hasData && userSnapshot.data!.exists) {
-          final userData = userSnapshot.data!.data() as Map<String, dynamic>;
-          providerName = userData['name'] ?? 'Provider';
-          providerId = userSnapshot.data!.id;
-          profileImage = userData['profileImage'] ?? profileImage;
+          final userData = userSnapshot.data!.data() as Map<String, dynamic>? ?? {};
+          providerName = userData['name'] as String? ?? defaultProviderName;
+          providerId = userSnapshot.data!.id ?? '';
+          profileImage = userData['profileImage'] as String? ?? defaultProfileImage;
         }
 
         return _ChatListItem(
@@ -382,7 +388,7 @@ class _ChatListScreenState extends State<ChatListScreen> {
           lastMessage: contact['lastMessage'],
           time: contact['timestamp'] != null
               ? _formatTimeAgo(contact['timestamp'].toDate())
-              : 'Unknown',
+              : defaultTime,
           unreadCount: contact['unreadCount'],
           onTap: () => _navigateToChat(
             context,
@@ -408,12 +414,12 @@ class _ChatListScreenState extends State<ChatListScreen> {
   }
 
   void _navigateToChat(
-    BuildContext context,
-    String chatRoomId,
-    String receiverId,
-    String receiverEmail,
-    String providerName,
-  ) {
+      BuildContext context,
+      String chatRoomId,
+      String receiverId,
+      String receiverEmail,
+      String providerName,
+      ) {
     if (currentUserId == null || currentUserEmail == null) return;
 
     final parts = chatRoomId.split('-');
@@ -479,8 +485,8 @@ class _ChatListItem extends StatelessWidget {
             ],
             border: unreadCount > 0
                 ? Border.all(
-                    color: ProviderTheme.primaryColor.withOpacity(0.2),
-                    width: 1.5)
+                color: ProviderTheme.primaryColor.withOpacity(0.2),
+                width: 1.5)
                 : Border.all(color: Colors.transparent),
           ),
           child: Row(
@@ -523,6 +529,7 @@ class _ChatListItem extends StatelessWidget {
             radius: 28,
             backgroundImage: CachedNetworkImageProvider(profileImage),
             backgroundColor: ProviderTheme.primaryColor.withOpacity(0.1),
+            onBackgroundImageError: (_, __) => const Icon(Icons.person),
           ),
         ),
         if (unreadCount > 0)

@@ -25,6 +25,12 @@ class _ProviderChatListScreenState extends State<ProviderChatListScreen> {
   List<Map<String, dynamic>> _filteredChatContacts = [];
   List<Map<String, dynamic>> _allChatContacts = [];
 
+  // Default values
+  static const String defaultProfileImage = 'https://avatar.iran.liara.run/public';
+  static const String defaultUserName = 'Unknown User';
+  static const String defaultLastMessage = 'No messages yet';
+  static const String defaultTime = 'Unknown';
+
   @override
   void initState() {
     super.initState();
@@ -34,7 +40,7 @@ class _ProviderChatListScreenState extends State<ProviderChatListScreen> {
     ));
     final currentUser = _auth.currentUser;
     if (currentUser != null) {
-      currentProviderEmail = currentUser.email;
+      currentProviderEmail = currentUser.email ?? 'unknown@example.com';
       currentProviderId = currentUser.uid;
       _fetchProviderName();
     }
@@ -56,7 +62,11 @@ class _ProviderChatListScreenState extends State<ProviderChatListScreen> {
       final providerDoc = await _firestore.collection('providers').doc(currentProviderId).get();
       if (providerDoc.exists) {
         setState(() {
-          currentProviderName = providerDoc['name'] ?? 'Unknown Provider';
+          currentProviderName = providerDoc['name'] as String? ?? 'Unknown Provider';
+        });
+      } else {
+        setState(() {
+          currentProviderName = 'Unknown Provider';
         });
       }
     }
@@ -70,8 +80,8 @@ class _ProviderChatListScreenState extends State<ProviderChatListScreen> {
       } else {
         _filteredChatContacts = _allChatContacts
             .where((contact) =>
-        contact['userName'].toLowerCase().contains(query) ||
-            contact['email'].toLowerCase().contains(query))
+        (contact['userName'] as String? ?? defaultUserName).toLowerCase().contains(query) ||
+            (contact['email'] as String? ?? '').toLowerCase().contains(query))
             .toList();
       }
     });
@@ -180,24 +190,21 @@ class _ProviderChatListScreenState extends State<ProviderChatListScreen> {
                 _allChatContacts.clear();
 
                 for (var doc in snapshot.data!.docs) {
-                  final List<dynamic> participants = doc['participants'];
+                  final List<dynamic> participants = doc['participants'] ?? [];
                   final String userEmail = participants
                       .map((e) => e.toString())
-                      .firstWhere((email) => email != currentProviderEmail);
+                      .firstWhere((email) => email != currentProviderEmail,
+                      orElse: () => 'unknown@example.com');
 
                   if (uniqueUserEmails.add(userEmail)) {
                     final timestamp = doc['timestamp'] as Timestamp?;
-                    final String timeAgo = timestamp != null
-                        ? _formatTimeAgo(timestamp.toDate())
-                        : 'Unknown';
-
                     _allChatContacts.add({
                       'email': userEmail,
-                      'chatRoomId': doc.id,
-                      'lastMessage': doc['lastMessage'] ?? 'No messages yet',
+                      'chatRoomId': doc.id ?? 'unknown_chatroom',
+                      'lastMessage': doc['lastMessage'] as String? ?? defaultLastMessage,
                       'timestamp': timestamp,
                       'unreadCount': doc['unreadCounts'] != null
-                          ? (doc['unreadCounts'][currentProviderId] ?? 0)
+                          ? (doc['unreadCounts'][currentProviderId] as int? ?? 0)
                           : 0,
                     });
                   }
@@ -226,18 +233,21 @@ class _ProviderChatListScreenState extends State<ProviderChatListScreen> {
                       return StreamBuilder<DocumentSnapshot>(
                         stream: _firestore
                             .collection('users')
-                            .doc(contact['chatRoomId'].split('-').firstWhere((id) => id != currentProviderId))
+                            .doc(contact['chatRoomId'].split('-').firstWhere(
+                                (id) => id != currentProviderId,
+                            orElse: () => ''))
                             .snapshots(),
                         builder: (context, userSnapshot) {
-                          String userName = 'Unknown User';
+                          String userName = defaultUserName;
                           String userId = '';
-                          String profileImage = 'https://avatar.iran.liara.run/public';
+                          String profileImage = defaultProfileImage;
 
                           if (userSnapshot.hasData && userSnapshot.data!.exists) {
                             final userDoc = userSnapshot.data!;
-                            userName = userDoc['name'] ?? 'Unknown User';
-                            userId = userDoc.id;
-                            profileImage = userDoc['profileImage'] ?? profileImage;
+                            final userData = userDoc.data() as Map<String, dynamic>? ?? {};
+                            userName = userData['name'] as String? ?? defaultUserName;
+                            userId = userDoc.id ?? '';
+                            profileImage = userData['profileImage'] as String? ?? defaultProfileImage;
                           }
 
                           return buildChatListItem(
@@ -249,7 +259,7 @@ class _ProviderChatListScreenState extends State<ProviderChatListScreen> {
                             lastMessage: contact['lastMessage'],
                             time: contact['timestamp'] != null
                                 ? _formatTimeAgo(contact['timestamp'].toDate())
-                                : 'Unknown',
+                                : defaultTime,
                             unreadCount: contact['unreadCount'],
                           );
                         },
@@ -297,6 +307,7 @@ class _ProviderChatListScreenState extends State<ProviderChatListScreen> {
               radius: 30,
               backgroundImage: CachedNetworkImageProvider(profileImage),
               backgroundColor: ProviderTheme.primaryColor.withOpacity(0.1),
+              onBackgroundImageError: (_, __) => const Icon(Icons.person),
             ),
             const SizedBox(width: 16),
             Expanded(
@@ -323,7 +334,7 @@ class _ProviderChatListScreenState extends State<ProviderChatListScreen> {
                             border: Border.all(color: ProviderTheme.surfaceColor, width: 2),
                           ),
                           child: Text(
-                            unreadCount.toString(),
+                            unreadCount > 9 ? '9+' : unreadCount.toString(),
                             style: Theme.of(context).textTheme.labelLarge!.copyWith(
                               color: ProviderTheme.onPrimaryTextColor,
                               fontSize: 12,

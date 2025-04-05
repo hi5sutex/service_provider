@@ -20,7 +20,8 @@ class ProviderTheme {
   static const Color confirmedColor = Color(0xFF0288D1); // Light Blue (new)
   static const Color ongoingColor = Color(0xFF7B1FA2); // Deep Purple
   static const Color completedColor = Color(0xFF388E3C); // Forest Green
-  static const Color canceledColor = Color(0xFFD32F2F); // Red
+  static const Color canceledColor = Color(0xFFD32F2F);
+  static const Color errorColor = Color(0xFFD32F2F);// Red
 
   // Button Colors
   static const Color defaultButtonColor = Color(0xFF060644); // Dark Navy Blue
