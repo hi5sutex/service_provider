@@ -5,13 +5,11 @@ import 'package:pie_chart/pie_chart.dart' as PieChartLib;
 import 'package:fl_chart/fl_chart.dart' as FlChartLib;
 import 'package:service_provider/Admin%20Panel/screens/PendingServicesScreen.dart';
 import 'package:service_provider/Admin%20Panel/screens/bookings_screen.dart';
-import 'package:service_provider/Admin%20Panel/screens/payments_screen.dart';
 import 'package:service_provider/Admin%20Panel/screens/users_screen.dart';
 import 'package:service_provider/Admin%20Panel/screens/providers_screen.dart';
 import 'package:service_provider/Admin%20Panel/screens/services_screen.dart';
 import 'package:service_provider/Admin%20Panel/screens/manage_categories.dart';
 import 'package:intl/intl.dart';
-import 'dart:math' as math;
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({Key? key}) : super(key: key);
@@ -37,18 +35,25 @@ class _DashboardScreenState extends State<DashboardScreen> {
     Color(0xFF607D8B),
   ];
 
-  static final currencyFormat = NumberFormat.currency(locale: 'en_US', symbol: '\$');
+
   static final monthFormat = DateFormat('MMM');
 
   Future<Map<String, dynamic>> fetchDashboardData() async {
-    final usersSnapshot = await FirebaseFirestore.instance.collection('users').get();
-    final providersSnapshot = await FirebaseFirestore.instance.collection('providers').get();
-    final servicesSnapshot = await FirebaseFirestore.instance.collection('services').get();
-    final pendingServicesSnapshot = await FirebaseFirestore.instance.collection('pending_services').get();
-    final bookingsSnapshot = await FirebaseFirestore.instance.collection('bookings').get();
-    final categoriesSnapshot = await FirebaseFirestore.instance.collection('categories').get();
+    final usersSnapshot =
+        await FirebaseFirestore.instance.collection('users').get();
+    final providersSnapshot =
+        await FirebaseFirestore.instance.collection('providers').get();
+    final servicesSnapshot =
+        await FirebaseFirestore.instance.collection('services').get();
+    final pendingServicesSnapshot =
+        await FirebaseFirestore.instance.collection('pending_services').get();
+    final bookingsSnapshot =
+        await FirebaseFirestore.instance.collection('bookings').get();
+    final categoriesSnapshot =
+        await FirebaseFirestore.instance.collection('categories').get();
 
-    Map<String, dynamic> processGrowthData(List<QueryDocumentSnapshot> docs, String dateField) {
+    Map<String, dynamic> processGrowthData(
+        List<QueryDocumentSnapshot> docs, String dateField) {
       final Map<String, int> countByMonthYear = {};
       String? firstYear;
 
@@ -58,9 +63,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
           final timestamp = data[dateField] as Timestamp?;
           if (timestamp != null) {
             try {
-              final date = DateTime.fromMillisecondsSinceEpoch(timestamp.millisecondsSinceEpoch);
-              final monthYear = "${date.year}-${date.month.toString().padLeft(2, '0')}";
-              countByMonthYear[monthYear] = (countByMonthYear[monthYear] ?? 0) + 1;
+              final date = DateTime.fromMillisecondsSinceEpoch(
+                  timestamp.millisecondsSinceEpoch);
+              final monthYear =
+                  "${date.year}-${date.month.toString().padLeft(2, '0')}";
+              countByMonthYear[monthYear] =
+                  (countByMonthYear[monthYear] ?? 0) + 1;
               firstYear ??= date.year.toString();
             } catch (e) {
               print("Error parsing timestamp for doc ${doc.id}: $e");
@@ -84,7 +92,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
       };
     }
 
-    Map<String, int> processCategoryData(List<QueryDocumentSnapshot> docs, String categoryField) {
+    Map<String, int> processCategoryData(
+        List<QueryDocumentSnapshot> docs, String categoryField) {
       final Map<String, int> countByCategory = {};
       for (var doc in docs) {
         final category = doc[categoryField] as String? ?? 'Uncategorized';
@@ -94,21 +103,29 @@ class _DashboardScreenState extends State<DashboardScreen> {
     }
 
     List<Map<String, dynamic>> processTopServices(
-        List<QueryDocumentSnapshot> bookingDocs, List<QueryDocumentSnapshot> serviceDocs) {
+        List<QueryDocumentSnapshot> bookingDocs,
+        List<QueryDocumentSnapshot> serviceDocs) {
       final Map<String, int> bookingsByService = {};
       for (var doc in bookingDocs) {
         final serviceId = doc['serviceId'] as String?;
         if (serviceId != null) {
-          bookingsByService[serviceId] = (bookingsByService[serviceId] ?? 0) + 1;
+          bookingsByService[serviceId] =
+              (bookingsByService[serviceId] ?? 0) + 1;
         }
       }
-      final serviceNames = {for (var doc in serviceDocs) doc.id: doc['name'] as String? ?? 'Unknown'};
-      final sortedServices = bookingsByService.entries.toList()..sort((a, b) => b.value.compareTo(a.value));
-      return sortedServices.take(8).map((entry) => {
-        'serviceId': entry.key,
-        'name': serviceNames[entry.key] ?? 'Unknown',
-        'bookings': entry.value,
-      }).toList();
+      final serviceNames = {
+        for (var doc in serviceDocs) doc.id: doc['name'] as String? ?? 'Unknown'
+      };
+      final sortedServices = bookingsByService.entries.toList()
+        ..sort((a, b) => b.value.compareTo(a.value));
+      return sortedServices
+          .take(8)
+          .map((entry) => {
+                'serviceId': entry.key,
+                'name': serviceNames[entry.key] ?? 'Unknown',
+                'bookings': entry.value,
+              })
+          .toList();
     }
 
     Map<String, int> processBookingStatuses(List<QueryDocumentSnapshot> docs) {
@@ -121,7 +138,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
     }
 
     final userGrowthData = processGrowthData(usersSnapshot.docs, 'createdAt');
-    final providerGrowthData = processGrowthData(providersSnapshot.docs, 'createdAt');
+    final providerGrowthData =
+        processGrowthData(providersSnapshot.docs, 'createdAt');
 
     return {
       'totalUsers': usersSnapshot.docs.length,
@@ -142,10 +160,19 @@ class _DashboardScreenState extends State<DashboardScreen> {
     };
   }
 
-  void navigateOrShowMessage(BuildContext context, String title, Widget Function() screenBuilder) {
-    final allowedItems = ['Users', 'Providers', 'Services', 'Bookings', 'Revenue', 'Manage Categories'];
+  void navigateOrShowMessage(
+      BuildContext context, String title, Widget Function() screenBuilder) {
+    final allowedItems = [
+      'Users',
+      'Providers',
+      'Services',
+      'Bookings',
+      'Revenue',
+      'Manage Categories'
+    ];
     if (allowedItems.contains(title)) {
-      Navigator.push(context, MaterialPageRoute(builder: (_) => screenBuilder()));
+      Navigator.push(
+          context, MaterialPageRoute(builder: (_) => screenBuilder()));
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("You don't have permission to access $title.")),
@@ -179,12 +206,26 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 children: [
                   _buildStatCards(data, context),
                   const SizedBox(height: 24),
-                  _buildChartSection("User Growth", _buildUserGrowthChart(data['userGrowth'], data['userGrowthYear'])),
-                  _buildChartSection("Provider Growth", _buildProviderGrowthChart(data['providerGrowth'], data['providerGrowthYear'])),
-                  _buildChartSection("Services by Category", _buildServicesByCategoryChart(data['servicesByCategory'])),
-                  _buildChartSection("Pending Services", _buildPendingServicesByCategoryChart(data['pendingServicesByCategory'])),
-                  _buildChartSection("Top Services", _buildTopServicesChart(data['topServices'])),
-                  _buildChartSection("Booking Statuses", _buildBookingStatusesChart(data['bookingStatuses'])),
+                  _buildChartSection(
+                      "User Growth",
+                      _buildUserGrowthChart(
+                          data['userGrowth'], data['userGrowthYear'])),
+                  _buildChartSection(
+                      "Provider Growth",
+                      _buildProviderGrowthChart(
+                          data['providerGrowth'], data['providerGrowthYear'])),
+                  _buildChartSection(
+                      "Services by Category",
+                      _buildServicesByCategoryChart(
+                          data['servicesByCategory'])),
+                  _buildChartSection(
+                      "Pending Services",
+                      _buildPendingServicesByCategoryChart(
+                          data['pendingServicesByCategory'])),
+                  _buildChartSection("Top Services",
+                      _buildTopServicesChart(data['topServices'])),
+                  _buildChartSection("Booking Statuses",
+                      _buildBookingStatusesChart(data['bookingStatuses'])),
                 ],
               );
             },
@@ -199,38 +240,97 @@ class _DashboardScreenState extends State<DashboardScreen> {
       children: [
         Row(
           children: [
-            Expanded(child: _buildStatCard("Users", "${data['totalUsers']}", Icons.group, chartColors[0], context, () => navigateOrShowMessage(context, "Users", () => UsersScreen()))),
+            Expanded(
+                child: _buildStatCard(
+                    "Users",
+                    "${data['totalUsers']}",
+                    Icons.group,
+                    chartColors[0],
+                    context,
+                    () => navigateOrShowMessage(
+                        context, "Users", () => UsersScreen()))),
             const SizedBox(width: 10),
-            Expanded(child: _buildStatCard("Providers", "${data['totalProviders']}", Icons.work, chartColors[1], context, () => navigateOrShowMessage(context, "Providers", () => ProvidersScreen()))),
+            Expanded(
+                child: _buildStatCard(
+                    "Providers",
+                    "${data['totalProviders']}",
+                    Icons.work,
+                    chartColors[1],
+                    context,
+                    () => navigateOrShowMessage(
+                        context, "Providers", () => ProvidersScreen()))),
           ],
         ),
         const SizedBox(height: 10),
         Row(
           children: [
-            Expanded(child: _buildStatCard("Services", "${data['totalServices']}", Icons.build, chartColors[2], context, () => navigateOrShowMessage(context, "Services", () => ServicesScreen()))),
+            Expanded(
+                child: _buildStatCard(
+                    "Services",
+                    "${data['totalServices']}",
+                    Icons.build,
+                    chartColors[2],
+                    context,
+                    () => navigateOrShowMessage(
+                        context, "Services", () => ServicesScreen()))),
             const SizedBox(width: 10),
-            Expanded(child: _buildStatCard("Pending", "${data['totalPendingServices']}", Icons.hourglass_empty, chartColors[3], context, () => Navigator.push(context, MaterialPageRoute(builder: (_) => PendingServicesScreen())))),
+            Expanded(
+                child: _buildStatCard(
+                    "Pending",
+                    "${data['totalPendingServices']}",
+                    Icons.hourglass_empty,
+                    chartColors[3],
+                    context,
+                    () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (_) => PendingServicesScreen())))),
           ],
         ),
         const SizedBox(height: 10),
         Row(
           children: [
-            Expanded(child: _buildStatCard("Bookings", "${data['totalBookings']}", Icons.event, chartColors[4], context, () => navigateOrShowMessage(context, "Bookings", () => BookingsScreen()))),
+            Expanded(
+                child: _buildStatCard(
+                    "Bookings",
+                    "${data['totalBookings']}",
+                    Icons.event,
+                    chartColors[4],
+                    context,
+                    () => navigateOrShowMessage(
+                        context, "Bookings", () => BookingsScreen()))),
             const SizedBox(width: 10),
-            Expanded(child: _buildStatCard("Completed", "${data['completedBookings']}", Icons.check_circle, chartColors[5], context, () => navigateOrShowMessage(context, "Bookings", () => BookingsScreen()))),
+            Expanded(
+                child: _buildStatCard(
+                    "Completed",
+                    "${data['completedBookings']}",
+                    Icons.check_circle,
+                    chartColors[5],
+                    context,
+                    () => navigateOrShowMessage(
+                        context, "Bookings", () => BookingsScreen()))),
           ],
         ),
         const SizedBox(height: 10),
         Row(
           children: [
-            Expanded(child: _buildStatCard("Categories", "${data['totalCategories']}", Icons.category, chartColors[6], context, () => navigateOrShowMessage(context, "Manage Categories", () => ManageCategoriesScreen()))),
+            Expanded(
+                child: _buildStatCard(
+                    "Categories",
+                    "${data['totalCategories']}",
+                    Icons.category,
+                    chartColors[6],
+                    context,
+                    () => navigateOrShowMessage(context, "Manage Categories",
+                        () => ManageCategoriesScreen()))),
           ],
         ),
       ],
     );
   }
 
-  Widget _buildStatCard(String title, String value, IconData icon, Color color, BuildContext context, VoidCallback onTap) {
+  Widget _buildStatCard(String title, String value, IconData icon, Color color,
+      BuildContext context, VoidCallback onTap) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -239,7 +339,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
           color: secondaryColor,
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
-            BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 4)),
+            BoxShadow(
+                color: Colors.black.withOpacity(0.05),
+                blurRadius: 10,
+                offset: const Offset(0, 4)),
           ],
         ),
         child: Column(
@@ -312,9 +415,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  Widget _buildUserGrowthChart(List<Map<String, dynamic>> userGrowth, String year) {
+  Widget _buildUserGrowthChart(
+      List<Map<String, dynamic>> userGrowth, String year) {
     if (userGrowth.isEmpty) return _buildEmptyChart();
-    final maxCount = userGrowth.map((e) => e['count'] as num).reduce((a, b) => a > b ? a : b).toDouble();
+    final maxCount = userGrowth
+        .map((e) => e['count'] as num)
+        .reduce((a, b) => a > b ? a : b)
+        .toDouble();
 
     return Column(
       children: [
@@ -339,7 +446,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     FlChartLib.BarChartRodData(
                       toY: data['count'].toDouble(),
                       gradient: LinearGradient(
-                        colors: [chartColors[0], chartColors[0].withOpacity(0.7)],
+                        colors: [
+                          chartColors[0],
+                          chartColors[0].withOpacity(0.7)
+                        ],
                         begin: Alignment.bottomCenter,
                         end: Alignment.topCenter,
                       ),
@@ -354,7 +464,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   sideTitles: FlChartLib.SideTitles(
                     showTitles: true,
                     reservedSize: 40,
-                    getTitlesWidget: (value, meta) => _monthTitles(value, meta, userGrowth),
+                    getTitlesWidget: (value, meta) =>
+                        _monthTitles(value, meta, userGrowth),
                   ),
                 ),
                 leftTitles: FlChartLib.AxisTitles(
@@ -365,8 +476,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     interval: maxCount / 5,
                   ),
                 ),
-                topTitles: const FlChartLib.AxisTitles(sideTitles: FlChartLib.SideTitles(showTitles: false)),
-                rightTitles: const FlChartLib.AxisTitles(sideTitles: FlChartLib.SideTitles(showTitles: false)),
+                topTitles: const FlChartLib.AxisTitles(
+                    sideTitles: FlChartLib.SideTitles(showTitles: false)),
+                rightTitles: const FlChartLib.AxisTitles(
+                    sideTitles: FlChartLib.SideTitles(showTitles: false)),
               ),
               gridData: FlChartLib.FlGridData(
                 show: true,
@@ -384,10 +497,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   tooltipRoundedRadius: 8,
                   getTooltipItem: (group, groupIndex, rod, rodIndex) {
                     final monthData = userGrowth[group.x.toInt()];
-                    final monthName = monthFormat.format(DateTime(monthData['year'], monthData['month']));
+                    final monthName = monthFormat.format(
+                        DateTime(monthData['year'], monthData['month']));
                     return FlChartLib.BarTooltipItem(
                       '$monthName\n${rod.toY.toInt()} Users',
-                      const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w600),
+                      const TextStyle(
+                          color: Colors.white,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600),
                     );
                   },
                 ),
@@ -399,9 +516,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  Widget _buildProviderGrowthChart(List<Map<String, dynamic>> providerGrowth, String year) {
+  Widget _buildProviderGrowthChart(
+      List<Map<String, dynamic>> providerGrowth, String year) {
     if (providerGrowth.isEmpty) return _buildEmptyChart();
-    final maxCount = providerGrowth.map((e) => e['count'] as num).reduce((a, b) => a > b ? a : b).toDouble();
+    final maxCount = providerGrowth
+        .map((e) => e['count'] as num)
+        .reduce((a, b) => a > b ? a : b)
+        .toDouble();
 
     return Column(
       children: [
@@ -426,7 +547,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     FlChartLib.BarChartRodData(
                       toY: data['count'].toDouble(),
                       gradient: LinearGradient(
-                        colors: [chartColors[1], chartColors[1].withOpacity(0.7)],
+                        colors: [
+                          chartColors[1],
+                          chartColors[1].withOpacity(0.7)
+                        ],
                         begin: Alignment.bottomCenter,
                         end: Alignment.topCenter,
                       ),
@@ -441,7 +565,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   sideTitles: FlChartLib.SideTitles(
                     showTitles: true,
                     reservedSize: 40,
-                    getTitlesWidget: (value, meta) => _monthTitles(value, meta, providerGrowth),
+                    getTitlesWidget: (value, meta) =>
+                        _monthTitles(value, meta, providerGrowth),
                   ),
                 ),
                 leftTitles: FlChartLib.AxisTitles(
@@ -452,8 +577,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     interval: maxCount / 5,
                   ),
                 ),
-                topTitles: const FlChartLib.AxisTitles(sideTitles: FlChartLib.SideTitles(showTitles: false)),
-                rightTitles: const FlChartLib.AxisTitles(sideTitles: FlChartLib.SideTitles(showTitles: false)),
+                topTitles: const FlChartLib.AxisTitles(
+                    sideTitles: FlChartLib.SideTitles(showTitles: false)),
+                rightTitles: const FlChartLib.AxisTitles(
+                    sideTitles: FlChartLib.SideTitles(showTitles: false)),
               ),
               gridData: FlChartLib.FlGridData(
                 show: true,
@@ -471,10 +598,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   tooltipRoundedRadius: 8,
                   getTooltipItem: (group, groupIndex, rod, rodIndex) {
                     final monthData = providerGrowth[group.x.toInt()];
-                    final monthName = monthFormat.format(DateTime(monthData['year'], monthData['month']));
+                    final monthName = monthFormat.format(
+                        DateTime(monthData['year'], monthData['month']));
                     return FlChartLib.BarTooltipItem(
                       '$monthName\n${rod.toY.toInt()} Providers',
-                      const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w600),
+                      const TextStyle(
+                          color: Colors.white,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600),
                     );
                   },
                 ),
@@ -493,7 +624,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
     final sortedCategories = servicesByCategory.entries.toList()
       ..sort((a, b) => b.value.compareTo(a.value));
 
-    final List<Map<String, dynamic>> categoryData = sortedCategories.asMap().entries.map((entry) {
+    final List<Map<String, dynamic>> categoryData =
+        sortedCategories.asMap().entries.map((entry) {
       final index = entry.key;
       final category = entry.value;
       final percentage = (category.value / totalServices * 100).toInt();
@@ -506,7 +638,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
     }).toList();
 
     return PieChartLib.PieChart(
-      dataMap: Map.fromEntries(categoryData.map((e) => MapEntry(e['name'], e['count'].toDouble()))),
+      dataMap: Map.fromEntries(
+          categoryData.map((e) => MapEntry(e['name'], e['count'].toDouble()))),
       animationDuration: const Duration(milliseconds: 800),
       chartLegendSpacing: 32,
       colorList: categoryData.map((e) => e['color'] as Color).toList(),
@@ -543,14 +676,17 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  Widget _buildPendingServicesByCategoryChart(Map<String, int> pendingServicesByCategory) {
+  Widget _buildPendingServicesByCategoryChart(
+      Map<String, int> pendingServicesByCategory) {
     if (pendingServicesByCategory.isEmpty) return _buildEmptyChart();
 
-    final totalPending = pendingServicesByCategory.values.reduce((a, b) => a + b);
+    final totalPending =
+        pendingServicesByCategory.values.reduce((a, b) => a + b);
     final sortedCategories = pendingServicesByCategory.entries.toList()
       ..sort((a, b) => b.value.compareTo(a.value));
 
-    final List<Map<String, dynamic>> categoryData = sortedCategories.asMap().entries.map((entry) {
+    final List<Map<String, dynamic>> categoryData =
+        sortedCategories.asMap().entries.map((entry) {
       final index = entry.key;
       final category = entry.value;
       final percentage = (category.value / totalPending * 100).toInt();
@@ -563,7 +699,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
     }).toList();
 
     return PieChartLib.PieChart(
-      dataMap: Map.fromEntries(categoryData.map((e) => MapEntry(e['name'], e['count'].toDouble()))),
+      dataMap: Map.fromEntries(
+          categoryData.map((e) => MapEntry(e['name'], e['count'].toDouble()))),
       animationDuration: const Duration(milliseconds: 800),
       chartLegendSpacing: 32,
       colorList: categoryData.map((e) => e['color'] as Color).toList(),
@@ -602,7 +739,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   Widget _buildTopServicesChart(List<Map<String, dynamic>> topServices) {
     if (topServices.isEmpty) return _buildEmptyChart();
-    final maxBookings = topServices.map((e) => e['bookings'] as num).reduce((a, b) => a > b ? a : b).toDouble();
+    final maxBookings = topServices
+        .map((e) => e['bookings'] as num)
+        .reduce((a, b) => a > b ? a : b)
+        .toDouble();
 
     return Column(
       children: [
@@ -620,7 +760,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     FlChartLib.BarChartRodData(
                       toY: service['bookings'].toDouble(),
                       gradient: LinearGradient(
-                        colors: [chartColors[index % chartColors.length], chartColors[index % chartColors.length].withOpacity(0.7)],
+                        colors: [
+                          chartColors[index % chartColors.length],
+                          chartColors[index % chartColors.length]
+                              .withOpacity(0.7)
+                        ],
                         begin: Alignment.bottomCenter,
                         end: Alignment.topCenter,
                       ),
@@ -641,8 +785,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     getTitlesWidget: _numberTitles,
                   ),
                 ),
-                topTitles: FlChartLib.AxisTitles(sideTitles: FlChartLib.SideTitles(showTitles: false)),
-                rightTitles: FlChartLib.AxisTitles(sideTitles: FlChartLib.SideTitles(showTitles: false)),
+                topTitles: FlChartLib.AxisTitles(
+                    sideTitles: FlChartLib.SideTitles(showTitles: false)),
+                rightTitles: FlChartLib.AxisTitles(
+                    sideTitles: FlChartLib.SideTitles(showTitles: false)),
               ),
               gridData: FlChartLib.FlGridData(
                 show: true,
@@ -662,7 +808,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     final service = topServices[group.x.toInt()];
                     return FlChartLib.BarTooltipItem(
                       '${service['name']}\n${rod.toY.toInt()} Bookings',
-                      const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w600),
+                      const TextStyle(
+                          color: Colors.white,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600),
                     );
                   },
                 ),
@@ -726,7 +875,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   Widget _buildBookingStatusesChart(Map<String, int> bookingStatuses) {
     if (bookingStatuses.isEmpty) return _buildEmptyChart();
-    final dataMap = bookingStatuses.map((key, value) => MapEntry(key, value.toDouble()));
+    final dataMap =
+        bookingStatuses.map((key, value) => MapEntry(key, value.toDouble()));
 
     return PieChartLib.PieChart(
       dataMap: dataMap,
@@ -775,7 +925,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
           const SizedBox(height: 16),
           Text(
             'No data available',
-            style: TextStyle(color: primaryColor.withOpacity(0.7), fontSize: 16),
+            style:
+                TextStyle(color: primaryColor.withOpacity(0.7), fontSize: 16),
           ),
         ],
       ),
@@ -799,7 +950,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
             onPressed: () => setState(() {}),
             style: ElevatedButton.styleFrom(
               backgroundColor: accentColor,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8)),
             ),
             child: const Text('Retry'),
           ),
@@ -855,16 +1007,18 @@ class _DashboardScreenState extends State<DashboardScreen> {
               Expanded(child: _buildShimmerCard()),
             ]),
             const SizedBox(height: 24),
-            ...List.generate(6, (_) => Padding(
-              padding: const EdgeInsets.only(bottom: 16),
-              child: Container(
-                height: 300,
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-            )),
+            ...List.generate(
+                6,
+                (_) => Padding(
+                      padding: const EdgeInsets.only(bottom: 16),
+                      child: Container(
+                        height: 300,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                    )),
           ],
         ),
       ),
@@ -881,11 +1035,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  static Widget _monthTitles(double value, FlChartLib.TitleMeta meta, List<Map<String, dynamic>> data) {
+  static Widget _monthTitles(double value, FlChartLib.TitleMeta meta,
+      List<Map<String, dynamic>> data) {
     final index = value.toInt();
     if (index >= 0 && index < data.length) {
       final monthData = data[index];
-      final monthName = monthFormat.format(DateTime(monthData['year'], monthData['month']));
+      final monthName =
+          monthFormat.format(DateTime(monthData['year'], monthData['month']));
       return Padding(
         padding: const EdgeInsets.only(top: 8),
         child: Text(

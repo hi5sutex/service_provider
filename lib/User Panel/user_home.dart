@@ -3,24 +3,20 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/services.dart';
-import 'package:hive_flutter/hive_flutter.dart';
 import 'package:flutter/foundation.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:shimmer/shimmer.dart';
+import 'package:carousel_slider/carousel_slider.dart';
 import 'package:service_provider/User%20Panel/provider_services_page.dart';
 import 'package:service_provider/User%20Panel/subcategories_list.dart';
 import 'package:service_provider/User%20Panel/user_profile.dart';
-import 'package:service_provider/User%20Panel/user_setting.dart';
 import 'package:service_provider/User%20Panel/service_details_screen.dart';
 import 'package:service_provider/User%20Panel/Usertheme.dart';
-
-
 
 class UserHome extends StatefulWidget {
   @override
   _UserHomeState createState() => _UserHomeState();
-
 }
 
 class _UserHomeState extends State<UserHome> with AutomaticKeepAliveClientMixin {
@@ -36,9 +32,7 @@ class _UserHomeState extends State<UserHome> with AutomaticKeepAliveClientMixin 
   Timer? _searchDebounceTimer;
   bool _isLoadingServices = false;
   bool _isLoadingCategories = true;
-  bool _isLoadingProviders = true;
-  bool _isLoadingPopularServices = true;
-
+  bool _isLoadingBanners = true; // New flag for banner loading
 
   Future<String> getUserName() async {
     try {
@@ -103,8 +97,6 @@ class _UserHomeState extends State<UserHome> with AutomaticKeepAliveClientMixin 
 
     _searchDebounceTimer?.cancel();
 
-
-
     try {
       QuerySnapshot snapshot = await FirebaseFirestore.instance
           .collection('services')
@@ -129,7 +121,7 @@ class _UserHomeState extends State<UserHome> with AutomaticKeepAliveClientMixin 
       setState(() => _isLoadingServices = true);
       QuerySnapshot snapshot = await FirebaseFirestore.instance
           .collection('services')
-          .limit(50) // Initial batch
+          .limit(50)
           .get();
 
       setState(() {
@@ -138,7 +130,6 @@ class _UserHomeState extends State<UserHome> with AutomaticKeepAliveClientMixin 
             .toList();
       });
 
-      // Load more in background
       _loadMoreServices();
     } catch (e) {
       print('Error prefetching services: $e');
@@ -154,7 +145,7 @@ class _UserHomeState extends State<UserHome> with AutomaticKeepAliveClientMixin 
       QuerySnapshot snapshot = await FirebaseFirestore.instance
           .collection('services')
           .startAfterDocument(_allServices.last as DocumentSnapshot<Object?>)
-          .limit(50) // Next batch
+          .limit(50)
           .get();
 
       setState(() {
@@ -165,8 +156,6 @@ class _UserHomeState extends State<UserHome> with AutomaticKeepAliveClientMixin 
       print('Error loading more services: $e');
     }
   }
-
-
 
   @override
   void initState() {
@@ -183,16 +172,13 @@ class _UserHomeState extends State<UserHome> with AutomaticKeepAliveClientMixin 
       }
     });
 
-    // Prefetch services when the app starts
     _prefetchServices();
 
-    // Simulate data loading
     Future.delayed(Duration(seconds: 2), () {
       if (mounted) {
         setState(() {
           _isLoadingCategories = false;
-          _isLoadingProviders = false;
-          _isLoadingPopularServices = false;
+          _isLoadingBanners = false; // Initialize banner loading
         });
       }
     });
@@ -231,11 +217,6 @@ class _UserHomeState extends State<UserHome> with AutomaticKeepAliveClientMixin 
     }
   }
 
-  // Set up new debounce timer (300ms delay)
-
-
-
-
   @override
   bool get wantKeepAlive => true;
 
@@ -246,7 +227,7 @@ class _UserHomeState extends State<UserHome> with AutomaticKeepAliveClientMixin 
     final screenHeight = MediaQuery.of(context).size.height;
 
     return Scaffold(
-      resizeToAvoidBottomInset: false,  // Add this line
+      resizeToAvoidBottomInset: false,
       backgroundColor: UserTheme.backgroundColor,
       body: SafeArea(
         child: Column(
@@ -573,7 +554,7 @@ class _UserHomeState extends State<UserHome> with AutomaticKeepAliveClientMixin 
             Container(
               margin: EdgeInsets.only(top: 0),
               height: screenHeight * 0.08,
-              padding: EdgeInsets.only(bottom: screenHeight * 0.015), // Added bottom padding
+              padding: EdgeInsets.only(bottom: screenHeight * 0.015),
               child: StreamBuilder<QuerySnapshot>(
                 stream: FirebaseFirestore.instance.collection('categories').snapshots(),
                 builder: (context, snapshot) {
@@ -636,11 +617,13 @@ class _UserHomeState extends State<UserHome> with AutomaticKeepAliveClientMixin 
                   child: Column(
                     children: [
                       _buildSectionHeader('Popular Services'),
-                      _buildPopularServices(),  // No more conditional with shimmer
+                      _buildPopularServices(),
+                      _buildSectionHeader('Offer Banners'), // New section header
+                      _buildOfferBanner(), // New offer banner widget
                       _buildSectionHeader('Top Rated Providers'),
-                      _buildProviders(),  // No more conditional with shimmer
+                      _buildProviders(),
                       _buildSectionHeader('All Categories'),
-                      _buildCategories(),  // No more conditional with shimmer
+                      _buildCategories(),
                       SizedBox(height: screenHeight * 0.025),
                     ],
                   ),
@@ -652,8 +635,6 @@ class _UserHomeState extends State<UserHome> with AutomaticKeepAliveClientMixin 
       ),
     );
   }
-
-  // Shimmer effect widgets
 
   Widget _buildShimmerForHeader(double screenWidth, double screenHeight) {
     return Shimmer.fromColors(
@@ -976,8 +957,6 @@ class _UserHomeState extends State<UserHome> with AutomaticKeepAliveClientMixin 
     );
   }
 
-// ... (keep all other methods the same)
-
   Widget _buildSectionHeader(String title) {
     final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
@@ -1034,7 +1013,6 @@ class _UserHomeState extends State<UserHome> with AutomaticKeepAliveClientMixin 
                 imageUrl: service.imageUrl,
                 category: service.category,
               );
-
             },
           );
         },
@@ -1122,6 +1100,122 @@ class _UserHomeState extends State<UserHome> with AutomaticKeepAliveClientMixin 
       },
     );
   }
+
+  Widget _buildOfferBanner() {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
+
+    return StreamBuilder<QuerySnapshot>(
+      stream: FirebaseFirestore.instance.collection('offerbanner').snapshots(),
+      builder: (context, snapshot) {
+        if (!snapshot.hasData || _isLoadingBanners) {
+          return Container(
+            height: screenHeight * 0.25,
+            child: _buildShimmerOfferBanner(screenWidth, screenHeight),
+          );
+        }
+
+        if (snapshot.hasError) {
+          return Container(
+            height: screenHeight * 0.25,
+            child: Center(
+              child: Text(
+                'Error loading banners',
+                style: TextStyle(color: UserTheme.errorTextColor),
+              ),
+            ),
+          );
+        }
+
+        final banners = snapshot.data!.docs.map((doc) {
+          final data = doc.data() as Map<String, dynamic>;
+          return {
+            'url': data['url'] ?? data['servicename'] ?? '', // Fallback to servicename if url is missing
+            'serviceId': data['serviceId'] ?? '', // Add serviceId from Firestore
+          };
+        }).toList();
+
+        if (banners.isEmpty) {
+          return Container(
+            height: screenHeight * 0.25,
+            child: Center(
+              child: Text(
+                'No banners available',
+                style: TextStyle(color: UserTheme.secondaryTextColor),
+              ),
+            ),
+          );
+        }
+
+        return Container(
+          height: screenHeight * 0.25,
+          child: CarouselSlider(
+            options: CarouselOptions(
+              height: screenHeight * 0.25,
+              autoPlay: true,
+              autoPlayInterval: Duration(seconds: 5),
+              enlargeCenterPage: true,
+              aspectRatio: 16 / 9,
+              autoPlayCurve: Curves.fastOutSlowIn,
+              enableInfiniteScroll: true,
+              autoPlayAnimationDuration: Duration(milliseconds: 800),
+              viewportFraction: 0.9,
+            ),
+            items: banners.map((banner) {
+              return Builder(
+                builder: (BuildContext context) {
+                  return GestureDetector(
+                    onTap: () {
+                      final serviceId = banner['serviceId'] as String;
+                      if (serviceId.isNotEmpty) {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => ServiceDetailsScreen(serviceId: serviceId),
+                          ),
+                        );
+                      } else {
+                        print('No serviceId available for this banner');
+                      }
+                    },
+                    child: Container(
+                      width: screenWidth,
+                      margin: EdgeInsets.symmetric(horizontal: screenWidth * 0.02),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(screenWidth * 0.037),
+                        image: DecorationImage(
+                          image: NetworkImage(banner['url'] as String),
+                          fit: BoxFit.cover,
+                          onError: (exception, stackTrace) {
+                            print('Image loading error: $exception');
+                          },
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              );
+            }).toList(),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildShimmerOfferBanner(double screenWidth, double screenHeight) {
+    return Shimmer.fromColors(
+      baseColor: Colors.grey[300]!,
+      highlightColor: Colors.grey[100]!,
+      child: Container(
+        height: screenHeight * 0.25,
+        width: screenWidth,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(screenWidth * 0.037),
+        ),
+      ),
+    );
+  }
 }
 
 class CategoryChip extends StatelessWidget {
@@ -1181,14 +1275,14 @@ class CategoryChip extends StatelessWidget {
 }
 
 class ServiceCard extends StatelessWidget {
-  final String id; // Add this
+  final String id;
   final String title;
   final String price;
   final String imageUrl;
   final String category;
 
   const ServiceCard({
-    required this.id, //
+    required this.id,
     required this.title,
     required this.price,
     required this.imageUrl,
@@ -1315,6 +1409,16 @@ class ProviderCard extends StatelessWidget {
     required this.profilePicUrl,
   });
 
+  // Declare _navigateToProviderServices before it is used
+  void _navigateToProviderServices(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ProviderServicesPage(providerId: id),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
@@ -1440,15 +1544,6 @@ class ProviderCard extends StatelessWidget {
       ),
     );
   }
-
-  void _navigateToProviderServices(BuildContext context) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => ProviderServicesPage(providerId: id),
-      ),
-    );
-  }
 }
 
 class GridCategoryCard extends StatelessWidget {
@@ -1562,4 +1657,3 @@ class Provider {
     );
   }
 }
-

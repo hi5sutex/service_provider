@@ -96,7 +96,7 @@ class ChatService {
             isRead: true,
           ).toMap();
         }
-        return msg as Map<String, dynamic>;
+        return msg;
       }).toList();
 
       await FirebaseFirestore.instance.collection('user_chatroom').doc(chatRoomId).update({

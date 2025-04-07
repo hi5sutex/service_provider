@@ -33,8 +33,8 @@ class CustomSnackBar extends StatelessWidget {
 
     final IconData displayIcon = icon ??
         (type == 'success'
-            ? FontAwesomeIcons.checkCircle // Checkmark for success
-            : FontAwesomeIcons.exclamationCircle); // Warning for error
+            ? FontAwesomeIcons.circleCheck // Checkmark for success
+            : FontAwesomeIcons.circleExclamation);  // Warning for error
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),

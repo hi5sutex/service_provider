@@ -7,9 +7,6 @@ import 'users_screen.dart';
 import 'providers_screen.dart';
 import 'services_screen.dart';
 import 'bookings_screen.dart';
-import 'payments_screen.dart';
-import 'analytics_screen.dart';
-import 'notifications_screen.dart';
 import 'manage_categories.dart';
 import 'admin_theme.dart'; // Import your theme file
 

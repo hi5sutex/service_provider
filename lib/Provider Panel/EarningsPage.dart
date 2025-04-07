@@ -520,7 +520,7 @@ class _EarningsPageState extends State<EarningsPage> {
                 .get()
                 .then((bookingSnapshot) {
               if (bookingSnapshot.exists) {
-                final bookingData = bookingSnapshot.data() as Map<String, dynamic>?;
+                final bookingData = bookingSnapshot.data();
                 final String serviceId = bookingData?['serviceId'] ?? 'Unknown';
                 return FirebaseFirestore.instance
                     .collection('services')
@@ -528,7 +528,7 @@ class _EarningsPageState extends State<EarningsPage> {
                     .get()
                     .then((serviceSnapshot) {
                   if (serviceSnapshot.exists) {
-                    final serviceData = serviceSnapshot.data() as Map<String, dynamic>?;
+                    final serviceData = serviceSnapshot.data();
                     String serviceName = serviceData?['name'] ?? 'Unknown Service';
                     serviceEarnings[serviceName] = (serviceEarnings[serviceName] ?? 0.0) + amount;
                   }
@@ -738,7 +738,7 @@ class _EarningsPageState extends State<EarningsPage> {
     final double taxAmount = (earningData['taxAmount'] as num?)?.toDouble() ?? 0.0;
     final double platformFee = (earningData['platformFee'] as num?)?.toDouble() ?? 0.0;
     final double paymentAmount = (earningData['paymentAmount'] as num?)?.toDouble() ?? 0.0;
-    final String earningStatus = earningData['earningStatus'] ?? 'Unknown';
+    //final String earningStatus = earningData['earningStatus'] ?? 'Unknown';
     final Timestamp? paymentAt = earningData['paymentAt'] as Timestamp?;
     final String paymentDate = paymentAt != null
         ? "${paymentAt.toDate().day} ${_getMonthName(paymentAt.toDate().month)} ${paymentAt.toDate().year}"

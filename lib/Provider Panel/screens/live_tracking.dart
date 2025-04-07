@@ -9,7 +9,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:service_provider/Provider%20Panel/screens/OtpBookingPage.dart'; // Import OtpBookingPage
-import 'package:service_provider/Provider%20Panel/screens/work_proof.dart'; // Import WorkProofPage
 
 class LiveTrackingPage extends StatefulWidget {
   final String bookingId;

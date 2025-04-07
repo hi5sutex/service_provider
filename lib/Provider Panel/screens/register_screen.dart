@@ -1,6 +1,4 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:email_otp/email_otp.dart';
 import 'package:flutter/services.dart';
 import 'package:service_provider/Provider Panel/screens/otp_verification.dart';
 
@@ -27,7 +25,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final TextEditingController passwordController = TextEditingController();
   final TextEditingController confirmPasswordController = TextEditingController();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-  final EmailOTP _emailOTP = EmailOTP();
+  //final EmailOTP _emailOTP = EmailOTP();
   bool _autoValidate = false;
   bool isLoading = false;
   bool _isObscure = true;
@@ -201,7 +199,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         if (value == null || value.isEmpty) {
                           return 'Please enter your email';
                         }
-                        if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$')
+                        if (!RegExp(r'^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$')
                             .hasMatch(value)) {
                           return 'Please enter a valid email';
                         }

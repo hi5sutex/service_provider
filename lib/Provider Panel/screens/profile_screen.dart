@@ -9,8 +9,6 @@ import 'package:service_provider/Provider%20Panel/screens/add_dummy_bookings.dar
 import 'package:service_provider/User%20Panel/user_login.dart';
 import 'package:service_provider/Provider%20Panel/screens/edit_profile.dart';
 import 'package:service_provider/Provider%20Panel/screens/manage_services.dart';
-import 'package:service_provider/Provider%20Panel/screens/portfolio.dart';
-import 'package:service_provider/Provider%20Panel/screens/provider_settings.dart';
 import 'package:service_provider/Provider%20Panel/provider_theme.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
@@ -87,7 +85,7 @@ class _ProviderProfileState extends State<ProviderProfile> {
         .collection('providers')
         .doc(providerId)
         .get();
-    return providerDoc.data() as Map<String, dynamic>? ?? {};
+    return providerDoc.data() ?? {};
   }
 
   Future<void> _refreshProfile() async {

@@ -6,7 +6,6 @@ import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
-import 'chat_funtionality/ChatListScreen.dart';
 import 'package:service_provider/User%20Panel/Usertheme.dart';
 
 class EditUserProfile extends StatefulWidget {
@@ -16,7 +15,6 @@ class EditUserProfile extends StatefulWidget {
 
 class _EditUserProfileState extends State<EditUserProfile> {
   final String userId = FirebaseAuth.instance.currentUser?.uid ?? '';
-  final _auth = FirebaseAuth.instance;
   final picker = ImagePicker();
   final _formKey = GlobalKey<FormState>();
 
@@ -87,6 +85,7 @@ class _EditUserProfileState extends State<EditUserProfile> {
       }
 
       Position position = await Geolocator.getCurrentPosition(
+          // ignore: deprecated_member_use
           desiredAccuracy: LocationAccuracy.high);
       _latitude = position.latitude;
       _longitude = position.longitude;
@@ -330,10 +329,10 @@ class _EditUserProfileState extends State<EditUserProfile> {
                         onPressed: isSaving ? null : _saveChanges,
                         style: Theme.of(context).elevatedButtonTheme.style?.copyWith(
                           // Background and text colors are set by ProviderTheme.elevatedButtonTheme
-                          padding: MaterialStateProperty.all(
+                          padding: WidgetStateProperty.all(
                             EdgeInsets.symmetric(vertical: screenHeight * 0.02),
                           ),
-                          shape: MaterialStateProperty.all(
+                          shape: WidgetStateProperty.all(
                             RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(screenWidth * 0.03),
                             ),

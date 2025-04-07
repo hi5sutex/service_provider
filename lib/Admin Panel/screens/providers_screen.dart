@@ -547,8 +547,8 @@ class _ProvidersScreenState extends State<ProvidersScreen> {
       ),
       itemCount: 6,
       itemBuilder: (context, index) => Shimmer.fromColors(
-        baseColor: Colors.grey.shade300!,
-        highlightColor: Colors.grey.shade100!,
+        baseColor: Colors.grey.shade300,
+        highlightColor: Colors.grey.shade100,
         child: Container(
           decoration: BoxDecoration(
             color: Colors.white,

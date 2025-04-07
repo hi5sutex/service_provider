@@ -104,8 +104,8 @@ class BookingActionButtons extends StatelessWidget {
               child: OutlinedButton(
                 onPressed: () => _showCancelConfirmationDialog(context),
                 style: ProviderTheme.themeData.outlinedButtonTheme.style?.copyWith(
-                  side: MaterialStateProperty.all(const BorderSide(color: ProviderTheme.canceledColor)),
-                  foregroundColor: MaterialStateProperty.all(ProviderTheme.canceledColor),
+                  side: WidgetStateProperty.all(const BorderSide(color: ProviderTheme.canceledColor)),
+                  foregroundColor: WidgetStateProperty.all(ProviderTheme.canceledColor),
                 ),
                 child: const Text('Cancel'),
               ),

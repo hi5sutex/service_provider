@@ -5,9 +5,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:razorpay_flutter/razorpay_flutter.dart';
-import 'package:googleapis_auth/auth_io.dart';
 import 'package:service_provider/notification_service.dart';
-import 'package:service_provider/secrets.dart';
 import 'package:service_provider/User%20Panel/Usertheme.dart';
 
 class ConfirmBookingPage extends StatefulWidget {
@@ -174,6 +172,7 @@ class _ConfirmBookingPageState extends State<ConfirmBookingPage> {
       }
 
       Position position = await Geolocator.getCurrentPosition(
+          // ignore: deprecated_member_use
           desiredAccuracy: LocationAccuracy.high);
       _latitude = position.latitude;
       _longitude = position.longitude;
@@ -262,16 +261,6 @@ class _ConfirmBookingPageState extends State<ConfirmBookingPage> {
     _showSnackBar("External Wallet Selected: ${response.walletName}");
   }
 
-  Future<String> _getAccessToken() async {
-    final serviceAccount = ServiceAccountCredentials.fromJson(serviceAccountJson);
-    final client = await clientViaServiceAccount(
-      serviceAccount,
-      ['https://www.googleapis.com/auth/cloud-platform'],
-    );
-    final accessToken = client.credentials.accessToken.data;
-    client.close();
-    return accessToken;
-  }
 
   Future<void> _saveBooking(String? paymentId) async {
     if (!_formKey.currentState!.validate()) {

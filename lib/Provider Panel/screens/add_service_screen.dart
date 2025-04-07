@@ -130,19 +130,17 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
   Future<void> selectImages() async {
     try {
       final pickedFiles = await _picker.pickMultiImage(imageQuality: 80, maxWidth: 1000);
-      if (pickedFiles != null) {
-        final newImages = pickedFiles.map((e) => File(e.path)).toList();
-        if (selectedImages.length + newImages.length <= 5) {
-          setState(() {
-            selectedImages.addAll(newImages);
-          });
-        } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Maximum 5 images allowed')),
-          );
-        }
+      final newImages = pickedFiles.map((e) => File(e.path)).toList();
+      if (selectedImages.length + newImages.length <= 5) {
+        setState(() {
+          selectedImages.addAll(newImages);
+        });
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Maximum 5 images allowed')),
+        );
       }
-    } catch (e) {
+        } catch (e) {
       debugPrint('Error picking images: $e');
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Failed to pick images')),

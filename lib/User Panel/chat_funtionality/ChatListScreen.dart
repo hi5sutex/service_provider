@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:service_provider/User%20Panel/chat_funtionality/chat_screen.dart';
 import 'package:service_provider/Provider%20Panel/provider_theme.dart';
@@ -338,7 +337,7 @@ class _ChatListScreenState extends State<ChatListScreen> {
         final timestamp = doc['timestamp'] as Timestamp?;
         chatContacts.add({
           'email': providerEmail,
-          'chatRoomId': doc.id ?? 'unknown_chatroom',
+          'chatRoomId': doc.id,
           'lastMessage': doc['lastMessage'] as String? ?? defaultLastMessage,
           'timestamp': timestamp,
           'unreadCount': doc['unreadCounts'] != null
@@ -375,7 +374,7 @@ class _ChatListScreenState extends State<ChatListScreen> {
         if (userSnapshot.hasData && userSnapshot.data!.exists) {
           final userData = userSnapshot.data!.data() as Map<String, dynamic>? ?? {};
           providerName = userData['name'] as String? ?? defaultProviderName;
-          providerId = userSnapshot.data!.id ?? '';
+          providerId = userSnapshot.data!.id;
           profileImage = userData['profileImage'] as String? ?? defaultProfileImage;
         }
 

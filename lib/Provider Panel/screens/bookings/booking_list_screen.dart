@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:service_provider/Provider%20Panel/provider_theme.dart';
 import 'package:service_provider/Provider Panel/screens/bookings/booking_list.dart';
-import 'booking_list.dart';
 import 'booking_utils.dart';
 
 class BookingListScreen extends StatelessWidget {

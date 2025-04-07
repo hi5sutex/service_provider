@@ -153,8 +153,8 @@ class BookingCard extends StatelessWidget {
                       child: ElevatedButton(
                         onPressed: () => showBookingDetailsBottomSheet(context, booking),
                         style: ProviderTheme.themeData.elevatedButtonTheme.style?.copyWith(
-                          padding: MaterialStateProperty.all(const EdgeInsets.symmetric(horizontal: 8)),
-                          textStyle: MaterialStateProperty.all(const TextStyle(fontSize: 12)),
+                          padding: WidgetStateProperty.all(const EdgeInsets.symmetric(horizontal: 8)),
+                          textStyle: WidgetStateProperty.all(const TextStyle(fontSize: 12)),
                         ),
                         child: const Text('View Details'),
                       ),

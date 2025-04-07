@@ -419,12 +419,10 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
                         child: ElevatedButton.icon(
                           onPressed: () async {
                             final pickedFiles = await _picker.pickMultiImage();
-                            if (pickedFiles != null) {
-                              setState(() {
-                                newImages.addAll(pickedFiles.map((e) => File(e.path)));
-                              });
-                            }
-                          },
+                            setState(() {
+                              newImages.addAll(pickedFiles.map((e) => File(e.path)));
+                            });
+                                                    },
                           icon: const FaIcon(
                             FontAwesomeIcons.camera,
                             color: ProviderTheme.onPrimaryTextColor, // White icon

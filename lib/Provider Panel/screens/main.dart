@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:service_provider/Provider%20Panel/screens/add_dummy_bookings.dart';
 import 'package:service_provider/Provider%20Panel/screens/home_screen.dart';
 import 'package:service_provider/Provider%20Panel/screens/bookings/provider_booking.dart';
 import 'package:service_provider/Provider%20Panel/screens/chat/provider_chat_list.dart';
@@ -146,6 +145,7 @@ class _MainState extends State<Main> with SingleTickerProviderStateMixin {
       debugShowCheckedModeBanner: false,  // Add this line to remove debug banner
       theme: ProviderTheme.themeData,
       scaffoldMessengerKey: _scaffoldMessengerKey,
+      // ignore: deprecated_member_use
       home: WillPopScope(
         onWillPop: _onWillPop, // Intercept back button press
         child: Scaffold(

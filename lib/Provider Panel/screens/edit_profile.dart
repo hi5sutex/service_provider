@@ -97,6 +97,7 @@ class _EditProfileState extends State<EditProfile> {
         return;
       }
 
+      // ignore: deprecated_member_use
       Position position = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
       _latitude = position.latitude;
       _longitude = position.longitude;
