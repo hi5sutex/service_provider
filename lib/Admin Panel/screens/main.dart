@@ -126,14 +126,8 @@ class _MainAdminPanelState extends State<MainAdminPanel> {
                       _buildDrawerItem(Icons.design_services_outlined, 'Services', 3),
                     if (permissions['viewBookings'] ?? false)
                       _buildDrawerItem(Icons.book_online_outlined, 'Bookings', 4),
-                    //if (permissions['viewPayments'] ?? false)
-                      //_buildDrawerItem(Icons.payment_outlined, 'Payments', 5),
-                   // if (permissions['viewAnalytics'] ?? false)
-                     // _buildDrawerItem(Icons.analytics_outlined, 'Analytics', 6),
-                   // if (permissions['sendNotifications'] ?? false)
-                      //_buildDrawerItem(Icons.notifications_outlined, 'Notifications', 7),
                     if (permissions['manageCategories'] ?? true)
-                      _buildDrawerItem(Icons.category_outlined, 'Manage Categories', 8),
+                      _buildDrawerItem(Icons.category_outlined, 'Manage Categories', 5), // Fixed index
                     const Divider(
                       color: AdminTheme.dividerColor,
                       thickness: 1,
